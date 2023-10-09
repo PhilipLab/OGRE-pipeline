@@ -1,4 +1,4 @@
-# Connectome Operations For FSL ExEcution (COFFEE) Pipeline  
+# One-Step General Registration and Extraction (OGRE) Pipeline  
 
 Ben Philip in Occupational Therapy at Washington University created a fMRI processing pipeline to integrate HCP preprocessing (including Freesurfer) with FSL on the Mac, for analysis of task MRI data.
 
