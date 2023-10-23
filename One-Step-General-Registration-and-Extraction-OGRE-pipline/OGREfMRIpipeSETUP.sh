@@ -331,28 +331,25 @@ for((i=0;i<${#csv[@]};++i));do
 
 
     if((lcfeatadapter==0));then
-
-        #bold=
-        #for((j=7;j<=23;j+=2));do
-        #    if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
-        #        [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
-        #    fi
-        #done
-        #START230618
         for((j=7;j<=23;j+=2));do
             bold[j]=0
             if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
                 [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
             fi
         done
-
-
-
-
         lcbold=$(IFS=+;echo "$((${bold[*]}))")
         ((lcbold==0)) && continue
 
+        #START231017
+        lcboldtask=0
+        for((j=7;j<=17;j+=2));do
+            lcboldtask=$((lcboldtask+${bold[j]}))
+        done
+        #echo "lcboldtask=${lcboldtask}"
+
         #printf '%s ' "${bold[@]}";echo '';echo "${#bold[@]}"
+        #declare -p bold
+        #exit
 
 
         #make sure bolds and SBRef have same phase encoding direction and dimensions
@@ -703,9 +700,10 @@ for((i=0;i<${#csv[@]};++i));do
             done
         fi
 
-        #if((lct1copymaskonly==0)) && ((lccleanonly==0)) && ((lcbadFM==0));then
-        #START230623
-        if((lct1copymaskonly==0)) && ((lcbadFM==0));then
+
+        #if((lct1copymaskonly==0)) && ((lcbadFM==0));then
+        #START231017
+        if((lcboldtask==1)) && ((lct1copymaskonly==0)) && ((lcbadFM==0));then
 
             endquote0=
             for((j=17;j>=7;j-=2));do
@@ -747,6 +745,9 @@ for((i=0;i<${#csv[@]};++i));do
             fi
             echo '    --EnvironmentScript=${ES}' >> ${F0[0]}
         fi
+
+
+
     fi
 
 

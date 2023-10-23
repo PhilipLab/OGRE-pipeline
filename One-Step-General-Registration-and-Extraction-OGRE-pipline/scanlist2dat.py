@@ -144,7 +144,15 @@ for i in args.sub:
                     if k==row['nii'].strip():
 
                         #print(f'k={k}')
-                        d0[k]=str(p0)+'/nifti/'+k+'.nii.gz'
+
+                        #d0[k]=str(p0)+'/nifti/'+k+'.nii.gz'
+                        #START231018
+                        file=str(p0)+'/nifti/'+k+'.nii.gz' 
+                        if pathlib.Path(file).exists():
+                            d0[k]=file
+                        else:
+                            print(f'{file} does not exist!')
+
                         break
 
 
