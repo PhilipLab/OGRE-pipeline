@@ -5,11 +5,17 @@ shebang="#!/usr/bin/env bash"
 #Hard coded location of freesurfer installations
 [ -z ${FREESURFDIR+x} ] && FREESURFDIR=/Applications/freesurfer
 
-#Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2
-[ -z ${FREESURFVER+x} ] && FREESURFVER=7.3.2
+##Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2
+#[ -z ${FREESURFVER+x} ] && FREESURFVER=7.3.2
+#START231114
+#Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2 7.4.0
+[ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.0
+
 
 root0=${0##*/}
 helpmsg(){
+    echo "From the pipeline<7.4.0> folder, the T1w, T2w and all <BOLD run> folders are removed."
+    echo "A *fileout.sh is created and that is the one to execute if you choose not to -AUTORUN"
     echo "Required: ${root0} <mydatfile>"
     echo "    -d --dat -dat"
     echo "        dat file(s). Arguments without options are assumed to be dat files."
@@ -23,10 +29,15 @@ helpmsg(){
     echo "        Flag. Automatically execute script. Default is not execute *_autorun.sh"
     echo "    -b --batchscript -batchscript"
     echo "        *_autorun.sh scripts are collected in the executable batchscript."
-    echo "    -F --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
 
-    #echo "        5.3.0-HCP, 7.2.0 or 7.3.2. Default is 7.3.2 unless set elsewhere via variable FREESURFVER."
-    #START230622
+    #echo "    -F --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
+    #START231114
+    echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
+    echo "        5.3.0-HCP, 7.2.0, 7.3.2, or 7.4.0. Default is 7.4.0 unless set elsewhere via variable FREESURFVER."
+
+
+    #echo "        5.3.0-HCP, 7.2.0, 7.3.2 or 7.4.0. Default is 7.3.2 unless set elsewhere via variable FREESURFVER."
+    #START231114
     echo "        5.3.0-HCP, 7.2.0, 7.3.2 or 7.4.0. Default is 7.3.2 unless set elsewhere via variable FREESURFVER."
 
     echo "    -m --HOSTNAME"
@@ -67,7 +78,11 @@ for((i=0;i<${#@};++i));do
             bs=${arg[((++i))]}
             echo "bs=$bs"
             ;;
-        -F | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion)
+
+        #-F | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion)
+        #START231114
+        -V | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion)
+
             FREESURFVER=${arg[((++i))]}
             echo "FREESURFVER=$FREESURFVER"
             ;;

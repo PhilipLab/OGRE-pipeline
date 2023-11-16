@@ -328,24 +328,45 @@ for((i=0;i<${#csv[@]};++i));do
         echo -e "$shebang\nset -e\n" > ${bs1} #ok to crush, because nothing new is written
     fi
 
+    #echo "here0 lcfeatadapter=$lcfeatadapter"
+
+
+    #START231107
+    for((j=7;j<=23;j+=2));do
+        bold[j]=0
+        if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
+            [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
+        fi
+    done
+    #lcbold=$(IFS=+;echo "$((${bold[*]}))")
+    #((lcbold==0)) && continue
+    lcboldtask=0
+    for((j=7;j<=17;j+=2));do
+        lcboldtask=$((lcboldtask+${bold[j]}))
+    done
+    echo "lcboldtask=${lcboldtask}"
 
 
     if((lcfeatadapter==0));then
-        for((j=7;j<=23;j+=2));do
-            bold[j]=0
-            if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
-                [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
-            fi
-        done
-        lcbold=$(IFS=+;echo "$((${bold[*]}))")
-        ((lcbold==0)) && continue
 
+
+        #START221107
+        #for((j=7;j<=23;j+=2));do
+        #    bold[j]=0
+        #    if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
+        #        [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
+        #    fi
+        #done
+        #lcbold=$(IFS=+;echo "$((${bold[*]}))")
+        #((lcbold==0)) && continue
+        #
         #START231017
-        lcboldtask=0
-        for((j=7;j<=17;j+=2));do
-            lcboldtask=$((lcboldtask+${bold[j]}))
-        done
+        #lcboldtask=0
+        #for((j=7;j<=17;j+=2));do
+        #    lcboldtask=$((lcboldtask+${bold[j]}))
+        #done
         #echo "lcboldtask=${lcboldtask}"
+
 
         #printf '%s ' "${bold[@]}";echo '';echo "${#bold[@]}"
         #declare -p bold
@@ -362,6 +383,9 @@ for((i=0;i<${#csv[@]};++i));do
                         continue
                     fi 
                     for((k=j;k<=((j+1));++k));do
+
+                        echo "line[$k]=${line[k]}"
+
                         json=${line[k]%%.*}.json
                         if [ ! -f $json ];then
                             echo "    $json not found. Abort!"
@@ -529,7 +553,10 @@ for((i=0;i<${#csv[@]};++i));do
 
             #echo -e export FSLDIR='${FSLDIR}'"\n" >> ${F0[j]}
             #START230605
-            echo export FSLDIR='${FSLDIR}' >> ${F0[j]}
+            #echo export FSLDIR='${FSLDIR}' >> ${F0[j]}
+            #START231107
+            echo -e export FSLDIR='${FSLDIR}'"\n" >> ${F0[j]}
+
         done
     fi
     if((lcfeatadapter==0));then
@@ -560,18 +587,24 @@ for((i=0;i<${#csv[@]};++i));do
     fi
     if [ -n "${outputdir1}" ];then
         for((j=0;j<${#F0[@]};++j));do
+
             #echo 'P3='${SCRIPT3} >> ${F0[j]}
             #START230605
-            echo -e "\n"'P3='${SCRIPT3} >> ${F0[j]}
+            #echo -e "\n"'P3='${SCRIPT3} >> ${F0[j]}
+            #START231107
+            echo 'P3='${SCRIPT3} >> ${F0[j]}
+
         done
     fi
     if((lcfeatadapter==0));then
 
         #((lccleanonly==0)) && echo 'ES='${ES} >> ${F0[0]}
         #START230623
-        echo 'ES='${ES} >> ${F0[0]}
+        #echo 'ES='${ES} >> ${F0[0]}
+        #echo "" >> ${F0[0]}
+        #START231107
+        echo -e  'ES='${ES}"\n" >> ${F0[0]}
 
-        echo "" >> ${F0[0]}
         echo "sf0=${line[1]}"'${FREESURFVER}' >> ${F0[0]}
 
         #if((lct1copymaskonly==0)) && ((lccleanonly==0));then
@@ -601,7 +634,7 @@ for((i=0;i<${#csv[@]};++i));do
             #START230712
             unset endquote
 
-            echo "here0 endquote=${endquote[@]} nelements=${#endquote[@]}"
+            #echo "here0 endquote=${endquote[@]} nelements=${#endquote[@]}"
 
             for((j=23;j>=7;j-=2));do
                 if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
@@ -703,7 +736,10 @@ for((i=0;i<${#csv[@]};++i));do
 
         #if((lct1copymaskonly==0)) && ((lcbadFM==0));then
         #START231017
-        if((lcboldtask==1)) && ((lct1copymaskonly==0)) && ((lcbadFM==0));then
+        #if((lcboldtask==1)) && ((lct1copymaskonly==0)) && ((lcbadFM==0));then
+        #START231107
+        if((lcboldtask!=0)) && ((lct1copymaskonly==0)) && ((lcbadFM==0));then
+
 
             endquote0=
             for((j=17;j>=7;j-=2));do
