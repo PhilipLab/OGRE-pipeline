@@ -230,6 +230,7 @@ for ((k=0; k < $NumFrames; k++)); do
   FrameMergeSTRINGII="${FrameMergeSTRINGII}${WD}/postvols/vol${vnum}_mask.nii.gz "
 
   #Do Basic Cleanup
+  #START231022 commented out to look at warps debugging 1018_run3_LH
   rm ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum}_gdc_warp.nii.gz
   rm ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz
 done
@@ -249,6 +250,8 @@ ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} $FrameMergeSTRING $TR_vol
 ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI}_mask $FrameMergeSTRINGII $TR_vol
 #echo "****************** here1 end ***********************"
 
+#START231009 added, debugging 1018_run3_LH
+#${FSLDIR}/bin/imcp ${OutputfMRI}_mask ${OutputfMRI}_mask_frames
 
 #echo "fslmaths ${OutputfMRI}_mask -Tmin ${OutputfMRI}_mask"
 fslmaths ${OutputfMRI}_mask -Tmin ${OutputfMRI}_mask
