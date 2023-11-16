@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 STUDYPATH=/Users/Shared/10_Connectivity
-PIPE=pipeline7.3.2
+PIPE=pipeline7.4.0
 T1=1
 ATLAS=2
 
@@ -14,9 +14,9 @@ helpmsg(){
     echo "                            If the option is not used, the third argument is assumed to be the analysis name." 
     echo ""
     echo "    -S --study -study       Optional. STUDYPATH. Default is /Users/Shared/10_Connectivity" 
-    echo "                            Syntax: if full path is "/Users/Shared/10_Connectivity/10_2000/pipeline7.3.2", STUDYPATH is /Users/Shared/10_Connectivity   
-    echo "    -p --pipe -pipe         Optional. PIPELINE_DIRECTORY. Default is pipeline7.3.2." 
-    echo "                            Syntax: if full path is "/Users/Shared/10_Connectivity/10_2000/pipeline7.3.2", PIPELINE_DIRECTORY is 7.3.2
+    echo "                            Syntax: if full path is "/Users/Shared/10_Connectivity/10_2000/pipeline7.4.0", STUDYPATH is /Users/Shared/10_Connectivity   
+    echo "    -p --pipe -pipe         Optional. PIPELINE_DIRECTORY. Default is pipeline7.4.0." 
+    echo "                            Syntax: if full path is "/Users/Shared/10_Connectivity/10_2000/pipeline7.4.0", PIPELINE_DIRECTORY is 7.4.0
     echo ""
     echo "    -t --t1 -t1             T1 resolution (ie FEAT highres). 1 or 2. Default is 1mm."
     echo "                            If 1mm, then MNINonLinear/T1w_restore and MNINonLinear/T1w_restore_brain are used."
@@ -24,19 +24,19 @@ helpmsg(){
     echo "                                NOTE: MNINonLinear/T1w_restore.2 is not the correct image. It is a so-called subcortical T1 for surface analysis."
     echo "    --t1highreshead -t1highreshead --t1hireshead -t1hireshead"
     echo "                            Input your own whole head T1."
-    echo "                            Ex. --t1highreshead /Users/Shared/10_Connectivity/10_1001/pipelineTest7.3.2/MNINonLinear/T1w_restore.nii.gz"
+    echo "                            Ex. --t1highreshead /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
     echo "    --t1highres -t1highres --t1hires -t1hires"
     echo "                            Input your own brain masked T1."
-    echo "                            Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.3.2/MNINonLinear/T1w_restore_brain.nii.gz"
+    echo "                            Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
     echo ""
     echo "    -u --atlas -atlas       Standard image resolution (ie FEAT standard). 1 or 2. Default is 2mm."
     echo "                            If 1mm, then ${FSLDIR}/data/standard/MNI152_T1_1mm and ${FSLDIR}/data/standard/MNI152_T1_1mm_brain are used."
     echo "                            If 2mm, then ${FSLDIR}/data/standard/MNI152_T1_2mm and ${FSLDIR}/data/standard/MNI152_T1_2mm_brain are used."
     echo "    --standardhead -standardhead"
     echo "                            Input your own whole head standard image."
-    echo "                            Ex. --standardhead /Users/Shared/10_Connectivity/10_1001/pipelineTest7.3.2/MNINonLinear/T1w_restore.nii.gz"
+    echo "                            Ex. --standardhead /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
     echo "    --standard -standard    Input your own brain masked standard image."
-    echo "                            Ex. --standard /Users/Shared/10_Connectivity/10_1001/pipelineTest7.3.2/MNINonLinear/T1w_restore_brain.nii.gz"
+    echo "                            Ex. --standard /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
     echo ""
     echo "    -h --help -help         Echo this help message."
     exit
