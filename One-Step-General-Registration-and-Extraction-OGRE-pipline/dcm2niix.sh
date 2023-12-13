@@ -5,6 +5,8 @@ shebang="#!/usr/bin/env bash"
 #Hard coded location of dcm2niix
 [ -z ${DCM2NIIXDIR+x} ] && DCM2NIIXDIR=/Users/Shared/pipeline
 
+#P0="${DCM2NIIXDIR}/dcm2niix -w 0 -z i" #-w 0 skip duplicates
+#START231209
 P0="${DCM2NIIXDIR}/dcm2niix -w 0 -z i" #-w 0 skip duplicates
 
 root0=${0##*/}
