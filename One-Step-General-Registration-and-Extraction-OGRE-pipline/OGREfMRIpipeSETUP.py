@@ -1,0 +1,475 @@
+#!/usr/bin/env python3
+
+#https://docs.python.org/3/tutorial/classes.html
+#https://www.digitalocean.com/community/tutorials/how-to-construct-classes-and-define-objects-in-python-3
+#https://www.sanfoundry.com/python-program-form-dictionary-object-class/
+#https://www.geeksforgeeks.org/python-initialize-a-dictionary-with-only-keys-from-a-list/
+#https://stackoverflow.com/questions/209840/make-a-dictionary-dict-from-separate-lists-of-keys-and-values
+#https://www.geeksforgeeks.org/how-to-change-a-dictionary-into-a-class/
+#https://pynative.com/python-class-variables/
+#https://docs.python.org/3/howto/argparse.html
+#https://stackoverflow.com/questions/31127366/single-dash-for-argparse-long-options
+#https://stackoverflow.com/questions/42818876/python-3-argparse-call-function
+#https://ioflood.com/blog/python-get-environment-variable/#:~:text=To%20get%20an%20environment%20variable,with%20your%20system's%20environment%20variables.
+#python3 equivalent to grep on a file
+
+import os
+import subprocess
+
+#**** default global variables **** 
+
+#Include path if necessary. Ideally, the locations of these scripts should be in your PATH environment variable.
+#Eg  OGRE=/Users/mcavoy/repo/OGRE-pipeline/One-Step-General-Registration-and-Extraction-OGRE-pipline
+#    PATH=$PATH:$OGRE:$OGRE/HCP/scripts
+
+P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
+P1='OGRET1w_restore.sh'
+P2='OGRESmoothingProcess.sh'
+P3='OGREmakeregdir.sh'
+SETUP='OGRESetUpHCPPipeline.sh'
+
+#**** These are overwritten by their environment variables in get_env_vars ****
+WBDIR='/Users/Shared/pipeline/HCP/workbench-mac/bin_macosx64'
+HCPDIR='/Users/Shared/pipeline/HCP'
+FSLDIR='/usr/local/fsl'
+FREESURFDIR='/Applications/freesurfer'
+FREESURFVER='7.4.0'
+
+#**** These overwrite the default global variables and are overwritten in options ****
+def get_env_vars():
+    try:
+        global WBDIR
+        WBDIR = os.environ['WBDIR'] 
+    except KeyError:
+        pass 
+    try:
+        global HCPDIR
+        HCPDIR = os.environ['HCPDIR'] 
+    except KeyError:
+        pass 
+    try:
+        global FSLDIR
+        FSLDIR = os.environ['FSLDIR'] 
+    except KeyError:
+        pass 
+    try:
+        global FREESURFDIR
+        FREESURFDIR = os.environ['FREESURFDIR'] 
+    except KeyError:
+        pass 
+    try:
+        global FREESURFVER
+        FREESURFVER = os.environ['FREESURFVER'] 
+    except KeyError:
+        pass 
+
+
+#**** dat file is stored here ****
+class Dat:
+    def __init__(self,dict0):
+        assumed = ['SUBNAME','OUTDIR','T1','T2','FM1','FM2']
+        for key in assumed:
+            setattr(self, key, dict0[key])
+            dict0.pop(key, None)
+        print(f'dict0 = {dict0}')
+
+        self.task_SBRef = []
+        self.task = []
+        self.rest_SBRef = []
+        self.rest = []
+        assumed = ['SBRef','rest']
+        for key in dict0:
+            if key.find(assumed[0]) != -1:
+                if key.find(assumed[1]) != -1:
+                    self.rest_SBRef.append(dict0.get(key))
+                else:
+                    self.task_SBRef.append(dict0.get(key))
+            else:
+                if key.find(assumed[1]) != -1:
+                    self.rest.append(dict0.get(key))
+                else:
+                    self.task.append(dict0.get(key))
+
+#def main(file):
+#    with open(file,encoding="utf8",errors='ignore') as f0:
+#        for line0 in f0:
+#            if not line0.strip() or line0.startswith('#'): continue
+#            #print(line0.split())
+#            if not 'keys' in locals():
+#                keys = line0.split()
+#            else:
+#                dict0 = dict(zip(keys,line0.split()))
+#                #print(f'dict0 = {dict0}')
+#                d0 = Dat(dict0)
+#                print(f'd0 = {vars(d0)}')
+
+#def dat2dictlist:
+#    dictlist = []
+#    with open(file,encoding="utf8",errors='ignore') as f0:
+#        for line0 in f0:
+#            if not line0.strip() or line0.startswith('#'): continue
+#            if not 'keys' in locals():
+#                keys = line0.split()
+#            else:
+#                dictlist.append(dict(zip(keys,line0.split())))
+
+def run_cmd(cmd):
+    return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
+
+
+
+if __name__ == "__main__":
+    get_env_vars()
+
+    lcdate=0
+    fwhm=0
+    paradigm_hp_sec=0
+    lcautorun=0
+    lchostname=0
+    lcdate=0
+    lct1copymaskonly=0
+    lcsmoothonly=0
+    lcfeatadapter=0
+
+    import argparse
+    parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('dat0',metavar='<datfile(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
+
+    hdat = '-d --dat -dat\n' \
+         + '        Ex 1. '+parser.prog+' 1001.dat 2000.dat\n' \
+         + '        Ex 2. '+parser.prog+' "1001.dat -d 2000.dat"\n' \
+         + '        Ex 3. '+parser.prog+' -d 1001.dat 2000.dat\n' \
+         + '        Ex 4. '+parser.prog+' -d "1001.dat 2000.dat"\n' \
+         + '        Ex 5. '+parser.prog+' -d 1001.dat -d 2000.dat\n' \
+         + '        Ex 6. '+parser.prog+' 1001.dat -d 2000.dat\n'
+    parser.add_argument('-d','--dat','-dat',dest='dat',metavar='*.dat',action='append',nargs='+',help=hdat)
+
+    hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
+    parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
+
+    hbs='*_fileout.sh scripts are collected in the executable batchscript.'
+    parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
+    #sbs = ['-b','--batchscript','-batchscript']
+    #parser.add_argument(sbs,dest='bs',metavar='batchscript',help=hbs)
+
+    hHCPDIR='HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR.'
+    parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
+
+    hFREESURFVER='5.3.0-HCP, 7.2.0, 7.3.2, or 7.4.0. Default is 7.4.0 unless set elsewhere via variable FREESURFVER.'
+    parser.add_argument('-V','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER','--freesurferVersion','-freesurferVersion',dest='FREESURFVER',metavar='FreeSurferVersion', \
+        help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0'])
+
+    hlchostname='Flag. Use machine name instead of user named file.'
+    parser.add_argument('-m','--HOSTNAME',dest='lchostname',action='store_true',help=hlchostname)
+
+    hlcdate='Flag. Add date (YYMMDD) to name of output script.'
+    parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate)
+
+    hlcdateL='Flag. Add date (YYMMDDHHMMSS) to name of output script.'
+    parser.add_argument('-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL)
+
+    hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
+    mfwhm='FWHM'
+    parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+
+    hparadigm_hp_sec='High pass filter cutoff (s)'
+    mparadigm_hp_sec='HPFcutoff'
+    parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+
+    hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
+    parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
+
+    hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.'
+    parser.add_argument('-s','--SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
+
+    hfsf1='fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
+    parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='append',nargs='+',help=hfsf1)
+
+    hfsf2='fsf files for second-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
+    parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='append',nargs='+',help=hfsf2)
+
+    hlcfeatadapter='Flag. Only write the feat adapter scripts.'
+    parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
+
+
+    #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
+    import sys
+    if len(sys.argv)==1:
+        parser.print_help()
+        # parser.print_usage() # for just the usage line
+        parser.exit()
+
+    args=parser.parse_args()
+    if args.dat:
+        print(f'here0')
+        if args.dat0:
+            args.dat.append(args.dat0)
+    elif args.dat0:
+        args.dat=[args.dat0]
+    else:
+        exit()
+
+    if fwhm==0 and not lcfeatadapter: 
+        print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
+
+    if paradigm_hp_sec==0 and not lcfeatadapter:
+        print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+
+    if args.HCPDIR: HCPDIR = args.HCPDIR
+    if args.FREESURFVER: FREESURFVER = args.FREESURFVER
+
+    print(f'HCPDIR={HCPDIR}')
+    print(f'FREESURFVER={FREESURFVER}')
+
+    if args.fsf1:
+        outputdir = []
+        for i in args.fsf1:
+            #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
+            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
+            outputdir.append(line0.split('"')[1])
+        print(f'outputdir = {outputdir}')
+
+    if args.fsf2:
+        outputdir2 = []
+        for i in args.fsf1:
+            #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
+            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
+            outputdir2.append(line0.split('"')[1])
+        print(f'outputdir2 = {outputdir2}')
+
+    if not args.bs:
+        num_sub = 0
+        for i in args.dat:
+            for j in range(len(i)):
+                with open(i[j],encoding="utf8",errors='ignore') as f0:
+                    num_sub0 = 0 #dat could be empty or just have a line of keys
+                    for line0 in f0:
+                        if not line0.strip() or line0.startswith('#'): continue
+                        num_sub0 += 1
+                    if num_sub0 > 0 : num_sub += num_sub0 - 1 #first line is the keys
+        num_cores = int(run_cmd('sysctl -n hw.ncpu'))
+        print(f'num_cores = {num_cores}')
+        if num_sub > num_cores:
+            hostname = run_cmd('hostname')
+            print(f'{num_sub} will be run, however {hostname} only has {num_cores}. Please consider using a batchscript -b.')
+
+
+
+
+
+
+
+
+
+#if __name__ == "__main__":
+#    #file = '/Users/Shared/10_Connectivity/10_2000/10_2000_new.dat'
+#    #main(file)
+#
+#    get_env_vars()
+
+#d0={"SUBNAME":"NONE",
+#    "OUTDIR":"NONE",
+#    "t1_mpr_1mm_p2_pos50":"NONE",
+#    "t2_spc_sag_p2_iso_1.0":"NONE",
+#    "SpinEchoFieldMap2_AP":"NONE",
+#    "SpinEchoFieldMap2_PA":"NONE",
+#    "run1_LH_SBRef":"NONE",
+#    "run1_LH":"NONE",
+#    "run1_RH_SBRef":"NONE",
+#    "run1_RH":"NONE",
+#    "run2_LH_SBRef":"NONE",
+#    "run2_LH":"NONE",
+#    "run2_RH_SBRef":"NONE",
+#    "run2_RH":"NONE",
+#    "run3_LH_SBRef":"NONE",
+#    "run3_LH":"NONE",
+#    "run3_RH_SBRef":"NONE",
+#    "run3_RH":"NONE",
+#    "rest01_SBRef":"NONE",
+#    "rest01":"NONE",
+#    "rest02_SBRef":"NONE",
+#    "rest02":"NONE",
+#    "rest03_SBRef":"NONE",
+#    "rest03":"NONE"}
+#
+#
+#def readdat(file):
+
+
+
+
+
+
+"""
+text='Convert *scanlist.csv to *.dat. Multiple *scanlist.csv for a single subject are ok. Each subject is demarcated by -s|--sub.'
+#print(text)
+
+import argparse
+parser=argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
+
+#START230410
+#parser.add_argument('sub0',nargs='*',help='Input scanlist.csv(s) are assumed all to belong to the same subject.')
+parser.add_argument('sub0',action='extend',nargs='*',help='Input scanlist.csv(s) are assumed all to belong to the same subject.')
+
+parser.add_argument('-s','--sub',action='append',nargs='+',help='Input scanlist.csv(s). Each subject is written to its own file (eg 10_1002.dat and 10_2002.dat).\nEx. -s 10_1002_scanlist.csv -s 10_2002a_scanlist.csv 10_2002b_scanlist.csv')
+parser.add_argument('-a','--all',help='Write all subjects to a single file. Individual files are still written.')
+parser.add_argument('-o','--out',help='Write all subjects to a single file. Individual files are not written.')
+
+#START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
+import sys
+if len(sys.argv)==1:
+    parser.print_help()
+    # parser.print_usage() # for just the usage line
+    parser.exit()
+
+
+
+
+args=parser.parse_args()
+
+#print(f'args={args}')
+#print(parser.parse_args([]))
+
+#if args.sub:
+#    print(f'-s --sub {args.sub}')
+#    #if args.all: print(f'-a --all {args.all}')
+#    print(f'args.all={args.all}')
+#    if args.out: print(f'-o --out {args.out}')
+#    print(f'args.out={args.out}')
+#else:
+#    exit()
+#START230410
+if args.sub:
+    #print(f'-s --sub {args.sub}')
+    #if args.all: print(f'-a --all {args.all}')
+    #print(f'args.all={args.all}')
+    if args.out: print(f'-o --out {args.out}')
+    #print(f'args.out={args.out}')
+    if args.sub0:
+        args.sub.append(args.sub0)
+    #print(f'-s --sub {args.sub}')
+elif args.sub0:
+    args.sub=[args.sub0]
+    #print(f'-s --sub {args.sub}')
+else:
+    exit()
+
+import re
+import pathlib
+
+import csv
+#START230410
+#import pandas
+
+str0='#Scans can be labeled NONE or NOTUSEABLE. Lines beginning with a # are ignored.\n'
+str1='#SUBNAME OUTDIR T1 T2 FM1 FM2 run1_LH_SBRef run1_LH run1_RH_SBRef run1_RH run2_LH_SBRef run2_LH run2_RH_SBRef run2_RH run3_LH_SBRef run3_LH run3_RH_SBRef run3_RH rest01_SBRef rest01 rest02_SBRef rest02 rest03_SBRef rest03\n'
+str2='#----------------------------------------------------------------------------------------------------------------------------------------------\n'
+
+if args.all or args.out:
+    if args.all:
+        str3=args.all
+    elif args.out:
+        str3=args.out
+    f2=open(str3,mode='wt',encoding="utf8")
+    f2.write(str0+str1+str2)
+
+
+for i in args.sub:
+    #print(f'i={i} len(i)={len(i)}') 
+
+    d0={"SUBNAME":"NONE",
+        "OUTDIR":"NONE",
+        "t1_mpr_1mm_p2_pos50":"NONE",
+        "t2_spc_sag_p2_iso_1.0":"NONE",
+        "SpinEchoFieldMap2_AP":"NONE",
+        "SpinEchoFieldMap2_PA":"NONE",
+        "run1_LH_SBRef":"NONE",
+        "run1_LH":"NONE",
+        "run1_RH_SBRef":"NONE",
+        "run1_RH":"NONE",
+        "run2_LH_SBRef":"NONE",
+        "run2_LH":"NONE",
+        "run2_RH_SBRef":"NONE",
+        "run2_RH":"NONE",
+        "run3_LH_SBRef":"NONE",
+        "run3_LH":"NONE",
+        "run3_RH_SBRef":"NONE",
+        "run3_RH":"NONE",
+        "rest01_SBRef":"NONE",
+        "rest01":"NONE",
+        "rest02_SBRef":"NONE",
+        "rest02":"NONE",
+        "rest03_SBRef":"NONE",
+        "rest03":"NONE"}
+
+   
+    n0=pathlib.Path(i[0]).stem
+    #print(f'here0 n0={n0}')
+
+    #m=re.match('([0-9_]+?)[a-zA-Z]_scanlist|([0-9_]+?)[a-zA-Z]',n0)
+    m=re.match('([0-9_]+?)[a-zA-Z]_scanlist|([0-9_]+?)_scanlist|([0-9_]+?)[a-zA-Z]',n0)
+
+    if m is not None: n0=m[m.lastindex]
+    subname=n0
+    ext='.dat'
+    if pathlib.Path(i[0]).suffix=='.dat':ext+=ext
+    n0=pathlib.Path(i[0]).with_name(n0+ext)
+    #print(f'here1 n0={n0}')
+
+    #p0=pathlib.Path(i[0]).parent
+    #START230410
+    p0=pathlib.Path(i[0]).resolve().parent
+    #print(f'here2 p0={p0}')
+
+
+    d0['SUBNAME']=subname
+    d0['OUTDIR']=str(p0)+'/pipeline'
+
+    for j in range(len(i)):
+
+        #print(f'i[{j}]={i[j]}')
+
+        with open(i[j],encoding="utf8",errors='ignore') as f1:
+
+            csv1=csv.DictReader(f1)
+            #START230410
+            #csv1=pandas.read_csv(f1,sep=', ',engine='python')
+
+            for row in csv1:
+                #print(f'row={row}')
+                if row['Scan'].casefold()=='none'.casefold():continue
+                for k in d0:
+
+                    #if k==row['nii']:
+                    #START230411
+                    if k==row['nii'].strip():
+
+                        #print(f'k={k}')
+
+                        #d0[k]=str(p0)+'/nifti/'+k+'.nii.gz'
+                        #START231018
+                        file=str(p0)+'/nifti/'+k+'.nii.gz' 
+                        if pathlib.Path(file).exists():
+                            d0[k]=file
+                        else:
+                            print(f'{file} does not exist!')
+
+                        break
+
+
+    if args.out is None:
+        with open(n0,mode='wt',encoding="utf8") as f0:
+            f0.write(str0+str1+str2)
+            f0.write(' '.join(d0.values()))
+            f0.write('\n')
+        print(f'Output written to {n0}')
+
+    if args.all or args.out:
+        f2.write(' '.join(d0.values()))
+        f2.write('\n')
+
+if args.all or args.out:
+    f2.close() 
+    print(f'Output written to {str3}')
+"""
