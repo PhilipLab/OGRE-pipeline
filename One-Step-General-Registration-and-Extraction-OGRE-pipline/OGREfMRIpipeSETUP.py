@@ -12,11 +12,18 @@
 #https://stackoverflow.com/questions/42818876/python-3-argparse-call-function
 #https://ioflood.com/blog/python-get-environment-variable/#:~:text=To%20get%20an%20environment%20variable,with%20your%20system's%20environment%20variables.
 #python3 equivalent to grep on a file
+#https://docs.python.org/3/library/os.html
+#https://docs.python.org/3/c-api/datetime.html
 
 import os
 import subprocess
+import pathlib
+#import datetime
+from datetime import datetime
 
 #**** default global variables **** 
+
+SHEBANG = "#!/usr/bin/env bash"
 
 #Include path if necessary. Ideally, the locations of these scripts should be in your PATH environment variable.
 #Eg  OGRE=/Users/mcavoy/repo/OGRE-pipeline/One-Step-General-Registration-and-Extraction-OGRE-pipline
@@ -225,7 +232,6 @@ if __name__ == "__main__":
     if args.fsf1:
         outputdir = []
         for i in args.fsf1:
-            #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
             line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
             outputdir.append(line0.split('"')[1])
         print(f'outputdir = {outputdir}')
@@ -253,12 +259,33 @@ if __name__ == "__main__":
         if num_sub > num_cores:
             hostname = run_cmd('hostname')
             print(f'{num_sub} will be run, however {hostname} only has {num_cores}. Please consider using a batchscript -b.')
+    else:
+        if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent, exist_ok=True)
+        bs0=open(args.bs,mode='wt',encoding="utf8")
+        bs0.write(f'{SHEBANG}\n')
 
 
+    for i in args.dat:
+        for j in range(len(i)):
+            with open(i[j],encoding="utf8",errors='ignore') as f0:
+                for line0 in f0:
+                    if not line0.strip() or line0.startswith('#'): continue
+                    if not 'keys' in locals():
+                        keys = line0.split()
+                    else:
+                        d0 = Dat(dict(zip(keys,line0.split())))
+                        dir0 = d0.OUTDIR + FREESURFVER
+
+                        if args.lcdate == 1:
+                            date0 = datetime.today().strftime("%y%m%d")
+                        elif args.lcdate == 2:
+                            date0 = datetime.today().strftime("%y%m%d%H%M%S")
+                        %print(f'date0 = {date0}')
+
+            del keys
 
 
-
-
+    bs0.close()
 
 
 
