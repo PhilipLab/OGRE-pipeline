@@ -128,15 +128,8 @@ def run_cmd(cmd):
 if __name__ == "__main__":
     get_env_vars()
 
-    lcdate=0
     fwhm=0
     paradigm_hp_sec=0
-    lcautorun=0
-    lchostname=0
-    lcdate=0
-    lct1copymaskonly=0
-    lcsmoothonly=0
-    lcfeatadapter=0
 
     import argparse
     parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
@@ -171,10 +164,10 @@ if __name__ == "__main__":
     parser.add_argument('-m','--HOSTNAME',dest='lchostname',action='store_true',help=hlchostname)
 
     hlcdate='Flag. Add date (YYMMDD) to name of output script.'
-    parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate)
+    parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate,default=0)
 
     hlcdateL='Flag. Add date (YYMMDDHHMMSS) to name of output script.'
-    parser.add_argument('-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL)
+    parser.add_argument('-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL,default=0)
 
     hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
     mfwhm='FWHM'
@@ -217,10 +210,10 @@ if __name__ == "__main__":
     else:
         exit()
 
-    if fwhm==0 and not lcfeatadapter: 
+    if fwhm==0 and not args.lcfeatadapter: 
         print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
 
-    if paradigm_hp_sec==0 and not lcfeatadapter:
+    if paradigm_hp_sec==0 and not args.lcfeatadapter:
         print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
     if args.HCPDIR: HCPDIR = args.HCPDIR
@@ -229,12 +222,13 @@ if __name__ == "__main__":
     print(f'HCPDIR={HCPDIR}')
     print(f'FREESURFVER={FREESURFVER}')
 
+    outputdir1 = []
     if args.fsf1:
-        outputdir = []
+        #outputdir1 = []
         for i in args.fsf1:
             line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
-            outputdir.append(line0.split('"')[1])
-        print(f'outputdir = {outputdir}')
+            outputdir1.append(line0.split('"')[1])
+        print(f'outputdir1 = {outputdir1}')
 
     if args.fsf2:
         outputdir2 = []
@@ -280,12 +274,37 @@ if __name__ == "__main__":
                             date0 = datetime.today().strftime("%y%m%d")
                         elif args.lcdate == 2:
                             date0 = datetime.today().strftime("%y%m%d%H%M%S")
-                        %print(f'date0 = {date0}')
+                        #print(f'date0 = {date0}')
+
+                        if not args.lcfeatadapter: 
+                            if not args.lcsmoothonly: 
+                                l0 = 'hcp3.27fMRIvol' 
+                            else: 
+                                l0 = 'smooth'
+                        else:
+                            l0 = 'FEATADAPTER'
+
+                        F0stem = dir0 + '/' + line0.split()[0].replace("/","_") + l0
+                        if args.lcdate > 0: F0stem += '_' + date0 
+                        print(f'F0stem = {F0stem}')
+
+                        F0 = [F0stem + '.sh']
+                        if not args.lcfeatadapter and outputdir1 != []: 
+
+#STARTHERE
+                            if args.lcdate == 0:
+                                bs0stem=${dir0}/${line[0]////_}_hcp3.27batch
+                            else:
+                                bs0stem=${dir0}/${line[0]////_}_hcp3.27batch_$(date +%y%m%d)
+                        
+
+
+                        F1 = F0stem + '_fileout.sh'
 
             del keys
 
 
-    bs0.close()
+    if args.bs: bs0.close()
 
 
 

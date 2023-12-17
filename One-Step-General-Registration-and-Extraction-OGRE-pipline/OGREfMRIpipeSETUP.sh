@@ -308,15 +308,13 @@ for((i=0;i<${#csv[@]};++i));do
     fi
 
     ((lcdate==0)) && F0stem=${dir0}/${line[0]////_}_${l0} || F0stem=${dir0}/${line[0]////_}_${l0}_${date0}
+
     F0[0]=${F0stem}.sh
-
-    #F1=${F0stem}_autorun.sh
-    #START230620
-    F1=${F0stem}_fileout.sh
-
     if((lcfeatadapter==0)) && [ -n "${outputdir1}" ];then
         ((lcdate==0)) && F0[1]=${dir0}/${line[0]////_}_FEATADAPTER.sh || F0[1]=${dir0}/${line[0]////_}_FEATADAPTER_${date0}.sh
     fi
+
+    F1=${F0stem}_fileout.sh
 
 
     #START230625
