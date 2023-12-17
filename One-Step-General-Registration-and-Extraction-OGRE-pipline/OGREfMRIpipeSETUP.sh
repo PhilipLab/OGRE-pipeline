@@ -316,8 +316,6 @@ for((i=0;i<${#csv[@]};++i));do
 
     F1=${F0stem}_fileout.sh
 
-
-    #START230625
     if [ -n "${bs}" ];then
         ((lcdate==0)) && bs0stem=${dir0}/${line[0]////_}_hcp3.27batch || bs0stem=${dir0}/${line[0]////_}_hcp3.27batch_$(date +%y%m%d)
         bs0=${bs0stem}.sh
@@ -326,18 +324,12 @@ for((i=0;i<${#csv[@]};++i));do
         echo -e "$shebang\nset -e\n" > ${bs1} #ok to crush, because nothing new is written
     fi
 
-    #echo "here0 lcfeatadapter=$lcfeatadapter"
-
-
-    #START231107
     for((j=7;j<=23;j+=2));do
         bold[j]=0
         if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
             [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
         fi
     done
-    #lcbold=$(IFS=+;echo "$((${bold[*]}))")
-    #((lcbold==0)) && continue
     lcboldtask=0
     for((j=7;j<=17;j+=2));do
         lcboldtask=$((lcboldtask+${bold[j]}))

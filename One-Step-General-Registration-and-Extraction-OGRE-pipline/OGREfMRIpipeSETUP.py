@@ -14,6 +14,7 @@
 #python3 equivalent to grep on a file
 #https://docs.python.org/3/library/os.html
 #https://docs.python.org/3/c-api/datetime.html
+#https://blog.devgenius.io/the-weird-side-effects-of-modifying-python-variables-inside-a-function-ba1e5ca65192
 
 import os
 import subprocess
@@ -123,6 +124,21 @@ class Dat:
 def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
 
+def check_bolds(bold,bold_SBRef):
+    indicator = []
+    for k in range(len(bold)):
+        if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
+            if not os.path.isfile(bold[k]):
+                print(f'{bold[k]} does not exist.')
+            else:
+                indicator.append(1)
+                if d0.bold_SBRef[k] != 'NONE' and d0.bold_SBRef[k] != 'NOTUSEABLE':
+                    if not os.path.isfile(d0.bold_SBRef[k]):
+                        print(f'{d0.bold_SBRef[k]} does not exist.')
+                        d0.bold_SBRef[k] = 'NONE'
+                continue;
+        indicator.append(0)
+    return indicator
 
 
 if __name__ == "__main__":
@@ -222,9 +238,8 @@ if __name__ == "__main__":
     print(f'HCPDIR={HCPDIR}')
     print(f'FREESURFVER={FREESURFVER}')
 
-    outputdir1 = []
     if args.fsf1:
-        #outputdir1 = []
+        outputdir1 = []
         for i in args.fsf1:
             line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
             outputdir1.append(line0.split('"')[1])
@@ -255,8 +270,8 @@ if __name__ == "__main__":
             print(f'{num_sub} will be run, however {hostname} only has {num_cores}. Please consider using a batchscript -b.')
     else:
         if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent, exist_ok=True)
-        bs0=open(args.bs,mode='wt',encoding="utf8")
-        bs0.write(f'{SHEBANG}\n')
+        bs=open(args.bs,mode='wt',encoding="utf8")
+        bs.write(f'{SHEBANG}\n')
 
 
     for i in args.dat:
@@ -266,47 +281,117 @@ if __name__ == "__main__":
                     if not line0.strip() or line0.startswith('#'): continue
                     if not 'keys' in locals():
                         keys = line0.split()
+                        continue
+                    d0 = Dat(dict(zip(keys,line0.split())))
+                    dir0 = d0.OUTDIR + FREESURFVER
+
+                    if args.lcdate == 1:
+                        date0 = datetime.today().strftime("%y%m%d")
+                    elif args.lcdate == 2:
+                        date0 = datetime.today().strftime("%y%m%d%H%M%S")
+                    #print(f'date0 = {date0}')
+
+                    #stem0 = dir0 + '/' + line0.split()[0].replace("/","_")
+                    stem0 = dir0 + '/' + d0.SUBNAME.split()[0].replace("/","_")
+
+                    if not args.lcfeatadapter: 
+                        if not args.lcsmoothonly: 
+                            l0 = 'hcp3.27fMRIvol' 
+                        else: 
+                            l0 = 'smooth'
                     else:
-                        d0 = Dat(dict(zip(keys,line0.split())))
-                        dir0 = d0.OUTDIR + FREESURFVER
+                        l0 = 'FEATADAPTER'
+                    str0 = stem0 + l0
+                    if args.lcdate > 0: str0 += '_' + date0 
+                    F0 = [str0 + '.sh']
+                    F1 = str0 + '_fileout.sh'
 
-                        if args.lcdate == 1:
-                            date0 = datetime.today().strftime("%y%m%d")
-                        elif args.lcdate == 2:
-                            date0 = datetime.today().strftime("%y%m%d%H%M%S")
-                        #print(f'date0 = {date0}')
+                    if not args.lcfeatadapter and args.fsf1: 
+                        str0 = stem0 + '_FEATADAPTER'
+                        if args.lcdate > 0: str0 += '_' + date0 
+                        F0.append(str0 + '.sh')
 
-                        if not args.lcfeatadapter: 
-                            if not args.lcsmoothonly: 
-                                l0 = 'hcp3.27fMRIvol' 
-                            else: 
-                                l0 = 'smooth'
+                    if args.bs:
+                        str0 = stem0 + '_hcp3.27batch'
+                        if args.lcdate > 0: str0 += '_' + date0
+                        bs0 = str0 + '.sh'
+                        if not os.path.isfile(bs0):
+                            mode0 = 'wt'
                         else:
-                            l0 = 'FEATADAPTER'
+                            mode0 = 'at'
+                        bsf0 = open(bs0,mode=mode0,encoding="utf8")
+                        if not os.path.isfile(bs0): bsf0.write(f'{SHEBANG}\n')
+                        bs1 = str0 + '_fileout.sh'
+                        bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
+                        bsf1.write(f'{SHEBANG}\nset -e\n')
+         
+                    #bold = []
+                    #for k in d0.task 
+                    #    if k != 'NONE' and k != 'NOTUSEABLE': 
+                    #        if not os.path.isfile(k):
+                    #            print(f'{k} does not exist.')
+                    #        else:
+                    #            bold.append(1)
+                    #            continue;
+                    #    bold.append(0)
+                    #lcboldtask = sum(bold)
 
-                        F0stem = dir0 + '/' + line0.split()[0].replace("/","_") + l0
-                        if args.lcdate > 0: F0stem += '_' + date0 
-                        print(f'F0stem = {F0stem}')
+                    #task = []
+                    #task_SBRef = []
+                    #for k in len(d0.task)
+                    #    if d0.task[k] != 'NONE' and d0.task[k] != 'NOTUSEABLE':
+                    #        if not os.path.isfile(d0.task[k]):
+                    #            print(f'{d0.task[k]} does not exist.')
+                    #        else:
+                    #            bold.append(d0.task[k])
+                    #            if d0.task_SBRef[k] != 'NONE' and d0.task_SBRef[k] != 'NOTUSEABLE':
+                    #                if not os.path.isfile(d0.task_SBRef[k]):
+                    #                    print(f'{d0.task_SBRef[k]} does not exist.')
 
-                        F0 = [F0stem + '.sh']
-                        if not args.lcfeatadapter and outputdir1 != []: 
+                    #bold_task = []
+                    #for k in len(d0.task)
+                    #    if d0.task[k] != 'NONE' and d0.task[k] != 'NOTUSEABLE':
+                    #        if not os.path.isfile(d0.task[k]):
+                    #            print(f'{d0.task[k]} does not exist.')
+                    #        else:
+                    #            bold.append(1)
+                    #            if d0.task_SBRef[k] != 'NONE' and d0.task_SBRef[k] != 'NOTUSEABLE':
+                    #                if not os.path.isfile(d0.task_SBRef[k]):
+                    #                    print(f'{d0.task_SBRef[k]} does not exist.')
+                    #                    d0.task_SBRef[k] = 'NONE'
+                    #            continue;
+                    #    bold.append(0)
+                    #lcboldtask = sum(bold_task)
 
-#STARTHERE
-                            if args.lcdate == 0:
-                                bs0stem=${dir0}/${line[0]////_}_hcp3.27batch
-                            else:
-                                bs0stem=${dir0}/${line[0]////_}_hcp3.27batch_$(date +%y%m%d)
-                        
+                    #bold_rest = []
+                    #for k in len(d0.rest)
+                    #    if d0.rest[k] != 'NONE' and d0.rest[k] != 'NOTUSEABLE':
+                    #        if not os.path.isfile(d0.rest[k]):
+                    #            print(f'{d0.rest[k]} does not exist.')
+                    #        else:
+                    #            bold.append(1)
+                    #            if d0.rest_SBRef[k] != 'NONE' and d0.rest_SBRef[k] != 'NOTUSEABLE':
+                    #                if not os.path.isfile(d0.rest_SBRef[k]):
+                    #                    print(f'{d0.rest_SBRef[k]} does not exist.')
+                    #                    d0.rest_SBRef[k] = 'NONE'
+                    #            continue;
+                    #    bold.append(0)
+                    #lcboldrest = sum(bold_rest)
 
+                    bold_task = check_bolds(d0.task, d0.task_SBRef)
+                    bold_rest = check_bolds(d0.rest, d0.rest_SBRef)
 
-                        F1 = F0stem + '_fileout.sh'
 
             del keys
 
 
-    if args.bs: bs0.close()
 
+#        self.task_SBRef = []
+#        self.task = []
+#        self.rest_SBRef = []
+#        self.rest = []
 
+if args.bs: bs0.close()
 
 #if __name__ == "__main__":
 #    #file = '/Users/Shared/10_Connectivity/10_2000/10_2000_new.dat'
