@@ -75,16 +75,16 @@ helpmsg(){
     echo "        Echo this help message."
     exit
     }
+
 if((${#@}<1));then
     helpmsg
     exit
 fi
 echo $0 $@
-
 lcautorun=0;lchostname=0;lcdate=0;lct1copymaskonly=0;lcsmoothonly=0;lcfeatadapter=0 #do not set dat or unexpected
 unset bs fwhm paradigm_hp_sec fsf1 fsf2
-
 arg=("$@")
+
 for((i=0;i<${#@};++i));do
     #echo "i=$i ${arg[i]}"
     case "${arg[i]}" in
@@ -339,30 +339,6 @@ for((i=0;i<${#csv[@]};++i));do
 
     if((lcfeatadapter==0));then
 
-
-        #START221107
-        #for((j=7;j<=23;j+=2));do
-        #    bold[j]=0
-        #    if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
-        #        [ ! -f ${line[j]} ] &&  echo "    ${line[j]} does not exist" || bold[j]=1
-        #    fi
-        #done
-        #lcbold=$(IFS=+;echo "$((${bold[*]}))")
-        #((lcbold==0)) && continue
-        #
-        #START231017
-        #lcboldtask=0
-        #for((j=7;j<=17;j+=2));do
-        #    lcboldtask=$((lcboldtask+${bold[j]}))
-        #done
-        #echo "lcboldtask=${lcboldtask}"
-
-
-        #printf '%s ' "${bold[@]}";echo '';echo "${#bold[@]}"
-        #declare -p bold
-        #exit
-
-
         #make sure bolds and SBRef have same phase encoding direction and dimensions
         lcSBRef=0;ped=;dim1=;dim2=;dim3=
         for((j=6;j<=22;j+=2));do
@@ -381,7 +357,8 @@ for((i=0;i<${#csv[@]};++i));do
                             echo "    $json not found. Abort!"
                             exit
                         fi
-                        IFS=$' ,' read -ra line0 < <( grep PhaseEncodingDirection $json )
+                        #IFS=$' ,' read -ra line0 < <( grep PhaseEncodingDirection $json )
+                        IFS=$' ,' read -ra line0 < <(grep PhaseEncodingDirection $json)
                         IFS=$'"' read -ra line1 <<< ${line0[1]}
                         ped[k]=${line1[1]}
                     done
@@ -389,7 +366,7 @@ for((i=0;i<${#csv[@]};++i));do
                         echo "    ERROR: ${line[j]} ${ped[j]}, ${line[j+1]} ${ped[j+1]}. Phases should be the same. Will not use this SBRef."
                         continue
                     fi
-
+#STARTHERE
                     for((k=j;k<=((j+1));++k));do
                         IFS=$'\r\n,\t ' read -d '' -ra line1 <<< $(fslinfo ${line[k]} | grep -w dim[1-3])
                         dim1[k]=${line1[@]:1:1}
@@ -410,11 +387,6 @@ for((i=0;i<${#csv[@]};++i));do
                 fi
             fi
         done
-
-        #for((j=4;j<=22;++j));do
-        #    #echo "line[$j]=${line[j]} ped[$j]=${ped[j]}"
-        #    echo "${line[j]} ${ped[j]} bold[$j]=${bold[j]} dim1[$j]=${dim1[j]} dim2[$j]=${dim2[j]} dim3[$j]=${dim3[j]}"
-        #done
 
         lcbadFM=1
 
@@ -723,13 +695,7 @@ for((i=0;i<${#csv[@]};++i));do
             done
         fi
 
-
-        #if((lct1copymaskonly==0)) && ((lcbadFM==0));then
-        #START231017
-        #if((lcboldtask==1)) && ((lct1copymaskonly==0)) && ((lcbadFM==0));then
-        #START231107
         if((lcboldtask!=0)) && ((lct1copymaskonly==0)) && ((lcbadFM==0));then
-
 
             endquote0=
             for((j=17;j>=7;j-=2));do

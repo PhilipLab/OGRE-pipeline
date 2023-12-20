@@ -15,12 +15,13 @@
 #https://docs.python.org/3/library/os.html
 #https://docs.python.org/3/c-api/datetime.html
 #https://blog.devgenius.io/the-weird-side-effects-of-modifying-python-variables-inside-a-function-ba1e5ca65192
+#https://stackoverflow.com/questions/986006/how-do-i-pass-a-variable-by-reference
 
 import os
 import subprocess
 import pathlib
-#import datetime
 from datetime import datetime
+import json
 
 #**** default global variables **** 
 
@@ -132,13 +133,64 @@ def check_bolds(bold,bold_SBRef):
                 print(f'{bold[k]} does not exist.')
             else:
                 indicator.append(1)
-                if d0.bold_SBRef[k] != 'NONE' and d0.bold_SBRef[k] != 'NOTUSEABLE':
-                    if not os.path.isfile(d0.bold_SBRef[k]):
-                        print(f'{d0.bold_SBRef[k]} does not exist.')
-                        d0.bold_SBRef[k] = 'NONE'
+                if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
+                    if not os.path.isfile(bold_SBRef[k]):
+                        print(f'{bold_SBRef[k]} does not exist.')
+                        bold_SBRef[k] = 'NONE'
                 continue;
         indicator.append(0)
     return indicator
+
+"""
+def get_phase(file,ped):
+
+    #json=${line[k]%%.*}.json
+    json = file.split('.')[0] + '.json'
+    if not os.path.isfile(json):
+        print(f'    {json} does not exist. Abort!')
+        return 'ERROR'
+
+    #IFS=$' ,' read -ra line0 < <( grep PhaseEncodingDirection $json )
+    #IFS=$'"' read -ra line1 <<< ${line0[1]}
+    line0 = run_cmd(f'grep PhaseEncodingDirection {json}')
+    dict0 = json.loads(line0)
+    #ped.append(dict0['PhaseEncodingDirection'])
+    return dict0['PhaseEncodingDirection']
+
+
+#line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
+#outputdir1.append(line0.split('"')[1])
+
+
+def check_phase_dims(bold,bold_SBRef,indicator):
+    indicator_SBRef = []
+    ped = []
+    for j in range(len(bold)):
+        indicator_SBRef.append(0)
+        if indicator[j] == 1:
+            if bold_SBRef[j] != 'NONE' and bold_SBRef[j] != 'NOTUSEABLE':
+
+                #for((k=j;k<=((j+1));++k));do
+                #for k in range(j,j+1):
+
+                #    json=${line[k]%%.*}.json
+
+                ped0 = get_phase(bold[j],ped)
+                ped.append(ped0)
+                ped0 = get_phase(bold_SBRef[j],ped)
+                if ped0 != ped[j]:
+                    print(f'    ERROR: {bold[j]} {ped[j]}') 
+                    print(f'    ERROR: {bold_SBRef[j]} {ped0}') 
+                    print(f'           Phases should be the same. Will not use this SBRef.')
+                    continue
+#STARTHERE
+
+
+                indicator_SBRef[j] = 1
+
+    
+    return indicator_SBRef, ped
+"""
 
 
 if __name__ == "__main__":
@@ -325,62 +377,17 @@ if __name__ == "__main__":
                         bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
                         bsf1.write(f'{SHEBANG}\nset -e\n')
          
-                    #bold = []
-                    #for k in d0.task 
-                    #    if k != 'NONE' and k != 'NOTUSEABLE': 
-                    #        if not os.path.isfile(k):
-                    #            print(f'{k} does not exist.')
-                    #        else:
-                    #            bold.append(1)
-                    #            continue;
-                    #    bold.append(0)
-                    #lcboldtask = sum(bold)
-
-                    #task = []
-                    #task_SBRef = []
-                    #for k in len(d0.task)
-                    #    if d0.task[k] != 'NONE' and d0.task[k] != 'NOTUSEABLE':
-                    #        if not os.path.isfile(d0.task[k]):
-                    #            print(f'{d0.task[k]} does not exist.')
-                    #        else:
-                    #            bold.append(d0.task[k])
-                    #            if d0.task_SBRef[k] != 'NONE' and d0.task_SBRef[k] != 'NOTUSEABLE':
-                    #                if not os.path.isfile(d0.task_SBRef[k]):
-                    #                    print(f'{d0.task_SBRef[k]} does not exist.')
-
-                    #bold_task = []
-                    #for k in len(d0.task)
-                    #    if d0.task[k] != 'NONE' and d0.task[k] != 'NOTUSEABLE':
-                    #        if not os.path.isfile(d0.task[k]):
-                    #            print(f'{d0.task[k]} does not exist.')
-                    #        else:
-                    #            bold.append(1)
-                    #            if d0.task_SBRef[k] != 'NONE' and d0.task_SBRef[k] != 'NOTUSEABLE':
-                    #                if not os.path.isfile(d0.task_SBRef[k]):
-                    #                    print(f'{d0.task_SBRef[k]} does not exist.')
-                    #                    d0.task_SBRef[k] = 'NONE'
-                    #            continue;
-                    #    bold.append(0)
-                    #lcboldtask = sum(bold_task)
-
-                    #bold_rest = []
-                    #for k in len(d0.rest)
-                    #    if d0.rest[k] != 'NONE' and d0.rest[k] != 'NOTUSEABLE':
-                    #        if not os.path.isfile(d0.rest[k]):
-                    #            print(f'{d0.rest[k]} does not exist.')
-                    #        else:
-                    #            bold.append(1)
-                    #            if d0.rest_SBRef[k] != 'NONE' and d0.rest_SBRef[k] != 'NOTUSEABLE':
-                    #                if not os.path.isfile(d0.rest_SBRef[k]):
-                    #                    print(f'{d0.rest_SBRef[k]} does not exist.')
-                    #                    d0.rest_SBRef[k] = 'NONE'
-                    #            continue;
-                    #    bold.append(0)
-                    #lcboldrest = sum(bold_rest)
-
                     bold_task = check_bolds(d0.task, d0.task_SBRef)
-                    bold_rest = check_bolds(d0.rest, d0.rest_SBRef)
+                    print(f'bold_task = {bold_task}')
+                    print(f'd0.task = {d0.task}')
+                    print(f'd0.task_SBRef = {d0.task_SBRef}') 
 
+                    bold_rest = check_bolds(d0.rest, d0.rest_SBRef)
+                    #print(f'bold_rest = {bold_rest}')
+                    #print(f'd0.rest = {d0.rest}')
+                    #print(f'd0.rest_SBRef = {d0.rest_SBRef}') 
+
+                    #if not args.lcfeatadapter: 
 
             del keys
 
