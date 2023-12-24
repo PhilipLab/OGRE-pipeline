@@ -16,6 +16,7 @@
 #https://docs.python.org/3/c-api/datetime.html
 #https://blog.devgenius.io/the-weird-side-effects-of-modifying-python-variables-inside-a-function-ba1e5ca65192
 #https://stackoverflow.com/questions/986006/how-do-i-pass-a-variable-by-reference
+#https://docs.python.org/3/library/json.html
 
 import os
 import subprocess
@@ -126,58 +127,61 @@ def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
 
 def check_bolds(bold,bold_SBRef):
-    indicator = []
+    ind = []
     for k in range(len(bold)):
         if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
             if not os.path.isfile(bold[k]):
                 print(f'{bold[k]} does not exist.')
             else:
-                indicator.append(1)
+                ind.append(1)
                 if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
                     if not os.path.isfile(bold_SBRef[k]):
                         print(f'{bold_SBRef[k]} does not exist.')
                         bold_SBRef[k] = 'NONE'
                 continue;
-        indicator.append(0)
-    return indicator
+        ind.append(0)
+    return ind
 
-"""
-def get_phase(file,ped):
-
-    #json=${line[k]%%.*}.json
-    json = file.split('.')[0] + '.json'
-    if not os.path.isfile(json):
-        print(f'    {json} does not exist. Abort!')
+def get_phase(file):
+    jsonf = file.split('.')[0] + '.json'
+    if not os.path.isfile(jsonf):
+        print(f'    {jsonf} does not exist. Abort!')
         return 'ERROR'
+    print(f'get_phase jsonf={jsonf}')
 
-    #IFS=$' ,' read -ra line0 < <( grep PhaseEncodingDirection $json )
-    #IFS=$'"' read -ra line1 <<< ${line0[1]}
-    line0 = run_cmd(f'grep PhaseEncodingDirection {json}')
-    dict0 = json.loads(line0)
-    #ped.append(dict0['PhaseEncodingDirection'])
+    #line0 = run_cmd(f'grep PhaseEncodingDirection {jsonf}')
+    #print(f'get_phase line0={line0}')
+    #dict0 = json.loads(line0)
+
+    with open(jsonf,encoding="utf8",errors='ignore') as f0:
+        dict0 = json.load(f0)
+
+    print(f"get_phase {dict0['PhaseEncodingDirection']}")
+
     return dict0['PhaseEncodingDirection']
 
+def get_dim(file):
+    line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
+    print(f'get_dim line0={line0}')
+    
 
-#line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
-#outputdir1.append(line0.split('"')[1])
-
-
-def check_phase_dims(bold,bold_SBRef,indicator):
-    indicator_SBRef = []
+def check_phase_dims(bold,bold_SBRef,ind):
+    ind_SBRef = []
     ped = []
     for j in range(len(bold)):
-        indicator_SBRef.append(0)
-        if indicator[j] == 1:
+
+        print(f'check_phase_dims before j={j}')
+
+        ind_SBRef.append(0)
+        ped.append(None)
+        if ind[j] == 1:
             if bold_SBRef[j] != 'NONE' and bold_SBRef[j] != 'NOTUSEABLE':
 
-                #for((k=j;k<=((j+1));++k));do
-                #for k in range(j,j+1):
+                ped[j] = get_phase(bold[j])
+                ped0 = get_phase(bold_SBRef[j])
 
-                #    json=${line[k]%%.*}.json
+                print(f'check_phase_dims j={j}')
 
-                ped0 = get_phase(bold[j],ped)
-                ped.append(ped0)
-                ped0 = get_phase(bold_SBRef[j],ped)
                 if ped0 != ped[j]:
                     print(f'    ERROR: {bold[j]} {ped[j]}') 
                     print(f'    ERROR: {bold_SBRef[j]} {ped0}') 
@@ -186,11 +190,10 @@ def check_phase_dims(bold,bold_SBRef,indicator):
 #STARTHERE
 
 
-                indicator_SBRef[j] = 1
+                ind_SBRef[j] = 1
 
     
-    return indicator_SBRef, ped
-"""
+    return ind_SBRef, ped
 
 
 if __name__ == "__main__":
@@ -377,17 +380,19 @@ if __name__ == "__main__":
                         bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
                         bsf1.write(f'{SHEBANG}\nset -e\n')
          
-                    bold_task = check_bolds(d0.task, d0.task_SBRef)
-                    print(f'bold_task = {bold_task}')
+                    ind_task = check_bolds(d0.task, d0.task_SBRef)
+                    print(f'ind_task = {ind_task}')
                     print(f'd0.task = {d0.task}')
                     print(f'd0.task_SBRef = {d0.task_SBRef}') 
 
-                    bold_rest = check_bolds(d0.rest, d0.rest_SBRef)
-                    #print(f'bold_rest = {bold_rest}')
-                    #print(f'd0.rest = {d0.rest}')
-                    #print(f'd0.rest_SBRef = {d0.rest_SBRef}') 
+                    ind_rest = check_bolds(d0.rest, d0.rest_SBRef)
+                    print(f'ind_rest = {ind_rest}')
+                    print(f'd0.rest = {d0.rest}')
+                    print(f'd0.rest_SBRef = {d0.rest_SBRef}') 
 
-                    #if not args.lcfeatadapter: 
+                    if not args.lcfeatadapter: 
+                        ind_task_SBRef, ped_task = check_phase_dims(d0.task,d0.task_SBRef,ind_task)                    
+                        ind_rest_SBRef, ped_rest = check_phase_dims(d0.rest,d0.rest_SBRef,ind_rest)                    
 
             del keys
 
