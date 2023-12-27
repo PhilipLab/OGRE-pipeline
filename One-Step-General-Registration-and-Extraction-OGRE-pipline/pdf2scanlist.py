@@ -1,92 +1,139 @@
 #!/usr/bin/env python3
 
-#SeriesDesc=['t1_mpr_1mm_p2_pos50', ...
-#            'SpinEchoFieldMap2_AP',...
-#            'SpinEchoFieldMap2_PA',...
-#            'CMRR_fMRI_TASK_R1_AP_3mm_488meas_SBRef',...
-#            'CMRR_fMRI_TASK_R1_AP_3mm_488meas',...
-#            'CMRR_fMRI_TASK_R2_AP_3mm_488meas_SBRef',...
-#            'CMRR_fMRI_TASK_R2_AP_3mm_488meas',...
-#            'CMRR_fMRI_TASK_R3_AP_3mm_488meas_SBRef',...
-#            'CMRR_fMRI_TASK_R3_AP_3mm_488meas',...
-#            'CMRR_fMRI_TASK_R4_AP_3mm_488meas_SBRef',...
-#            'CMRR_fMRI_TASK_R4_AP_3mm_488meas',...
-#            'CMRR_fMRI_TASK_R5_AP_3mm_488meas_SBRef',...
-#            'CMRR_fMRI_TASK_R5_AP_3mm_488meas',...
-#            'CMRR_fMRI_TASK_R6_AP_3mm_488meas_SBRef',...
-#            'CMRR_fMRI_TASK_R6_AP_3mm_488meas',...
-
-#Need to find all occurences of field maps in case that got in and out of the scanner
-
-
-
-
-
 #https://pdfreader.readthedocs.io/en/latest/examples/extract_page_text.html
 
-#text='Append dbsi fields in pdf to scanlist.csv'
-#START231213
-text='pdf to scanlist.csv'
+"""
+SeriesDesc=['t1_mpr_1mm_p2_pos50', ...
+            'SpinEchoFieldMap2_AP',...
+            'SpinEchoFieldMap2_PA',...
+            'CMRR_fMRI_TASK_R1_AP_3mm_488meas_SBRef',...
+            'CMRR_fMRI_TASK_R1_AP_3mm_488meas',...
+            'CMRR_fMRI_TASK_R2_AP_3mm_488meas_SBRef',...
+            'CMRR_fMRI_TASK_R2_AP_3mm_488meas',...
+            'CMRR_fMRI_TASK_R3_AP_3mm_488meas_SBRef',...
+            'CMRR_fMRI_TASK_R3_AP_3mm_488meas',...
+            'CMRR_fMRI_TASK_R4_AP_3mm_488meas_SBRef',...
+            'CMRR_fMRI_TASK_R4_AP_3mm_488meas',...
+            'CMRR_fMRI_TASK_R5_AP_3mm_488meas_SBRef',...
+            'CMRR_fMRI_TASK_R5_AP_3mm_488meas',...
+            'CMRR_fMRI_TASK_R6_AP_3mm_488meas_SBRef',...
+            'CMRR_fMRI_TASK_R6_AP_3mm_488meas',...
+            'ep2ddbsi_b0_PE=PA',...
+            'ep2ddbsi_19_2mm_iso_LowBW_2av',...
+            'CMRR_fMRI_REST_R1_AP_3mm_550meas_SBRef',...
+            'CMRR_fMRI_REST_R1_AP_3mm_550meas',...
+            'CMRR_fMRI_REST_R2_AP_3mm_550meas_SBRef',...
+            'CMRR_fMRI_REST_R2_AP_3mm_550meas',...
+            'CMRR_fMRI_REST_R3_AP_3mm_550meas_SBRef',...
+            'CMRR_fMRI_REST_R3_AP_3mm_550meas',...
+            't2_spc_sag_p2_iso1.0']
+"""
 
-import sys
-import argparse
+#We should set this up so this can also be loaded as a paramter file (ie csv) that is read into DICT
+#Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
 
-parser=argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('subject',action='extend',nargs='*',help='<pdf> <scanlist.csv>')
-parser.add_argument('-a','--append',help='Append to existing scanlist.csv',action="store_true")
-parser.add_argument('-v','--verbose',help='Echo messages to terminal',action="store_true")
-if len(sys.argv)==1:
-    parser.print_help()
-    # parser.print_usage() # for just the usage line
-    parser.exit()
-args=parser.parse_args()
+#Need to find all occurences of field maps in case that got in and out of the scanner
+#Will need to check how the dbsi is named.
 
-mode="w"
-if args.subject:
-    pdf=args.subject[0]
-    csv=args.subject[1]
-    if args.append:
-        print(f'-a --append {args.append}')
-        mode="a"
-else:
-    exit()
+DICT={'t1_mpr_1mm_p2_pos50'                    : ('overwrite', 'anat', 't1_mpr_1mm_p2_pos50'          ), ...
+      'SpinEchoFieldMap2_AP'                   : ('append',    'fmap', 'SpinEchoFieldMap2_AP'         ), ...
+      'SpinEchoFieldMap2_PA'                   : ('append',    'fmap', 'SpinEchoFieldMap2_PA'         ), ...
+      'CMRR_fMRI_TASK_R1_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawRH_run-1_SBRef'      ), ...
+      'CMRR_fMRI_TASK_R1_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawRH_run-1'            ), ...
+      'CMRR_fMRI_TASK_R2_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawLH_run-1_SBRef'      ), ...
+      'CMRR_fMRI_TASK_R2_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawLH_run-1'            ), ...
+      'CMRR_fMRI_TASK_R3_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawRH_run-2_SBRef'      ), ...
+      'CMRR_fMRI_TASK_R3_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawRH_run-2'            ), ...
+      'CMRR_fMRI_TASK_R4_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawLH_run-2_SBRef'      ), ...
+      'CMRR_fMRI_TASK_R4_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawLH_run-2'            ), ...
+      'CMRR_fMRI_TASK_R5_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawRH_run-3_SBRef'      ), ...
+      'CMRR_fMRI_TASK_R5_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawRH_run-3'            ), ...
+      'CMRR_fMRI_TASK_R6_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawLH_run-3_SBRef'      ), ...
+      'CMRR_fMRI_TASK_R6_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawLH_run-3'            ), ...
+      'ep2ddbsi_b0_PE=PA',                     : ('overwrite', 'fmap', 'ep2ddbsi_b0_PE=PA'            ), ...
+      'ep2ddbsi_19_2mm_iso_LowBW_2av',         : ('overwrite', 'anat', 'ep2ddbsi_19_2mm_iso_LowBW_2av'), ...
+      'CMRR_fMRI_REST_R1_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest01_SBRef'                 ), ...
+      'CMRR_fMRI_REST_R1_AP_3mm_550meas'       : ('overwrite', 'func', 'rest01'                       ), ...
+      'CMRR_fMRI_REST_R2_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest02_SBRef'                 ), ...
+      'CMRR_fMRI_REST_R2_AP_3mm_550meas'       : ('overwrite', 'func', 'rest02'                       ), ...
+      'CMRR_fMRI_REST_R3_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest03_SBRef'                 ), ...
+      'CMRR_fMRI_REST_R3_AP_3mm_550meas'       : ('overwrite', 'func', 'rest03'                       ), ...
+      't2_spc_sag_p2_iso1.0'                   : ('overwrite', 'anat', 't2_spc_sag_p2_iso1.0'         )}
 
-from pdfreader import SimplePDFViewer
 
-with open(pdf,"rb") as fd:
 
-    with open(csv,mode,encoding="utf8",errors='ignore') as f0:
-        f0.write("Scan,Series Desc,nii\n")
 
-        #searchstr='ep2d'
-        #START231224
-        #We always want the last one, so reading repetively is what we want to do.
-        searchstr=['t1_mpr_1mm_p2_pos50']
 
-        d0 = dict.fromkeys(searchstr,None)
-        print(f'd0={d0}')
 
-        viewer = SimplePDFViewer(fd)
-        #viewer.render()
 
-        #plain_text = ["".join(canvas.strings).split() for canvas in viewer]
-        #print(f'plain_text={plain_text}')
+if __name__ == "__main__":
+    import sys
+    import argparse
 
-        plain_text = []
-        for canvas in viewer:
-            plain_text += "".join(canvas.strings).split()
-        print(f'plain_text={plain_text}')
+    text='pdf to scanlist.csv'
+    parser=argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('subject',action='extend',nargs='*',help='<pdf> <scanlist.csv>')
+    parser.add_argument('-a','--append',help='Append to existing scanlist.csv',action="store_true")
+    parser.add_argument('-v','--verbose',help='Echo messages to terminal',action="store_true")
+    if len(sys.argv)==1:
+        parser.print_help()
+        # parser.print_usage() # for just the usage line
+        parser.exit()
+    args=parser.parse_args()
 
-        for j in d0: 
-            for i in range(len(plain_text)):
-                idx = plain_text[i].find(j)
-                if idx > -1:
-                    #scan = plain_text[i].split("files")[1].split(j)[0]
-                    #print(plain_text[i]) 
-                    #print(f'idx={idx}') 
-                    #print(f'scan={scan}') 
-                    d0[j] = plain_text[i].split("files")[1].split(j)[0]
-                    print(f'd0={d0}') 
+    mode="w"
+    if args.subject:
+        pdf=args.subject[0]
+        csv=args.subject[1]
+        if args.append:
+            print(f'-a --append {args.append}')
+            mode="a"
+    else:
+        exit()
+
+    from pdfreader import SimplePDFViewer
+
+    with open(pdf,"rb") as fd:
+
+        with open(csv,mode,encoding="utf8",errors='ignore') as f0:
+            f0.write("Scan,Series Desc,nii\n")
+
+            #searchstr='ep2d'
+            #START231224
+            #We always want the last one, so reading repetively is what we want to do.
+            searchstr=['t1_mpr_1mm_p2_pos50']
+
+            d0 = dict.fromkeys(searchstr,None)
+            print(f'd0={d0}')
+
+            viewer = SimplePDFViewer(fd)
+            #viewer.render()
+
+            #plain_text = ["".join(canvas.strings).split() for canvas in viewer]
+            #print(f'plain_text={plain_text}')
+
+            plain_text = []
+            for canvas in viewer:
+                plain_text += "".join(canvas.strings).split()
+            print(f'plain_text={plain_text}')
+
+            for j in d0: 
+                for i in range(len(plain_text)):
+                    idx = plain_text[i].find(j)
+                    if idx > -1:
+                        #scan = plain_text[i].split("files")[1].split(j)[0]
+                        #print(plain_text[i]) 
+                        #print(f'idx={idx}') 
+                        #print(f'scan={scan}') 
+                        d0[j] = plain_text[i].split("files")[1].split(j)[0]
+                        print(f'd0={d0}') 
+
+
+
+
+
+
+
 
 
 """
