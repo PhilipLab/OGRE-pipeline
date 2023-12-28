@@ -35,6 +35,7 @@ SeriesDesc=['t1_mpr_1mm_p2_pos50', ...
 #Need to find all occurences of field maps in case that got in and out of the scanner
 #Will need to check how the dbsi is named.
 
+"""
 DICT={'t1_mpr_1mm_p2_pos50'                    : ('overwrite', 'anat', 't1_mpr_1mm_p2_pos50'          ), ...
       'SpinEchoFieldMap2_AP'                   : ('append',    'fmap', 'SpinEchoFieldMap2_AP'         ), ...
       'SpinEchoFieldMap2_PA'                   : ('append',    'fmap', 'SpinEchoFieldMap2_PA'         ), ...
@@ -59,6 +60,38 @@ DICT={'t1_mpr_1mm_p2_pos50'                    : ('overwrite', 'anat', 't1_mpr_1
       'CMRR_fMRI_REST_R3_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest03_SBRef'                 ), ...
       'CMRR_fMRI_REST_R3_AP_3mm_550meas'       : ('overwrite', 'func', 'rest03'                       ), ...
       't2_spc_sag_p2_iso1.0'                   : ('overwrite', 'anat', 't2_spc_sag_p2_iso1.0'         )}
+"""
+
+import re
+def get_protocol(file):
+    with open(file,encoding="utf8",errors='ignore') as f0:
+        for line0 in f0:
+            if not line0.strip() or line0.startswith('#'): continue
+            #line1 = line0.replace(',',' ').split()
+            #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
+            line1 = re.findall(r'[^,\s]+', line0)
+            print(f'line1={line1}')
+                 
+
+#    for i in args.dat:
+#        for j in range(len(i)):
+#            with open(i[j],encoding="utf8",errors='ignore') as f0:
+#                for line0 in f0:
+#                    if not line0.strip() or line0.startswith('#'): continue
+#                    if not 'keys' in locals():
+#                        keys = line0.split()
+#                        continue
+#                    d0 = Dat(dict(zip(keys,line0.split())))
+#                    dir0 = d0.OUTDIR + FREESURFVER
+
+
+
+
+#            if not 'keys' in locals():
+#                keys = line0.split()
+#                continue
+#            d0 = Dat(dict(zip(keys,line0.split())))
+
 
 
 
@@ -70,27 +103,60 @@ if __name__ == "__main__":
     import sys
     import argparse
 
-    text='pdf to scanlist.csv'
-    parser=argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('subject',action='extend',nargs='*',help='<pdf> <scanlist.csv>')
-    parser.add_argument('-a','--append',help='Append to existing scanlist.csv',action="store_true")
-    parser.add_argument('-v','--verbose',help='Echo messages to terminal',action="store_true")
+    parser=argparse.ArgumentParser(description='Convert pdf(s) to a single scanlist.csv.\nRequired: <pdf(s)> -p <protocol.csv>',formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('dat0',metavar='<pdf(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be pdfs.')
+    parser.add_argument('-pdf','--pdf',dest='dat',metavar='*.pdf',action='append',nargs='+',help='-pdf --pdf')
+
+    hprotocol='Comma and/or space and/or tab separated file that specifies the protocol.'
+    parser.add_argument('-p','--protocol','-protocol',dest='protocol',metavar='protocol file',help=hprotocol)
+
+    hout='Override default output name of scanlist.'
+    parser.add_argument('-o','--out','-out',dest='out',metavar='output scanlist',help=hout)
+
+    hverbose='Echo messages to terminal.'
+    parser.add_argument('-v','--verbose','-verbose',dest='verbose',action='store_true',help=hverbose)
+
+
+
+    #parser.add_argument('subject',action='extend',nargs='*',help='<pdf> <scanlist.csv>')
+    #parser.add_argument('-a','--append',help='Append to existing scanlist.csv',action="store_true")
+    #parser.add_argument('-v','--verbose',help='Echo messages to terminal',action="store_true")
+    #if len(sys.argv)==1:
+    #    parser.print_help()
+    #    # parser.print_usage() # for just the usage line
+    #    parser.exit()
+    #args=parser.parse_args()
+    #mode="w"
+    #if args.subject:
+    #    pdf=args.subject[0]
+    #    csv=args.subject[1]
+    #    if args.append:
+    #        print(f'-a --append {args.append}')
+    #        mode="a"
+    #else:
+    #    exit()
+    #START231226
+    #https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     if len(sys.argv)==1:
         parser.print_help()
         # parser.print_usage() # for just the usage line
         parser.exit()
     args=parser.parse_args()
-
-    mode="w"
-    if args.subject:
-        pdf=args.subject[0]
-        csv=args.subject[1]
-        if args.append:
-            print(f'-a --append {args.append}')
-            mode="a"
+    if args.dat:
+        if args.dat0:
+            #args.dat.append(args.dat0)
+            args.dat += args.dat0
+    elif args.dat0:
+        args.dat=[args.dat0]
     else:
         exit()
 
+    if not args.protocol:
+        print(f'Error: Protocol must be specified. Abort!')
+        exit()
+    get_protocol(args.protocol)
+
+"""
     from pdfreader import SimplePDFViewer
 
     with open(pdf,"rb") as fd:
@@ -127,6 +193,7 @@ if __name__ == "__main__":
                         #print(f'scan={scan}') 
                         d0[j] = plain_text[i].split("files")[1].split(j)[0]
                         print(f'd0={d0}') 
+"""
 
 
 
