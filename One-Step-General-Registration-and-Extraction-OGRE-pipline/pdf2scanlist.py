@@ -36,26 +36,6 @@ if __name__ == "__main__":
     hverbose='Echo messages to terminal.'
     parser.add_argument('-v','--verbose','-verbose',dest='verbose',action='store_true',help=hverbose)
 
-
-
-    #parser.add_argument('subject',action='extend',nargs='*',help='<pdf> <scanlist.csv>')
-    #parser.add_argument('-a','--append',help='Append to existing scanlist.csv',action="store_true")
-    #parser.add_argument('-v','--verbose',help='Echo messages to terminal',action="store_true")
-    #if len(sys.argv)==1:
-    #    parser.print_help()
-    #    # parser.print_usage() # for just the usage line
-    #    parser.exit()
-    #args=parser.parse_args()
-    #mode="w"
-    #if args.subject:
-    #    pdf=args.subject[0]
-    #    csv=args.subject[1]
-    #    if args.append:
-    #        print(f'-a --append {args.append}')
-    #        mode="a"
-    #else:
-    #    exit()
-    #START231226
     #https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     if len(sys.argv)==1:
         parser.print_help()
@@ -64,10 +44,8 @@ if __name__ == "__main__":
     args=parser.parse_args()
     if args.dat:
         if args.dat0:
-            #args.dat.append(args.dat0)
             args.dat += args.dat0
     elif args.dat0:
-        #args.dat=[args.dat0]
         args.dat=args.dat0
     else:
         exit()
@@ -80,14 +58,12 @@ if __name__ == "__main__":
 
     import pathlib
     parent0 = str(pathlib.Path(args.dat[0]).resolve().parent)
+    n0=pathlib.Path(args.dat[0]).stem
+    m=re.match('sub-([0-9]+)',n0)
+    if m is not None: n0=m.group()
+    #print(f'n0={n0}')
 
-    if not args.out:
-        n0=pathlib.Path(args.dat[0]).stem
-        m=re.match('sub-([0-9]+)',n0)
-        if m is not None: n0=m.group()
-        #args.out = str(pathlib.Path(args.dat[0]).resolve().parent) + '/' + n0 + '_runs.txt' 
-        args.out = parent0 + '/' + n0 + '_runs.txt' 
-        print(f'args.out={args.out}')
+    if not args.out: args.out = parent0 + '/' + n0 + '_scans.csv' 
         
     from pdfreader import SimplePDFViewer
     plain_text = []
@@ -98,139 +74,28 @@ if __name__ == "__main__":
                 plain_text += "".join(canvas.strings).split()
     #print(f'plain_text={plain_text}')
 
-"""
+    from collections import Counter
+    cnt = Counter()
+
     with open(args.out,'w',encoding="utf8",errors='ignore') as f0:
+        dict1={}
         for i in range(len(plain_text)):
             if plain_text[i].find('PhysioLog') > -1:
                 continue
             for j in dict0: 
                 idx = plain_text[i].find(j)
                 if idx > -1:
-                    print(plain_text[i]) 
-                    #print(f'    {plain_text[i][0:idx]}') 
-                    #line1 = re.findall(r'[^,\s]+', line0)
-                    #re.findall(r'[0-9]+', plain_text[i][0:idx])
-                    print(f"    {re.findall(r'[0-9]+', plain_text[i][0:idx])}") 
+                    #print(plain_text[i]) 
+                    scan = re.findall(r'[0-9]+', plain_text[i][0:idx]) 
+                    name = parent0 + '/' + dict0[j][1] + '/' + n0 + '_' + dict0[j][2] 
+                    if dict0[j][0] == 'overwrite':
+                        dict1[j] = scan[0] + ',' + name
+                    elif dict0[j][0] == 'append':
+                        cnt[j] += 1
+                        a0 = '-' + str(cnt[j])
+                        dict1[j+a0] = scan[0] + ',' + name + a0
+                    #print(f'    {scan} {name}') 
                     break
-
-"""
-
-
-
-
-
-
-
-"""
-    from pdfreader import SimplePDFViewer
-
-    with open(pdf,"rb") as fd:
-
-        with open(csv,mode,encoding="utf8",errors='ignore') as f0:
-            f0.write("Scan,Series Desc,nii\n")
-
-            #searchstr='ep2d'
-            #START231224
-            #We always want the last one, so reading repetively is what we want to do.
-            searchstr=['t1_mpr_1mm_p2_pos50']
-
-            d0 = dict.fromkeys(searchstr,None)
-            print(f'd0={d0}')
-
-            viewer = SimplePDFViewer(fd)
-            #viewer.render()
-
-            #plain_text = ["".join(canvas.strings).split() for canvas in viewer]
-            #print(f'plain_text={plain_text}')
-
-            plain_text = []
-            for canvas in viewer:
-                plain_text += "".join(canvas.strings).split()
-            print(f'plain_text={plain_text}')
-
-            for j in d0: 
-                for i in range(len(plain_text)):
-                    idx = plain_text[i].find(j)
-                    if idx > -1:
-                        #scan = plain_text[i].split("files")[1].split(j)[0]
-                        #print(plain_text[i]) 
-                        #print(f'idx={idx}') 
-                        #print(f'scan={scan}') 
-                        d0[j] = plain_text[i].split("files")[1].split(j)[0]
-                        print(f'd0={d0}') 
-"""
-
-
-
-
-
-
-
-
-
-"""
-        for canvas in viewer:
-        #for canvas in viewer.render():
-
-            #print(f'canvas.strings={canvas.strings}')
-            #print(f'canvas.text_context={canvas.text_content}')
-
-            #plain_text = "".join(canvas.strings)
-            plain_text = "".join(canvas.strings).split()
-            #print(f'plain_text={plain_text}')
-            
-
-
-
-            #indices = [i for i in range(len(canvas.strings)) if canvas.strings[i]==searchstr]
-            #if indices:
-            #    for i in range(0,len(indices),2):
-            #        str=canvas.strings[indices[i]]+"_"+"".join(canvas.strings[indices[i]+1:indices[i+1]])
-            #        f0.write(canvas.strings[indices[i]-1]+","+str+","+str+"\n")
-            #START231224
-            #for j in searchstr: 
-            #    indices = [i for i in range(len(canvas.strings)) if canvas.strings[i]==j]
-            #    if indices:
-            #        for i in range(0,len(indices),2):
-            #            str=canvas.strings[indices[i]]+"_"+"".join(canvas.strings[indices[i]+1:indices[i+1]])
-            #            f0.write(canvas.strings[indices[i]-1]+","+str+","+str+"\n")
-            #for j in searchstr: 
-            #    indices = [i for i in range(len(plain_text)) if plain_text[i]==j]
-            #    if indices:
-            #        for i in range(0,len(indices),2):
-            #            str=plain_text[indices[i]]+"_"+"".join(plain_text[indices[i]+1:indices[i+1]])
-            #            f0.write(plain_text[indices[i]-1]+","+str+","+str+"\n")
-            #for j in searchstr: 
-            for j in d0: 
-                for i in range(len(plain_text)):
-                    idx = plain_text[i].find(j)
-                    if idx > -1:
-                        scan = plain_text[i].split("files")[1].split(j)[0]
-                        print(plain_text[i]) 
-                        print(f'idx={idx}') 
-                        print(f'scan={scan}') 
-
-
-
-
-        if args.verbose: print(f'Output written to {csv}')
-"""
-
-"""
-with open(pdf,"rb") as fd:
-    viewer = SimplePDFViewer(fd)
-    markdown = viewer.canvas.text_content
-    print(f'markdown = {markdown}');
-    with open("example-markdown.txt", "w") as f:
-        f.write(markdown)
-    print(f'viewer.canvas.strings={viewer.canvas.strings}')
-"""
-
-"""
-with open(pdf,"rb") as fd:
-    with open("example-markdown.txt", "w") as f:
-        viewer = SimplePDFViewer(fd)
-        for canvas in viewer:
-            markdown = canvas.text_content
-            f.write(markdown)
-"""
+        #print(f'dict1.values()={dict1.values()}')
+        f0.write('\n'.join(i for i in dict1.values()))
+    if args.verbose: print(f'Output written to {args.out}')
