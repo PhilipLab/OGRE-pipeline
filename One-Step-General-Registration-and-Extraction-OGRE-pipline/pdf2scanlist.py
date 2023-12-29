@@ -1,103 +1,23 @@
 #!/usr/bin/env python3
 
 #https://pdfreader.readthedocs.io/en/latest/examples/extract_page_text.html
-
-"""
-SeriesDesc=['t1_mpr_1mm_p2_pos50', ...
-            'SpinEchoFieldMap2_AP',...
-            'SpinEchoFieldMap2_PA',...
-            'CMRR_fMRI_TASK_R1_AP_3mm_488meas_SBRef',...
-            'CMRR_fMRI_TASK_R1_AP_3mm_488meas',...
-            'CMRR_fMRI_TASK_R2_AP_3mm_488meas_SBRef',...
-            'CMRR_fMRI_TASK_R2_AP_3mm_488meas',...
-            'CMRR_fMRI_TASK_R3_AP_3mm_488meas_SBRef',...
-            'CMRR_fMRI_TASK_R3_AP_3mm_488meas',...
-            'CMRR_fMRI_TASK_R4_AP_3mm_488meas_SBRef',...
-            'CMRR_fMRI_TASK_R4_AP_3mm_488meas',...
-            'CMRR_fMRI_TASK_R5_AP_3mm_488meas_SBRef',...
-            'CMRR_fMRI_TASK_R5_AP_3mm_488meas',...
-            'CMRR_fMRI_TASK_R6_AP_3mm_488meas_SBRef',...
-            'CMRR_fMRI_TASK_R6_AP_3mm_488meas',...
-            'ep2ddbsi_b0_PE=PA',...
-            'ep2ddbsi_19_2mm_iso_LowBW_2av',...
-            'CMRR_fMRI_REST_R1_AP_3mm_550meas_SBRef',...
-            'CMRR_fMRI_REST_R1_AP_3mm_550meas',...
-            'CMRR_fMRI_REST_R2_AP_3mm_550meas_SBRef',...
-            'CMRR_fMRI_REST_R2_AP_3mm_550meas',...
-            'CMRR_fMRI_REST_R3_AP_3mm_550meas_SBRef',...
-            'CMRR_fMRI_REST_R3_AP_3mm_550meas',...
-            't2_spc_sag_p2_iso1.0']
-"""
-
-#We should set this up so this can also be loaded as a paramter file (ie csv) that is read into DICT
-#Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
-
-#Need to find all occurences of field maps in case that got in and out of the scanner
-#Will need to check how the dbsi is named.
-
-"""
-DICT={'t1_mpr_1mm_p2_pos50'                    : ('overwrite', 'anat', 't1_mpr_1mm_p2_pos50'          ), ...
-      'SpinEchoFieldMap2_AP'                   : ('append',    'fmap', 'SpinEchoFieldMap2_AP'         ), ...
-      'SpinEchoFieldMap2_PA'                   : ('append',    'fmap', 'SpinEchoFieldMap2_PA'         ), ...
-      'CMRR_fMRI_TASK_R1_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawRH_run-1_SBRef'      ), ...
-      'CMRR_fMRI_TASK_R1_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawRH_run-1'            ), ...
-      'CMRR_fMRI_TASK_R2_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawLH_run-1_SBRef'      ), ...
-      'CMRR_fMRI_TASK_R2_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawLH_run-1'            ), ...
-      'CMRR_fMRI_TASK_R3_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawRH_run-2_SBRef'      ), ...
-      'CMRR_fMRI_TASK_R3_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawRH_run-2'            ), ...
-      'CMRR_fMRI_TASK_R4_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawLH_run-2_SBRef'      ), ...
-      'CMRR_fMRI_TASK_R4_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawLH_run-2'            ), ...
-      'CMRR_fMRI_TASK_R5_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawRH_run-3_SBRef'      ), ...
-      'CMRR_fMRI_TASK_R5_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawRH_run-3'            ), ...
-      'CMRR_fMRI_TASK_R6_AP_3mm_488meas_SBRef' : ('overwrite', 'func', 'task-drawLH_run-3_SBRef'      ), ...
-      'CMRR_fMRI_TASK_R6_AP_3mm_488meas'       : ('overwrite', 'func', 'task-drawLH_run-3'            ), ...
-      'ep2ddbsi_b0_PE=PA',                     : ('overwrite', 'fmap', 'ep2ddbsi_b0_PE=PA'            ), ...
-      'ep2ddbsi_19_2mm_iso_LowBW_2av',         : ('overwrite', 'anat', 'ep2ddbsi_19_2mm_iso_LowBW_2av'), ...
-      'CMRR_fMRI_REST_R1_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest01_SBRef'                 ), ...
-      'CMRR_fMRI_REST_R1_AP_3mm_550meas'       : ('overwrite', 'func', 'rest01'                       ), ...
-      'CMRR_fMRI_REST_R2_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest02_SBRef'                 ), ...
-      'CMRR_fMRI_REST_R2_AP_3mm_550meas'       : ('overwrite', 'func', 'rest02'                       ), ...
-      'CMRR_fMRI_REST_R3_AP_3mm_550meas_SBRef' : ('overwrite', 'func', 'rest03_SBRef'                 ), ...
-      'CMRR_fMRI_REST_R3_AP_3mm_550meas'       : ('overwrite', 'func', 'rest03'                       ), ...
-      't2_spc_sag_p2_iso1.0'                   : ('overwrite', 'anat', 't2_spc_sag_p2_iso1.0'         )}
-"""
+#https://note.nkmk.me/en/python-re-match-object-span-group/#:~:text=In%20Python's%20re%20module%2C%20match,provided%20by%20the%20match%20object.
 
 import re
+#Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
 def get_protocol(file):
     with open(file,encoding="utf8",errors='ignore') as f0:
+        dict0 = {}
         for line0 in f0:
             if not line0.strip() or line0.startswith('#'): continue
             #line1 = line0.replace(',',' ').split()
             #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
             line1 = re.findall(r'[^,\s]+', line0)
-            print(f'line1={line1}')
+            #print(f'line1={line1}')
+            dict0[line1[0]] = (line1[1],line1[2],line1[3])
+        #print(f'dict0={dict0}')
+    return dict0
                  
-
-#    for i in args.dat:
-#        for j in range(len(i)):
-#            with open(i[j],encoding="utf8",errors='ignore') as f0:
-#                for line0 in f0:
-#                    if not line0.strip() or line0.startswith('#'): continue
-#                    if not 'keys' in locals():
-#                        keys = line0.split()
-#                        continue
-#                    d0 = Dat(dict(zip(keys,line0.split())))
-#                    dir0 = d0.OUTDIR + FREESURFVER
-
-
-
-
-#            if not 'keys' in locals():
-#                keys = line0.split()
-#                continue
-#            d0 = Dat(dict(zip(keys,line0.split())))
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     import sys
@@ -147,14 +67,59 @@ if __name__ == "__main__":
             #args.dat.append(args.dat0)
             args.dat += args.dat0
     elif args.dat0:
-        args.dat=[args.dat0]
+        #args.dat=[args.dat0]
+        args.dat=args.dat0
     else:
         exit()
+    #print(f'args.dat={args.dat}')
 
     if not args.protocol:
         print(f'Error: Protocol must be specified. Abort!')
         exit()
-    get_protocol(args.protocol)
+    dict0 = get_protocol(args.protocol)
+
+    import pathlib
+    parent0 = str(pathlib.Path(args.dat[0]).resolve().parent)
+
+    if not args.out:
+        n0=pathlib.Path(args.dat[0]).stem
+        m=re.match('sub-([0-9]+)',n0)
+        if m is not None: n0=m.group()
+        #args.out = str(pathlib.Path(args.dat[0]).resolve().parent) + '/' + n0 + '_runs.txt' 
+        args.out = parent0 + '/' + n0 + '_runs.txt' 
+        print(f'args.out={args.out}')
+        
+    from pdfreader import SimplePDFViewer
+    plain_text = []
+    for i in args.dat:
+        with open(i,"rb") as fd:
+            viewer = SimplePDFViewer(fd)
+            for canvas in viewer:
+                plain_text += "".join(canvas.strings).split()
+    #print(f'plain_text={plain_text}')
+
+"""
+    with open(args.out,'w',encoding="utf8",errors='ignore') as f0:
+        for i in range(len(plain_text)):
+            if plain_text[i].find('PhysioLog') > -1:
+                continue
+            for j in dict0: 
+                idx = plain_text[i].find(j)
+                if idx > -1:
+                    print(plain_text[i]) 
+                    #print(f'    {plain_text[i][0:idx]}') 
+                    #line1 = re.findall(r'[^,\s]+', line0)
+                    #re.findall(r'[0-9]+', plain_text[i][0:idx])
+                    print(f"    {re.findall(r'[0-9]+', plain_text[i][0:idx])}") 
+                    break
+
+"""
+
+
+
+
+
+
 
 """
     from pdfreader import SimplePDFViewer
