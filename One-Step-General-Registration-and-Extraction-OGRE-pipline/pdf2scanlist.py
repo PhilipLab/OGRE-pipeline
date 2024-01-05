@@ -28,10 +28,10 @@ if __name__ == "__main__":
     parser.add_argument('-pdf','--pdf',dest='dat',metavar='*.pdf',action='append',nargs='+',help='-pdf --pdf')
 
     hprotocol='Comma and/or space and/or tab separated file that specifies the protocol.'
-    parser.add_argument('-p','--protocol','-protocol',dest='protocol',metavar='protocol file',help=hprotocol)
+    parser.add_argument('-p','--protocol','-protocol',dest='protocol',metavar='<protocol file>',help=hprotocol)
 
-    hout='Override default output name of scanlist.'
-    parser.add_argument('-o','--out','-out',dest='out',metavar='output scanlist',help=hout)
+    hout='Override default output name of scanlist.\nEx. sub-2035_CNDA.pdf will output sub-2035_scanlist.csv'
+    parser.add_argument('-o','--out','-out',dest='out',metavar='<output scanlist>',help=hout)
 
     hverbose='Echo messages to terminal.'
     parser.add_argument('-v','--verbose','-verbose',dest='verbose',action='store_true',help=hverbose)
@@ -63,7 +63,14 @@ if __name__ == "__main__":
     if m is not None: n0=m.group()
     #print(f'n0={n0}')
 
-    if not args.out: args.out = parent0 + '/' + n0 + '_scans.csv' 
+    #if not args.out: args.out = parent0 + '/' + n0 + '_scanlist.csv' 
+    #START240104
+    if args.out:
+        ext = pathlib.Path(args.out).suffix 
+        if ext == '': args.out += '.csv'
+    else:
+        args.out: args.out = parent0 + '/' + n0 + '_scanlist.csv' 
+
         
     from pdfreader import SimplePDFViewer
     plain_text = []
