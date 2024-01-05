@@ -23,7 +23,7 @@ helpmsg(){
     echo "        STUDYPATH is /Users/Shared/10_Connectivity"
     echo "        SUBJDIR is 10_2000"
     echo ""
-    echo "    -s --sub -sub"
+    echo "    -s --scanlist -scanlist"
     #echo "        scanlist.csv file(s). Arguments without options are assumed to be scanlist.csv files."
     echo "        scans.csv file(s). Arguments without options are assumed to be scans.csv files."
     #echo "        First row is labels which is currently not used."
@@ -71,7 +71,7 @@ arg=("$@")
 for((i=0;i<${#@};++i));do
     #echo "i=$i ${arg[i]}"
     case "${arg[i]}" in
-        -s | --sub | -sub)
+        -s | --sub | -sub || -scanlist --scanlist)
             dat+=(${arg[((++i))]})
             for((j=i;j<${#@};++i));do #i is incremented only if dat is appended
                 dat0=(${arg[((++j))]})
