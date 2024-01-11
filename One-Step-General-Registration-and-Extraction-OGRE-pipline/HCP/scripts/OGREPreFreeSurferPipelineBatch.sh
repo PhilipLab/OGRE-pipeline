@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-P0=OGREPreFreeSurferPipeline.sh
+#P0=OGREPreFreeSurferPipeline.sh
+#START240110
+P0=${OGREDIR}/HCP/scripts/${OGREPreFreeSurferPipeline.sh}
+
 echo "**** Running $0 ****"
 set -e
 
@@ -240,8 +243,8 @@ main()
 	# Set up pipeline environment variables and software
 	source ${EnvironmentScript}
 
-        #START220211
-        P0=${HCPMOD}/${P0}
+        #START240107
+        #P0=${HCPMOD}/${P0}
 
 	# Define processing queue to be used if submitted to job scheduler
 	# if [ X$SGE_ROOT != X ] ; then
