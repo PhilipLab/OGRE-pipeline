@@ -1,6 +1,10 @@
 #!/usr/bin/env bash 
 
-P0=OGREGenericfMRIVolumeProcessingPipeline.sh
+#P0=OGREGenericfMRIVolumeProcessingPipeline.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGREGenericfMRIVolumeProcessingPipeline.sh
+
+
 echo "**** Running $0 ****"
 
 get_batch_options() {
@@ -219,7 +223,7 @@ echo "************* Sourcing ${EnvironmentScript} ***********************"
 source ${EnvironmentScript}
 
 #START220211
-P0=${HCPMOD}/${P0}
+#P0=${HCPMOD}/${P0}
 
 #START190724
 echo "*******************************************************************"

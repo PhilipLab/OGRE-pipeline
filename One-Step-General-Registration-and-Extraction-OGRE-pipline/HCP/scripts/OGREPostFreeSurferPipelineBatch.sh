@@ -1,6 +1,8 @@
 #!/usr/bin/env bash 
 
-P0=OGREPostFreeSurferPipeline.sh
+#P0=OGREPostFreeSurferPipeline.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGREPostFreeSurferPipeline.sh
 
 get_batch_options() {
     local arguments=("$@")
@@ -79,7 +81,7 @@ fi
 source ${EnvironmentScript}
 
 #START220211
-P0=${HCPMOD}/${P0}
+#P0=${HCPMOD}/${P0}
 
 # Log the originating call
 echo "$@"

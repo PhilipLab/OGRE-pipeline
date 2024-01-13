@@ -1,7 +1,9 @@
 #!/usr/bin/env bash 
 set -e
 
-P0=${HCPMOD}/OGREmcflirt.sh
+#P0=${HCPMOD}/OGREmcflirt.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGREmcflirt.sh
 
 # --------------------------------------------------------------------------------
 #  Load Function Libraries

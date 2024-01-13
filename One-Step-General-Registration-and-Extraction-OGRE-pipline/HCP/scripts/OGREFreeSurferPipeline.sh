@@ -3,8 +3,12 @@ set -e
 
 echo "    **** Running $0 ****"
 
-P0=${HCPMOD}/OGREFreeSurferHiresWhite.sh
-P1=${HCPMOD}/OGREFreeSurferHiresPial.sh
+#P0=${HCPMOD}/OGREFreeSurferHiresWhite.sh
+#P1=${HCPMOD}/OGREFreeSurferHiresPial.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGREFreeSurferHiresWhite.sh
+P1=${OGREDIR}/HCP/scripts/OGREFreeSurferHiresPial.sh
+
 
 # Requirements for this script
 #  installed versions of: FSL (version 5.0.6), FreeSurfer (version 5.3.0-HCP)

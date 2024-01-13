@@ -2,11 +2,15 @@
 #~ND~FORMAT~MARKDOWN~
 #~ND~START~
 
-echo "    **** Running $0 ****"
+#P0=${HCPMOD}/OGRET2wToT1wReg.sh
+#P1=${HCPMOD}/OGREBiasFieldCorrection_sqrtT1wXT1w.sh
+#P2=${HCPMOD}/OGREAtlasRegistrationToMNI152_FLIRTandFNIRT.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGRET2wToT1wReg.sh
+P1=${OGREDIR}/HCP/scripts/OGREBiasFieldCorrection_sqrtT1wXT1w.sh
+P2=${OGREDIR}/HCP/scripts/OGREAtlasRegistrationToMNI152_FLIRTandFNIRT.sh
 
-P0=${HCPMOD}/OGRET2wToT1wReg.sh
-P1=${HCPMOD}/OGREBiasFieldCorrection_sqrtT1wXT1w.sh
-P2=${HCPMOD}/OGREAtlasRegistrationToMNI152_FLIRTandFNIRT.sh
+echo "    **** Running $0 ****"
 
 #
 # # PreFreeSurferPipeline.sh
