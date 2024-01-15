@@ -156,6 +156,7 @@ if [ -z "${OGREDIR}" ];then
     echo "    or via an option to this script: -OGREDIR <OGRE directory>"
     exit
 fi
+echo "OGREDIR=$OGREDIR"
 
 [ -n "${unexpected}" ] && dat+=(${unexpected[@]})
 if [ -z "${dat}" ];then
@@ -209,6 +210,8 @@ wd0=$(pwd)
 #for((i=0;i<${#csv[@]};++i));do
 #START231230
 for((i=0;i<${#dat[@]};++i));do
+
+    echo Reading ${dat[i]})
 
     #START231231
     unset T1f T2f
@@ -275,16 +278,35 @@ for((i=0;i<${#dat[@]};++i));do
             unset T2f
         fi
     fi
+    [ -n "${T2f}" ] && echo "T2f = ${T2f}"
 
 
-    #dir0=${line[1]}${FREESURFVER}
-    #START231231
-    [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
+    #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
+    #START240113
+    #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir0=$(pwd)
+    idx=1
+    #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir0=$(pwd) && idx=2
+    unset dir0 dir1
+    #If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not path then extract the current working directory and if path ../ then set idx=2
+    [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir1=$(pwd) && [[ "${dir0}" == ".." ]] && idx=2
+    #[[ "${dir0}" == ".." ]] && idx=2
+    [ -n ${dir1} ] && dir0=${dir1}
     echo "initial dir0=${dir0}"
+    echo "idx=${idx}"
 
     IFS='/' read -ra subj <<< "${dir0}"
-    s0=${subj[${#subj[@]}-1]}
     #echo "subj=${subj[@]}"
+    #s0=${subj[${#subj[@]}-1]}
+    s0=${subj[${#subj[@]}-$idx]}
+    #START240113
+    #idx=1
+    #s0=${subj[${#subj[@]}-1]} && [[ ${s0} != ".." ]] || s0=${subj[${#subj[@]}-2]}
+    #s0=${subj[${#subj[@]}-1]} && [[ ${s0} != ".." ]] || idx=2 && ((idx==2)) && s0=${subj[${#subj[@]}-2]}
+    #s0=${subj[${#subj[@]}-1]} && [[ ${s0} == ".." ]] || idx=2 && ((idx==2)) && s0=${subj[${#subj[@]}-2]}
+    #s0=${subj[${#subj[@]}-1]} && [[ ${s0} != ".." ]] || idx=2
+    #((idx==2)) && s0=${subj[${#subj[@]}-2]}
+    #s0=${subj[${#subj[@]}-$idx]} && [[ ${s0} != ".." ]] || idx=2
+    echo "s0=${s0}"
 
     #START240107
     T1f=${T1f//${s0}/'${s0}'}
@@ -293,11 +315,14 @@ for((i=0;i<${#dat[@]};++i));do
 
     #START240107
     #dir1=$(join_by / ${subj[@]::${#subj[@]}-1})
-    dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+    #dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+    dir0=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/${s0}/pipeline${FREESURFVER}
+    dir1=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/'${s0}'/pipeline'${FREESURFVER}'
+    echo "dir0=${dir0}"
     echo "dir1=${dir1}"
 
 
-    dir0+=/pipeline${FREESURFVER}
+    #dir0+=/pipeline${FREESURFVER}
     #START240107
     #dir0+=/pipeline'${FREESURFVER}'
 
@@ -364,10 +389,21 @@ for((i=0;i<${#dat[@]};++i));do
 
     echo "FREESURFVER=${FREESURFVER}" >> ${F0}
     echo -e export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}'"\n" >> ${F0}
-    echo 'PRE='${PRE} >> ${F0}
-    echo 'FREE='${FREE} >> ${F0}
-    echo 'POST='${POST} >> ${F0}
-    echo -e "SETUP=${SETUP}\n" >> ${F0}
+
+
+
+
+    #echo 'PRE='${PRE} >> ${F0}
+    #echo 'FREE='${FREE} >> ${F0}
+    #echo 'POST='${POST} >> ${F0}
+    #echo -e "SETUP=${SETUP}\n" >> ${F0}
+
+    echo export OGREDIR=${OGREDIR} >> ${F0}
+    echo PRE='${OGREDIR}'/HCP/scripts/${PRE} >> ${F0}
+    echo FREE='${OGREDIR}'/HCP/scripts/${FREE} >> ${F0}
+    echo POST='${OGREDIR}'/HCP/scripts/${POST} >> ${F0}
+    echo -e SETUP='${OGREDIR}'/HCP/scripts/${SETUP}"\n" >> ${F0}
+
 
     #echo "sf0=${line[1]}"'${FREESURFVER}' >> ${F0}
     #START240107
