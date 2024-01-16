@@ -28,10 +28,6 @@ import json
 
 SHEBANG = "#!/usr/bin/env bash"
 
-#Include path if necessary. Ideally, the locations of these scripts should be in your PATH environment variable.
-#Eg  OGRE=/Users/mcavoy/repo/OGRE-pipeline/One-Step-General-Registration-and-Extraction-OGRE-pipline
-#    PATH=$PATH:$OGRE:$OGRE/HCP/scripts
-
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
 P1='OGRET1w_restore.sh'
 P2='OGRESmoothingProcess.sh'
@@ -206,7 +202,6 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('dat0',metavar='<datfile(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
-
     hdat = '-d --dat -dat\n' \
          + '        Ex 1. '+parser.prog+' 1001.dat 2000.dat\n' \
          + '        Ex 2. '+parser.prog+' "1001.dat -d 2000.dat"\n' \
@@ -223,6 +218,14 @@ if __name__ == "__main__":
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
     #sbs = ['-b','--batchscript','-batchscript']
     #parser.add_argument(sbs,dest='bs',metavar='batchscript',help=hbs)
+
+
+    #START240114
+    hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
+        +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
+        +'The path provided by this option will be used instead of any other setting.\n'
+    parser.add_argument('-O','--OGREDIR','-OGREDIR','--ogredir','-ogredir',dest='OGREDIR',metavar='OGREdirectory',help=hOGREDIR)
+
 
     hHCPDIR='HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR.'
     parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
@@ -281,6 +284,16 @@ if __name__ == "__main__":
     else:
         exit()
 
+
+    #START240114
+    if args.OGREDIR: OGREDIR = args.OGREDIR
+    if not OGREDIR:
+        print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
+        exit()
+    fi  
+
+#STARTHERE
+
     if fwhm==0 and not args.lcfeatadapter: 
         print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
 
@@ -289,6 +302,7 @@ if __name__ == "__main__":
 
     if args.HCPDIR: HCPDIR = args.HCPDIR
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
+
 
     print(f'HCPDIR={HCPDIR}')
     print(f'FREESURFVER={FREESURFVER}')
