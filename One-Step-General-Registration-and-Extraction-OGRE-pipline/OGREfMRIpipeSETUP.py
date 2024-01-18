@@ -23,6 +23,7 @@ import subprocess
 import pathlib
 from datetime import datetime
 import json
+import re
 
 #**** default global variables **** 
 
@@ -43,6 +44,11 @@ FREESURFVER='7.4.0'
 
 #**** These overwrite the default global variables and are overwritten in options ****
 def get_env_vars():
+    try:
+        global OGREDIR
+        OGREDIR = os.environ['OGREDIR'] 
+    except KeyError:
+        pass 
     try:
         global WBDIR
         WBDIR = os.environ['WBDIR'] 
@@ -68,6 +74,26 @@ def get_env_vars():
         FREESURFVER = os.environ['FREESURFVER'] 
     except KeyError:
         pass 
+
+
+
+
+#START240115
+def read_scanlist(file):
+    with open(file,encoding="utf8",errors='ignore') as f0:
+        i=1
+        for line0 in f0:
+            if not line0.strip() or line0.startswith('#'): continue
+            #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
+            line1 = re.findall(r'[^,\s]+', line0)
+            print(line1[1])
+            file0 = line1[1] + '.nii.gz'
+            if not os.path.isfile(file0):
+                print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
+                exit()
+            i+=1
+
+
 
 
 #**** dat file is stored here ****
@@ -161,6 +187,7 @@ def get_dim(file):
     print(f'get_dim line0={line0}')
     
 
+"""
 def check_phase_dims(bold,bold_SBRef,ind):
     ind_SBRef = []
     ped = []
@@ -190,6 +217,7 @@ def check_phase_dims(bold,bold_SBRef,ind):
 
     
     return ind_SBRef, ped
+"""
 
 
 if __name__ == "__main__":
@@ -287,10 +315,10 @@ if __name__ == "__main__":
 
     #START240114
     if args.OGREDIR: OGREDIR = args.OGREDIR
-    if not OGREDIR:
+    if not 'OGREDIR' in locals():
         print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
         exit()
-    fi  
+
 
 #STARTHERE
 
@@ -322,6 +350,8 @@ if __name__ == "__main__":
             outputdir2.append(line0.split('"')[1])
         print(f'outputdir2 = {outputdir2}')
 
+
+    """
     if not args.bs:
         num_sub = 0
         for i in args.dat:
@@ -341,10 +371,17 @@ if __name__ == "__main__":
         if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent, exist_ok=True)
         bs=open(args.bs,mode='wt',encoding="utf8")
         bs.write(f'{SHEBANG}\n')
-
+    """
 
     for i in args.dat:
         for j in range(len(i)):
+            read_scanlist(i[j])
+
+
+
+
+
+"""
             with open(i[j],encoding="utf8",errors='ignore') as f0:
                 for line0 in f0:
                     if not line0.strip() or line0.startswith('#'): continue
@@ -418,6 +455,7 @@ if __name__ == "__main__":
 #        self.rest = []
 
 if args.bs: bs0.close()
+"""
 
 #if __name__ == "__main__":
 #    #file = '/Users/Shared/10_Connectivity/10_2000/10_2000_new.dat'
