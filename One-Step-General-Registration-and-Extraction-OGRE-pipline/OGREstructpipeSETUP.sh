@@ -30,6 +30,32 @@ function join_by {
   fi
 }
 
+#UNTESTED
+#https://stackoverflow.com/questions/3915040/how-to-obtain-the-absolute-path-of-a-file-via-shell-bash-zsh-sh
+#get_abs_filename() {
+#  # $1 : relative filename
+#  filename=$1
+#  parentdir=$(dirname "${filename}")
+#
+#  if [ -d "${filename}" ]; then
+#      echo "$(cd "${filename}" && pwd)"
+#  elif [ -d "${parentdir}" ]; then
+#    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
+#  fi
+#}
+#function get_abs_filename {
+#  filename=$1
+#  parentdir=$(dirname "${filename}")
+#
+#  if [ -d "${filename}" ]; then
+#      echo "$(cd "${filename}" && pwd)"
+#  elif [ -d "${parentdir}" ]; then
+#    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
+#  fi
+#}
+
+
+
 root0=${0##*/}
 helpmsg(){
     echo "Required: ${root0} <scanlist.csv file(s)>"
@@ -245,7 +271,7 @@ for((i=0;i<${#dat[@]};++i));do
     if [ -z "$pipedir" ];then
         idx=1
         unset dir0 dir1
-        #If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not path then extract the current working directory and if path ../ then set idx=2
+        #If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not a path then extract the current working directory and if path ../ then set idx=2
         [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir1=$(pwd) && [[ "${dir0}" == ".." ]] && idx=2
         [ -n ${dir1} ] && dir0=${dir1}
         echo "initial dir0=${dir0}"

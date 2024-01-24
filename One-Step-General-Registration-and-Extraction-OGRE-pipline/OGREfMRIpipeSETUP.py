@@ -81,6 +81,9 @@ def get_env_vars():
 #START240115
 def read_scanlist(file):
     with open(file,encoding="utf8",errors='ignore') as f0:
+        fmap = []
+        SBRef2 = []
+        bold2 = [] 
         i=1
         for line0 in f0:
             if not line0.strip() or line0.startswith('#'): continue
@@ -92,8 +95,33 @@ def read_scanlist(file):
                 print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
                 exit()
             i+=1
+         
+            #line1=file0.split('/')
+            #print(f'line1={line1}')
+            #print(f'line1[-2]={line1[-2]}')
 
+            #line1=file0.split('/')[-2]
+            line2=file0.split('/')
+            if line2[-2] == 'fmap':
+                if line2[-1].find('dbsi') == -1:
+                    print('    **** fmap ****')
+                    fmap.append(file0)
+            elif line2[-2] == 'func':
+                #print('    **** func ****')
+                #print(f'    **** len(fmap) = {len(fmap)} ****')
+                #print(f'    **** len(fmap)-2 = {len(fmap)-2} ****')
+                if line2[-1].find('SBRef') != -1:
+                    SBRef2.append((file0,len(fmap)-2))
+                else:
+                    bold2.append((file0,len(fmap)-2))
 
+    print(f'SBRef2={SBRef2}')
+    print(f'bold2={bold2}')
+    if len(SBRef2) != len(bold2):
+        print(f'There are {len(SBRef2)} reference files and {len(bold2)} bolds. Must be equal. Abort!')
+        exit()
+                
+    return fmap,SBRef2,bold2
 
 
 #**** dat file is stored here ****
@@ -148,21 +176,26 @@ class Dat:
 def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
 
-def check_bolds(bold,bold_SBRef):
-    ind = []
-    for k in range(len(bold)):
-        if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
-            if not os.path.isfile(bold[k]):
-                print(f'{bold[k]} does not exist.')
-            else:
-                ind.append(1)
-                if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
-                    if not os.path.isfile(bold_SBRef[k]):
-                        print(f'{bold_SBRef[k]} does not exist.')
-                        bold_SBRef[k] = 'NONE'
-                continue;
-        ind.append(0)
-    return ind
+#def check_bolds(bold,bold_SBRef):
+#    ind = []
+#    for k in range(len(bold)):
+#        if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
+#            if not os.path.isfile(bold[k]):
+#                print(f'{bold[k]} does not exist.')
+#            else:
+#                ind.append(1)
+#                if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
+#                    if not os.path.isfile(bold_SBRef[k]):
+#                        print(f'{bold_SBRef[k]} does not exist.')
+#                        bold_SBRef[k] = 'NONE'
+#                continue;
+#        ind.append(0)
+#    return ind
+
+
+
+
+
 
 def get_phase(file):
     jsonf = file.split('.')[0] + '.json'
@@ -184,40 +217,74 @@ def get_phase(file):
 
 def get_dim(file):
     line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
-    print(f'get_dim line0={line0}')
-    
+    line1=line0.split()
+    return (line1[1],line1[3],line1[5])
 
 """
-def check_phase_dims(bold,bold_SBRef,ind):
-    ind_SBRef = []
+def check_phase_dims(bold2,SBRef2):
+    lcSBRef2 = []
     ped = []
+    dim = []
+    for j in range(len(bold2)):
+
+        lcSBRef2.append(0)
+
+        ped.append(get_phase(bold2[j][0]))
+        ped0 = get_phase(SBRef2[j][0])
+
+        if ped0 != ped[j]:
+            print(f'    ERROR: {bold2[j][0]} {ped[j]}')
+            print(f'    ERROR: {SBRef2[j][0]} {ped0}')
+            print(f'           Phases should be the same. Will not use this SBRef.')
+            continue
+
+        dim.append(get_dim(bold2[j][0]))
+        dim0 = get_dim(SBRef2[j][0])
+
+        if dim0 != dim[j]:
+            print(f'    ERROR: {bold2[j][0]} {dim[j]}')
+            print(f'    ERROR: {SBRef2[j][0]} {dim0}')
+            print(f'           Dimensions should be the same. Will not use this SBRef.')
+            continue
+
+        lcSBRef2[j]=1
+
+    print(f'lcSBRef2={lcSBRef2}')
+    return lcSBRef2,ped,dim
+"""
+
+def check_phase_dims(bold,SBRef):
+    lcSBRef = []
+    ped = []
+    dim = []
     for j in range(len(bold)):
 
-        print(f'check_phase_dims before j={j}')
+        lcSBRef.append(0)
 
-        ind_SBRef.append(0)
-        ped.append(None)
-        if ind[j] == 1:
-            if bold_SBRef[j] != 'NONE' and bold_SBRef[j] != 'NOTUSEABLE':
+        ped.append(get_phase(bold[j]))
+        ped0 = get_phase(SBRef[j])
 
-                ped[j] = get_phase(bold[j])
-                ped0 = get_phase(bold_SBRef[j])
+        if ped0 != ped[j]:
+            print(f'    ERROR: {bold[j]} {ped[j]}')
+            print(f'    ERROR: {SBRef[j]} {ped0}')
+            print(f'           Phases should be the same. Will not use this SBRef.')
+            continue
 
-                print(f'check_phase_dims j={j}')
+        dim.append(get_dim(bold[j]))
+        dim0 = get_dim(SBRef[j])
 
-                if ped0 != ped[j]:
-                    print(f'    ERROR: {bold[j]} {ped[j]}') 
-                    print(f'    ERROR: {bold_SBRef[j]} {ped0}') 
-                    print(f'           Phases should be the same. Will not use this SBRef.')
-                    continue
-#STARTHERE
+        if dim0 != dim[j]:
+            print(f'    ERROR: {bold[j]} {dim[j]}')
+            print(f'    ERROR: {SBRef[j]} {dim0}')
+            print(f'           Dimensions should be the same. Will not use this SBRef.')
+            continue
 
+        lcSBRef[j]=1
 
-                ind_SBRef[j] = 1
-
-    
-    return ind_SBRef, ped
-"""
+    print(f'lcSBRef={lcSBRef}')
+    print(f'ped={ped}')
+    print(f'dim={dim}')
+    return lcSBRef,ped,dim
 
 
 if __name__ == "__main__":
@@ -304,11 +371,10 @@ if __name__ == "__main__":
 
     args=parser.parse_args()
     if args.dat:
-        print(f'here0')
         if args.dat0:
-            args.dat.append(args.dat0)
+            args.dat += args.dat0
     elif args.dat0:
-        args.dat=[args.dat0]
+        args.dat=args.dat0
     else:
         exit()
 
@@ -328,7 +394,7 @@ if __name__ == "__main__":
     if paradigm_hp_sec==0 and not args.lcfeatadapter:
         print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
-    if args.HCPDIR: HCPDIR = args.HCPDIR
+    if args.HCPDIR: HCPDIR = args.HCPDIR 
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
 
 
@@ -374,10 +440,15 @@ if __name__ == "__main__":
     """
 
     for i in args.dat:
-        for j in range(len(i)):
-            read_scanlist(i[j])
+        fmap,SBRef2,bold2 = read_scanlist(i)
+
+        #lcSBRef2,ped,dim = check_phase_dims(bold2,SBRef2)
+        lcSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
 
 
+        #lcfmap,ped_fmap,dim_fmap = check_phase_dims(fmap[0::2],fmap[1::2])
+        #need to first check that letter is the same (ie j and j), then check for opposite signs (ie - and +)
+        
 
 
 
