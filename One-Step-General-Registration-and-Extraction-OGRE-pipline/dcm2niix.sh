@@ -99,7 +99,12 @@ fi
 
 for((i=0;i<${#dat[@]};++i));do
 
-    [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
+    #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
+    #START240123
+    #https://stackoverflow.com/questions/17577093/how-do-i-get-the-absolute-directory-of-a-file-in-bash
+    datf=$(readlink -f ${dat[i]})
+    #echo "datf=$datf"
+    dir0=${datf%/*}
     #echo "dir0=${dir0}"
 
     [ -z "${id0}" ] && id=${dir0}/dicom 
@@ -111,8 +116,13 @@ for((i=0;i<${#dat[@]};++i));do
     if [ -z "${bs0}" ];then
         IFS='/' read -ra subj <<< "${dir0}"
         subj=${subj[${#subj[@]}-1]}
-        bs=${dir0}/${subj}_dcm2niix.sh
-        F1=${dir0}/${subj}_dcm2niix_fileout.sh
+
+        #bs=${dir0}/${subj}_dcm2niix.sh
+        #F1=${dir0}/${subj}_dcm2niix_fileout.sh
+        #START240123
+        bs=$(pwd)/${subj}_dcm2niix.sh
+        F1=$(pwd)/${subj}_dcm2niix_fileout.sh
+
     fi
 
     if [[ "${bs}" == *"/"* ]];then

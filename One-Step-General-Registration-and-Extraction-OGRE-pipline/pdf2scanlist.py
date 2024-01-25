@@ -94,13 +94,27 @@ if __name__ == "__main__":
                 if idx > -1:
                     #print(plain_text[i]) 
                     scan = re.findall(r'[0-9]+', plain_text[i][0:idx]) 
-                    name = parent0 + '/' + dict0[j][1] + '/' + n0 + '_' + dict0[j][2] 
+
+                    #name = parent0 + '/' + dict0[j][1] + '/' + n0 + '_' + dict0[j][2] 
+                    #START240123
+                    name0 = parent0 + '/' + dict0[j][1] + '/' + n0 + '_'
+                    #name = name0 + dict0[j][2] 
+
                     if dict0[j][0] == 'overwrite':
-                        dict1[j] = scan[0] + ',' + name
+
+                        #dict1[j] = scan[0] + ',' + name
+                        #START240123
+                        dict1[j] = scan[0] + ',' + name0 + dict0[j][2]
+
                     elif dict0[j][0] == 'append':
                         cnt[j] += 1
-                        a0 = '-' + str(cnt[j])
-                        dict1[j+a0] = scan[0] + ',' + name + a0
+
+                        #a0 = '-' + str(cnt[j])
+                        #dict1[j+a0] = scan[0] + ',' + name + a0
+                        #START240123
+                        a0 = 'run-' + str(cnt[j])
+                        dict1[j+a0] = scan[0] + ',' + name0 + a0 + '_' + dict0[j][2]
+
                     #print(f'    {scan} {name}') 
                     break
         #print(f'dict1.values()={dict1.values()}')
