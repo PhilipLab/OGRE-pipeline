@@ -5,6 +5,8 @@
 
 ##START240124
 #appendstr = ['acq-task','acq-rest']
+#START240126
+fmdict = {'task':'acq-task','rest':'acq-rest'}
 
 import re
 #Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
@@ -86,6 +88,9 @@ if __name__ == "__main__":
 
     from collections import Counter
     cnt = Counter()
+
+    #START240126
+    fmstr = fmdict['task']
 
     with open(args.out,'w',encoding="utf8",errors='ignore') as f0:
         dict1={}
