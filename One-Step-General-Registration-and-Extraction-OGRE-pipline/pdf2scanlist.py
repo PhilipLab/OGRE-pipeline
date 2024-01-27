@@ -3,6 +3,9 @@
 #https://pdfreader.readthedocs.io/en/latest/examples/extract_page_text.html
 #https://note.nkmk.me/en/python-re-match-object-span-group/#:~:text=In%20Python's%20re%20module%2C%20match,provided%20by%20the%20match%20object.
 
+##START240124
+#appendstr = ['acq-task','acq-rest']
+
 import re
 #Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
 def get_protocol(file):
@@ -108,12 +111,17 @@ if __name__ == "__main__":
 
                     elif dict0[j][0] == 'append':
                         cnt[j] += 1
+                         
+                        ##a0 = '-' + str(cnt[j])
+                        ##dict1[j+a0] = scan[0] + ',' + name + a0
+                        ##START240123
+                        a0 = '_run-' + str(cnt[j]) + '_epi'
+                        dict1[j+a0] = scan[0] + ',' + name0 + dict0[j][2] + a0
 
-                        #a0 = '-' + str(cnt[j])
-                        #dict1[j+a0] = scan[0] + ',' + name + a0
-                        #START240123
-                        a0 = 'run-' + str(cnt[j])
-                        dict1[j+a0] = scan[0] + ',' + name0 + a0 + '_' + dict0[j][2]
+                        ##START240124
+                        #a0 = appendstr[cnt[j]]
+                        #dict1[j+a0] = scan[0] + ',' + name0 + a0 + '_' + dict0[j][2]
+                        #cnt[j] += 1
 
                     #print(f'    {scan} {name}') 
                     break
