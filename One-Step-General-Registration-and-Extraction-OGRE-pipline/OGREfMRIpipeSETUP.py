@@ -23,14 +23,11 @@ import subprocess
 import pathlib
 from datetime import datetime
 import json
+import re
 
 #**** default global variables **** 
 
 SHEBANG = "#!/usr/bin/env bash"
-
-#Include path if necessary. Ideally, the locations of these scripts should be in your PATH environment variable.
-#Eg  OGRE=/Users/mcavoy/repo/OGRE-pipeline/One-Step-General-Registration-and-Extraction-OGRE-pipline
-#    PATH=$PATH:$OGRE:$OGRE/HCP/scripts
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
 P1='OGRET1w_restore.sh'
@@ -47,6 +44,11 @@ FREESURFVER='7.4.0'
 
 #**** These overwrite the default global variables and are overwritten in options ****
 def get_env_vars():
+    try:
+        global OGREDIR
+        OGREDIR = os.environ['OGREDIR'] 
+    except KeyError:
+        pass 
     try:
         global WBDIR
         WBDIR = os.environ['WBDIR'] 
@@ -72,6 +74,54 @@ def get_env_vars():
         FREESURFVER = os.environ['FREESURFVER'] 
     except KeyError:
         pass 
+
+
+
+
+#START240115
+def read_scanlist(file):
+    with open(file,encoding="utf8",errors='ignore') as f0:
+        fmap = []
+        SBRef2 = []
+        bold2 = [] 
+        i=1
+        for line0 in f0:
+            if not line0.strip() or line0.startswith('#'): continue
+            #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
+            line1 = re.findall(r'[^,\s]+', line0)
+            print(line1[1])
+            file0 = line1[1] + '.nii.gz'
+            if not os.path.isfile(file0):
+                print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
+                exit()
+            i+=1
+         
+            #line1=file0.split('/')
+            #print(f'line1={line1}')
+            #print(f'line1[-2]={line1[-2]}')
+
+            #line1=file0.split('/')[-2]
+            line2=file0.split('/')
+            if line2[-2] == 'fmap':
+                if line2[-1].find('dbsi') == -1:
+                    print('    **** fmap ****')
+                    fmap.append(file0)
+            elif line2[-2] == 'func':
+                #print('    **** func ****')
+                #print(f'    **** len(fmap) = {len(fmap)} ****')
+                #print(f'    **** len(fmap)-2 = {len(fmap)-2} ****')
+                if line2[-1].find('SBRef') != -1:
+                    SBRef2.append((file0,len(fmap)-2))
+                else:
+                    bold2.append((file0,len(fmap)-2))
+
+    print(f'SBRef2={SBRef2}')
+    print(f'bold2={bold2}')
+    if len(SBRef2) != len(bold2):
+        print(f'There are {len(SBRef2)} reference files and {len(bold2)} bolds. Must be equal. Abort!')
+        exit()
+                
+    return fmap,SBRef2,bold2
 
 
 #**** dat file is stored here ****
@@ -126,21 +176,26 @@ class Dat:
 def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
 
-def check_bolds(bold,bold_SBRef):
-    ind = []
-    for k in range(len(bold)):
-        if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
-            if not os.path.isfile(bold[k]):
-                print(f'{bold[k]} does not exist.')
-            else:
-                ind.append(1)
-                if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
-                    if not os.path.isfile(bold_SBRef[k]):
-                        print(f'{bold_SBRef[k]} does not exist.')
-                        bold_SBRef[k] = 'NONE'
-                continue;
-        ind.append(0)
-    return ind
+#def check_bolds(bold,bold_SBRef):
+#    ind = []
+#    for k in range(len(bold)):
+#        if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
+#            if not os.path.isfile(bold[k]):
+#                print(f'{bold[k]} does not exist.')
+#            else:
+#                ind.append(1)
+#                if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
+#                    if not os.path.isfile(bold_SBRef[k]):
+#                        print(f'{bold_SBRef[k]} does not exist.')
+#                        bold_SBRef[k] = 'NONE'
+#                continue;
+#        ind.append(0)
+#    return ind
+
+
+
+
+
 
 def get_phase(file):
     jsonf = file.split('.')[0] + '.json'
@@ -162,38 +217,74 @@ def get_phase(file):
 
 def get_dim(file):
     line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
-    print(f'get_dim line0={line0}')
-    
+    line1=line0.split()
+    return (line1[1],line1[3],line1[5])
 
-def check_phase_dims(bold,bold_SBRef,ind):
-    ind_SBRef = []
+"""
+def check_phase_dims(bold2,SBRef2):
+    lcSBRef2 = []
     ped = []
+    dim = []
+    for j in range(len(bold2)):
+
+        lcSBRef2.append(0)
+
+        ped.append(get_phase(bold2[j][0]))
+        ped0 = get_phase(SBRef2[j][0])
+
+        if ped0 != ped[j]:
+            print(f'    ERROR: {bold2[j][0]} {ped[j]}')
+            print(f'    ERROR: {SBRef2[j][0]} {ped0}')
+            print(f'           Phases should be the same. Will not use this SBRef.')
+            continue
+
+        dim.append(get_dim(bold2[j][0]))
+        dim0 = get_dim(SBRef2[j][0])
+
+        if dim0 != dim[j]:
+            print(f'    ERROR: {bold2[j][0]} {dim[j]}')
+            print(f'    ERROR: {SBRef2[j][0]} {dim0}')
+            print(f'           Dimensions should be the same. Will not use this SBRef.')
+            continue
+
+        lcSBRef2[j]=1
+
+    print(f'lcSBRef2={lcSBRef2}')
+    return lcSBRef2,ped,dim
+"""
+
+def check_phase_dims(bold,SBRef):
+    lcSBRef = []
+    ped = []
+    dim = []
     for j in range(len(bold)):
 
-        print(f'check_phase_dims before j={j}')
+        lcSBRef.append(0)
 
-        ind_SBRef.append(0)
-        ped.append(None)
-        if ind[j] == 1:
-            if bold_SBRef[j] != 'NONE' and bold_SBRef[j] != 'NOTUSEABLE':
+        ped.append(get_phase(bold[j]))
+        ped0 = get_phase(SBRef[j])
 
-                ped[j] = get_phase(bold[j])
-                ped0 = get_phase(bold_SBRef[j])
+        if ped0 != ped[j]:
+            print(f'    ERROR: {bold[j]} {ped[j]}')
+            print(f'    ERROR: {SBRef[j]} {ped0}')
+            print(f'           Phases should be the same. Will not use this SBRef.')
+            continue
 
-                print(f'check_phase_dims j={j}')
+        dim.append(get_dim(bold[j]))
+        dim0 = get_dim(SBRef[j])
 
-                if ped0 != ped[j]:
-                    print(f'    ERROR: {bold[j]} {ped[j]}') 
-                    print(f'    ERROR: {bold_SBRef[j]} {ped0}') 
-                    print(f'           Phases should be the same. Will not use this SBRef.')
-                    continue
-#STARTHERE
+        if dim0 != dim[j]:
+            print(f'    ERROR: {bold[j]} {dim[j]}')
+            print(f'    ERROR: {SBRef[j]} {dim0}')
+            print(f'           Dimensions should be the same. Will not use this SBRef.')
+            continue
 
+        lcSBRef[j]=1
 
-                ind_SBRef[j] = 1
-
-    
-    return ind_SBRef, ped
+    print(f'lcSBRef={lcSBRef}')
+    print(f'ped={ped}')
+    print(f'dim={dim}')
+    return lcSBRef,ped,dim
 
 
 if __name__ == "__main__":
@@ -206,7 +297,6 @@ if __name__ == "__main__":
     parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('dat0',metavar='<datfile(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
-
     hdat = '-d --dat -dat\n' \
          + '        Ex 1. '+parser.prog+' 1001.dat 2000.dat\n' \
          + '        Ex 2. '+parser.prog+' "1001.dat -d 2000.dat"\n' \
@@ -223,6 +313,14 @@ if __name__ == "__main__":
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
     #sbs = ['-b','--batchscript','-batchscript']
     #parser.add_argument(sbs,dest='bs',metavar='batchscript',help=hbs)
+
+
+    #START240114
+    hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
+        +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
+        +'The path provided by this option will be used instead of any other setting.\n'
+    parser.add_argument('-O','--OGREDIR','-OGREDIR','--ogredir','-ogredir',dest='OGREDIR',metavar='OGREdirectory',help=hOGREDIR)
+
 
     hHCPDIR='HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR.'
     parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
@@ -273,13 +371,22 @@ if __name__ == "__main__":
 
     args=parser.parse_args()
     if args.dat:
-        print(f'here0')
         if args.dat0:
-            args.dat.append(args.dat0)
+            args.dat += args.dat0
     elif args.dat0:
-        args.dat=[args.dat0]
+        args.dat=args.dat0
     else:
         exit()
+
+
+    #START240114
+    if args.OGREDIR: OGREDIR = args.OGREDIR
+    if not 'OGREDIR' in locals():
+        print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
+        exit()
+
+
+#STARTHERE
 
     if fwhm==0 and not args.lcfeatadapter: 
         print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
@@ -287,8 +394,9 @@ if __name__ == "__main__":
     if paradigm_hp_sec==0 and not args.lcfeatadapter:
         print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
-    if args.HCPDIR: HCPDIR = args.HCPDIR
+    if args.HCPDIR: HCPDIR = args.HCPDIR 
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
+
 
     print(f'HCPDIR={HCPDIR}')
     print(f'FREESURFVER={FREESURFVER}')
@@ -308,6 +416,8 @@ if __name__ == "__main__":
             outputdir2.append(line0.split('"')[1])
         print(f'outputdir2 = {outputdir2}')
 
+
+    """
     if not args.bs:
         num_sub = 0
         for i in args.dat:
@@ -327,10 +437,22 @@ if __name__ == "__main__":
         if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent, exist_ok=True)
         bs=open(args.bs,mode='wt',encoding="utf8")
         bs.write(f'{SHEBANG}\n')
-
+    """
 
     for i in args.dat:
-        for j in range(len(i)):
+        fmap,SBRef2,bold2 = read_scanlist(i)
+
+        #lcSBRef2,ped,dim = check_phase_dims(bold2,SBRef2)
+        lcSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
+
+
+        #lcfmap,ped_fmap,dim_fmap = check_phase_dims(fmap[0::2],fmap[1::2])
+        #need to first check that letter is the same (ie j and j), then check for opposite signs (ie - and +)
+        
+
+
+
+"""
             with open(i[j],encoding="utf8",errors='ignore') as f0:
                 for line0 in f0:
                     if not line0.strip() or line0.startswith('#'): continue
@@ -404,6 +526,7 @@ if __name__ == "__main__":
 #        self.rest = []
 
 if args.bs: bs0.close()
+"""
 
 #if __name__ == "__main__":
 #    #file = '/Users/Shared/10_Connectivity/10_2000/10_2000_new.dat'

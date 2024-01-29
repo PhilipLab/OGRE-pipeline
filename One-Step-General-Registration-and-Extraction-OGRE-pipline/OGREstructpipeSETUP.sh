@@ -11,13 +11,7 @@ shebang="#!/usr/bin/env bash"
 #Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2 7.4.0
 [ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.0
 
-##Hard coded HCP batch scripts
-#pre0=OGREPreFreeSurferPipelineBatch.sh
-#free0=OGREFreeSurferPipelineBatch.sh
-#post0=OGREPostFreeSurferPipelineBatch.sh
-##Hard coded pipeline settings
-#setup0=OGRESetUpHCPPipeline.sh
-#START231230
+#Hard coded HCP batch scripts
 PRE=OGREPreFreeSurferPipelineBatch.sh
 FREE=OGREFreeSurferPipelineBatch.sh
 POST=OGREPostFreeSurferPipelineBatch.sh
@@ -26,7 +20,6 @@ SETUP=OGRESetUpHCPPipeline.sh
 #Resolution. options: 1, 0.7 or 0.8
 Hires=1
 
-#START231231
 T1SEARCHSTR=t1
 T2SEARCHSTR=t2
 
@@ -36,6 +29,32 @@ function join_by {
     printf %s "$f" "${@/#/$d}"
   fi
 }
+
+#UNTESTED
+#https://stackoverflow.com/questions/3915040/how-to-obtain-the-absolute-path-of-a-file-via-shell-bash-zsh-sh
+#get_abs_filename() {
+#  # $1 : relative filename
+#  filename=$1
+#  parentdir=$(dirname "${filename}")
+#
+#  if [ -d "${filename}" ]; then
+#      echo "$(cd "${filename}" && pwd)"
+#  elif [ -d "${parentdir}" ]; then
+#    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
+#  fi
+#}
+#function get_abs_filename {
+#  filename=$1
+#  parentdir=$(dirname "${filename}")
+#
+#  if [ -d "${filename}" ]; then
+#      echo "$(cd "${filename}" && pwd)"
+#  elif [ -d "${parentdir}" ]; then
+#    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
+#  fi
+#}
+
+
 
 root0=${0##*/}
 helpmsg(){
@@ -55,15 +74,20 @@ helpmsg(){
     echo "        Flag. OGRE output is copied to BIDS directories."
     echo "    --bs -bs --batchscript -batchscript"
     echo "        *_fileout.sh scripts are collected in the executable batchscript."
-
-    #START240110
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
-    echo "         OGRE directory. Optional if set at the top of this script or elsewhere via variable OGREDIR."
-
+    echo "        OGRE directory. Location of OGRE scripts."
+    echo "        Optional if set at the top of this script or elsewhere via variable OGREDIR."
+    echo "        The path provided by this option will be used instead of any other setting."
     echo "    -H --HCPDIR -HCPDIR --hcpdir -hcpdir"
     echo "        HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR."
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, or 7.4.0. Default is 7.3.2 unless set elsewhere via variable FREESURFVER."
+    echo "    -p --pipedir -pipedir"
+    echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
+    echo "        Optional. Default if <scanlist.csv path>."
+    echo "    -n --name -name"
+    echo "        Use with -pipedir to provide the subject name."
+    echo "        If not provided, then root of scanlist.csv."
     echo "    -m --HOSTNAME"
     echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003"
     echo "    -D --DATE -DATE --date -date"
@@ -83,7 +107,7 @@ fi
 echo $0 $@
 
 lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
-unset bs
+unset bs pipedir name
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -109,13 +133,10 @@ for((i=0;i<${#@};++i));do
             bs=${arg[((++i))]}
             echo "bs=$bs"
             ;;
-
-        #START240110
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
             echo "OGREDIR=$OGREDIR"
             ;;
-
         -H | --HCPDIR | -HCPDIR | --hcpdir | -hcpdir)
             HCPDIR=${arg[((++i))]}
             echo "HCPDIR=$HCPDIR"
@@ -124,6 +145,19 @@ for((i=0;i<${#@};++i));do
             FREESURFVER=${arg[((++i))]}
             echo "FREESURFVER=$FREESURFVER"
             ;;
+
+        -p | --pipedir | -pipedir)
+            pipedir=${arg[((++i))]}
+            #https://stackoverflow.com/questions/17542892/how-to-get-the-last-character-of-a-string-in-a-shell
+            #https://stackoverflow.com/questions/27658675/how-to-remove-last-n-characters-from-a-string-in-bash
+            [[ ${pipedir: -1} == "/" ]] && pipedir=${pipedir::-1}
+            echo "pipedir=$pipedir"
+            ;;
+        -n | --name | -name)
+            name=${arg[((++i))]}
+            echo "name=$name"
+            ;;
+
         -m | --HOSTNAME)
             lchostname=1
             echo "lchostname=$lchostname"
@@ -149,13 +183,13 @@ for((i=0;i<${#@};++i));do
     esac
 done
 
-#START240110
 if [ -z "${OGREDIR}" ];then
     echo "OGREDIR not set. Abort!"
-    echo "Eg. Before calling this scripts: export OGREDIR <OGRE directory>"
-    echo "    or via an option to this script: -OGREDIR <OGRE directory>"
+    echo "Before calling this script: export OGREDIR=<OGRE directory>"
+    echo "or via an option to this script: -OGREDIR <OGRE directory>"
     exit
 fi
+echo "OGREDIR=$OGREDIR"
 
 [ -n "${unexpected}" ] && dat+=(${unexpected[@]})
 if [ -z "${dat}" ];then
@@ -164,20 +198,6 @@ if [ -z "${dat}" ];then
 fi
 #echo "dat[@]=${dat[@]}"
 #echo "#dat[@]=${#dat[@]}"
-
-
-#START231230
-#PRE=${HCPDIR}/scripts/${pre0}
-#FREE=${HCPDIR}/scripts/${free0}
-#POST=${HCPDIR}/scripts/${post0}
-#ES=${HCPDIR}/scripts/${setup0}
-#for((i=0;i<${#dat[@]};++i));do
-#    IFS=$'\r\n' read -d '' -ra csv0 < ${dat[i]}
-#    #printf '%s\n' "${csv0[@]}"
-#    #echo ''
-#    csv+=("${csv0[@]}")
-#done
-##printf '%s\n' "${csv[@]}"
 
 if [ -z "${bs}" ];then
     num_sub=0
@@ -206,11 +226,10 @@ if [ -n "${bs}" ];then
 fi
 wd0=$(pwd) 
 
-#for((i=0;i<${#csv[@]};++i));do
-#START231230
 for((i=0;i<${#dat[@]};++i));do
 
-    #START231231
+    echo "Reading ${dat[i]}"
+
     unset T1f T2f
     cnt=0
 
@@ -227,34 +246,6 @@ for((i=0;i<${#dat[@]};++i));do
         ((cnt==2)) && break
     done < <(grep -vE '^(\s*$|#)' ${dat[i]})
 
-
-    #T1f=${line[2]}
-    #if [[ "${T1f}" = "NONE" || "${T1f}" = "NOTUSEABLE" ]];then
-    #    echo "    T1 ${T1f}"
-    #    continue
-    #fi
-    #if [ ! -f "$T1f" ];then
-    #    echo "    T1 ${T1f} not found"
-    #    continue
-    #fi
-    #echo "    T1 ${T1f}"
-    #T2f=;T20=${line[3]}
-    #if [[ "${T20}" = "NONE" || "${T20}" = "NOTUSEABLE" ]];then
-    #    echo "    T2 ${T20}"
-    #elif [ ! -f "${T20}" ];then
-    #    echo "    T2 ${T20} not found"
-    #else
-    #    T2f=${T20}
-    #    echo "    T2 ${T2f}"
-    #fi
-    #START231231
-    #if [ -z "${T1f}" ];then
-    #    echo -e "T1 not found with searchstr = \"${T1SEARCHSTR}\" Abort!"
-    #    continue 
-    #fi
-    #echo "T1f = ${T1f}"
-    #[ -z "${T2f}" ] && echo "T2 not found with searchstr = ${T2SEARCHSTR} " || echo "T2f = ${T2f}"
-    #START240107
     if [ -z "${T1f}" ];then
         echo -e "    T1 not found with searchstr = \"${T1SEARCHSTR}\" Abort!"
         continue 
@@ -275,61 +266,48 @@ for((i=0;i<${#dat[@]};++i));do
             unset T2f
         fi
     fi
+    [ -n "${T2f}" ] && echo "T2f = ${T2f}"
 
+    if [ -z "$pipedir" ];then
+        idx=1
+        unset dir0 dir1
+        #If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not a path then extract the current working directory and if path ../ then set idx=2
+        [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir1=$(pwd) && [[ "${dir0}" == ".." ]] && idx=2
+        [ -n ${dir1} ] && dir0=${dir1}
+        echo "initial dir0=${dir0}"
+        echo "idx=${idx}"
 
-    #dir0=${line[1]}${FREESURFVER}
-    #START231231
-    [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
-    echo "initial dir0=${dir0}"
+        IFS='/' read -ra subj <<< "${dir0}"
+        s0=${subj[${#subj[@]}-$idx]}
 
-    IFS='/' read -ra subj <<< "${dir0}"
-    s0=${subj[${#subj[@]}-1]}
-    #echo "subj=${subj[@]}"
+        T1f=${T1f//${s0}/'${s0}'}
+        T2f=${T2f//${s0}/'${s0}'}
 
-    #START240107
-    T1f=${T1f//${s0}/'${s0}'}
-    T2f=${T2f//${s0}/'${s0}'}
-    
-
-    #START240107
-    #dir1=$(join_by / ${subj[@]::${#subj[@]}-1})
-    dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+        dir0=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/${s0}/pipeline${FREESURFVER}
+        dir1=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/'${s0}'/pipeline'${FREESURFVER}'
+    else
+        dir0=${pipedir}/pipeline${FREESURFVER}
+        dir1=${pipedir}/pipeline'${FREESURFVER}'
+    fi
+    echo "s0=${s0}"
+    echo "dir0=${dir0}"
     echo "dir1=${dir1}"
 
+    [ -n "$name" ] && s0=$name
 
-    dir0+=/pipeline${FREESURFVER}
-    #START240107
-    #dir0+=/pipeline'${FREESURFVER}'
-
-    #if((lchostname==0));then
-    #    IFS=$'/' read -ra line2 <<< ${line[1]}
-    #    #echo "line2=${line2[@]}"
-    #    sub0=${line2[-2]}
-    #    #echo "sub0=${sub0}"
-    #fi
-    #START231231
-    #((lchostname==1)) && dir0+=_$(hostname)
-    #START240107
     if((lchostname==1));then
         dir0+=_$(hostname)
         dir1+=_'$(hostname)'
     fi
 
-    #echo "dir0=${dir0}"
-    #exit
-
     mkdir -p ${dir0}
 
-    #START240101
     if((lcdate==1));then
         date0=$(date +%y%m%d)
     elif((lcdate==2));then
         date0=$(date +%y%m%d%H%M%S)
     fi
 
-    #((lcdate==0)) && F0stem=${dir0}/${line[0]////_}_hcp3.27struct || F0stem=${dir0}/${line[0]////_}_hcp3.27struct_${date0} 
-    #((lcdate==0)) && F0stem=${dir0}/${subj}_hcp3.27struct || F0stem=${dir0}/${subj}_hcp3.27struct_${date0} 
-    #START240107
     ((lcdate==0)) && F0stem=${dir0}/${s0}_hcp3.27struct || F0stem=${dir0}/${s0}_hcp3.27struct_${date0} 
 
     F0=${F0stem}.sh
@@ -339,19 +317,9 @@ for((i=0;i<${#dat[@]};++i));do
 
     if [ -n "${bs}" ];then
         echo "    ${F0}"
-
-        #((lcdate==0)) && bs0stem=${dir0}/${line[0]////_}_hcp3.27batch || bs0stem=${dir0}/${line[0]////_}_hcp3.27batch_$(date +%y%m%d) 
-        #START240101
-        #((lcdate==0)) && bs0stem=${dir0}/${subj}_hcp3.27batch || bs0stem=${dir0}/${subj}_hcp3.27batch_${date0} 
-        #START240107
         ((lcdate==0)) && bs0stem=${dir0}/${s0}_hcp3.27batch || bs0stem=${dir0}/${s0}_hcp3.27batch_${date0} 
-
         bs0=${bs0stem}.sh
-
-        #echo -e "$shebang\nset -e\n" > ${bs0} 
-        #START240110
         echo -e "$shebang\nset -e\nexport OGREDIR=$OGREDIR\n" > ${bs0} 
-
         bs1=${bs0stem}_fileout.sh
         echo -e "$shebang\nset -e\n" > ${bs1} 
     fi
@@ -359,29 +327,18 @@ for((i=0;i<${#dat[@]};++i));do
     echo -e "$shebang\nset -e\n" > ${F0} 
     echo -e "$shebang\nset -e\n" > ${F1} 
 
-
     echo -e "#$0 $@\n" >> ${F0}
-
     echo "FREESURFVER=${FREESURFVER}" >> ${F0}
     echo -e export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}'"\n" >> ${F0}
-    echo 'PRE='${PRE} >> ${F0}
-    echo 'FREE='${FREE} >> ${F0}
-    echo 'POST='${POST} >> ${F0}
-    echo -e "SETUP=${SETUP}\n" >> ${F0}
 
-    #echo "sf0=${line[1]}"'${FREESURFVER}' >> ${F0}
-    #START240107
+    echo export OGREDIR=${OGREDIR} >> ${F0}
+    echo PRE='${OGREDIR}'/HCP/scripts/${PRE} >> ${F0}
+    echo FREE='${OGREDIR}'/HCP/scripts/${FREE} >> ${F0}
+    echo POST='${OGREDIR}'/HCP/scripts/${POST} >> ${F0}
+    echo -e SETUP='${OGREDIR}'/HCP/scripts/${SETUP}"\n" >> ${F0}
+
     echo "s0=${s0}" >> ${F0}
     echo "sf0=${dir1}" >> ${F0}
-
-    #if((lchostname==1));then
-    #    echo 's0=$(hostname)' >> ${F0}
-    #else
-    #    echo "s0=${sub0}" >> ${F0}
-    #fi
-    #START240107
-    #echo "s0=${subj}" >> ${F0}
-    #echo "s0=${s0}" >> ${F0}
 
     echo -e "Hires=${Hires}\n" >> ${F0}
 
