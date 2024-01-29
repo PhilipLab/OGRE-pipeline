@@ -141,31 +141,31 @@ if __name__ == "__main__":
                     break
 
         #print(f'dict1.values()={dict1.values()}')
-        [print(value) for value in dict1.values()]
-        print(json.dumps(dict1,indent=4))
-        print(f'cnt={cnt}')
+        #[print(value) for value in dict1.values()]
+        #print(json.dumps(dict1,indent=4))
+        #print(f'cnt={cnt}')
 
         cnt = Counter()
         key0=[]
         for key,val in dict1.items():
             if val.find('epi') != -1 and val.find('acq-dbsi') == -1:
-                print(f'here0 = {val}')
+                #print(f'here0 = {val}')
                 key0.append(key)
                 continue
             if val.find('task-rest') != -1:
                 str_acq='acq-rest'
             else:
                 str_acq='acq-task'
-            print(f'val={val} str_acq={str_acq}')
-            print(f'key0={key0}')
+            #print(f'val={val} str_acq={str_acq}')
+            #print(f'key0={key0}')
             str_cnt = ''
             if cnt[str_acq] > 0: str_cnt = str(cnt[str_acq]+2)
             for k in key0:
                 str0 = dict1[k]
-                print(f'    str0={str0}')
+                #print(f'    str0={str0}')
                 str1=str0.split('dir') 
-                print(f'    str1={str1}')
-                print(f'    str1[0]={str1[0]}')
+                #print(f'    str1={str1}')
+                #print(f'    str1[0]={str1[0]}')
                 dict1[k] = str1[0] + str_acq + str_cnt + '_dir' + str1[1]
             if key0: cnt[str_acq]+=1
             key0.clear()
