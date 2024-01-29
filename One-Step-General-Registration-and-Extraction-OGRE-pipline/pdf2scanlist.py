@@ -27,6 +27,7 @@ def get_protocol(file):
 if __name__ == "__main__":
     import sys
     import argparse
+    import json
 
     parser=argparse.ArgumentParser(description='Convert pdf(s) to a single scanlist.csv.\nRequired: <pdf(s)> -p <protocol.csv>',formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('dat0',metavar='<pdf(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be pdfs.')
@@ -98,6 +99,9 @@ if __name__ == "__main__":
             if plain_text[i].find('PhysioLog') > -1:
                 continue
             for j in dict0: 
+
+                #print(f'j={j}')
+
                 idx = plain_text[i].find(j)
                 if idx > -1:
                     #print(plain_text[i]) 
@@ -110,26 +114,62 @@ if __name__ == "__main__":
 
                     if dict0[j][0] == 'overwrite':
 
-                        #dict1[j] = scan[0] + ',' + name
-                        #START240123
+                        ##dict1[j] = scan[0] + ',' + name
+                        ##START240123
                         dict1[j] = scan[0] + ',' + name0 + dict0[j][2]
 
                     elif dict0[j][0] == 'append':
                         cnt[j] += 1
                          
-                        ##a0 = '-' + str(cnt[j])
-                        ##dict1[j+a0] = scan[0] + ',' + name + a0
-                        ##START240123
-                        a0 = '_run-' + str(cnt[j]) + '_epi'
-                        dict1[j+a0] = scan[0] + ',' + name0 + dict0[j][2] + a0
+                        ###a0 = '-' + str(cnt[j])
+                        ###dict1[j+a0] = scan[0] + ',' + name + a0
+                        ###START240123
+                        #a0 = '_run-' + str(cnt[j]) + '_epi'
+                        #dict1[j+a0] = scan[0] + ',' + name0 + dict0[j][2] + a0
 
-                        ##START240124
-                        #a0 = appendstr[cnt[j]]
-                        #dict1[j+a0] = scan[0] + ',' + name0 + a0 + '_' + dict0[j][2]
-                        #cnt[j] += 1
+                        ###START240124
+                        ##a0 = appendstr[cnt[j]]
+                        ##dict1[j+a0] = scan[0] + ',' + name0 + a0 + '_' + dict0[j][2]
+                        ##cnt[j] += 1
+
+                        dict1[j+'-'+str(cnt[j])] = scan[0] + ',' + name0 + dict0[j][2]
 
                     #print(f'    {scan} {name}') 
+
+                    #dict1[j] = scan[0] + ',' + name0 + dict0[j][2]
+
                     break
+
         #print(f'dict1.values()={dict1.values()}')
+        [print(value) for value in dict1.values()]
+        print(json.dumps(dict1,indent=4))
+        print(f'cnt={cnt}')
+
+        cnt = Counter()
+        key0=[]
+        for key,val in dict1.items():
+            if val.find('epi') != -1 and val.find('acq-dbsi') == -1:
+                print(f'here0 = {val}')
+                key0.append(key)
+                continue
+            if val.find('task-rest') != -1:
+                str_acq='acq-rest'
+            else:
+                str_acq='acq-task'
+            print(f'val={val} str_acq={str_acq}')
+            print(f'key0={key0}')
+            str_cnt = ''
+            if cnt[str_acq] > 0: str_cnt = str(cnt[str_acq]+2)
+            for k in key0:
+                str0 = dict1[k]
+                print(f'    str0={str0}')
+                str1=str0.split('dir') 
+                print(f'    str1={str1}')
+                print(f'    str1[0]={str1[0]}')
+                dict1[k] = str1[0] + str_acq + str_cnt + '_dir' + str1[1]
+            if key0: cnt[str_acq]+=1
+            key0.clear()
+
+
         f0.write('\n'.join(i for i in dict1.values()))
     if args.verbose: print(f'Output written to {args.out}')
