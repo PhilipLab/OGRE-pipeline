@@ -1,6 +1,16 @@
 #!/usr/bin/env bash 
 set -e
 
+#P0=${HCPMOD}/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
+#P1=${HCPMOD}/OGREOneStepResampling.sh
+#P2=${HCPMOD}/OGREIntensityNormalization.sh
+#P3=${HCPMOD}/OGREMotionCorrection.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
+P1=${OGREDIR}/HCP/scripts/OGREOneStepResampling.sh
+P2=${OGREDIR}/HCP/scripts/OGREIntensityNormalization.sh
+P3=${OGREDIR}/HCP/scripts/OGREMotionCorrection.sh
+
 echo "******  START $0 ******"
 
 do_GradientDistortionCorrection=1
@@ -8,11 +18,6 @@ do_MotionCorrection=1
 do_P0=1
 do_P1=1
 do_P2=1
-
-P0=${HCPMOD}/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
-P1=${HCPMOD}/OGREOneStepResampling.sh
-P2=${HCPMOD}/OGREIntensityNormalization.sh
-P3=${HCPMOD}/OGREMotionCorrection.sh
 
 # Requirements for this script
 #  installed versions of: FSL (version 5.0.6), FreeSurfer (version 5.3.0-HCP) , gradunwarp (HCP version 1.0.2) 

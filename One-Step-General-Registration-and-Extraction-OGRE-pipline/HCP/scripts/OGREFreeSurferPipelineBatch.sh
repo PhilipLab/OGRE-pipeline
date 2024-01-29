@@ -1,6 +1,8 @@
 #!/usr/bin/env bash 
 
-P0=OGREFreeSurferPipeline.sh
+#P0=OGREFreeSurferPipeline.sh
+#START240111
+P0=${OGREDIR}/HCP/scripts/OGREFreeSurferPipeline.sh
 
 echo "**** Running $0 ****"
 set -e
@@ -149,7 +151,7 @@ fi
 source ${EnvironmentScript}
 
 #START220211
-P0=${HCPMOD}/${P0}
+#P0=${HCPMOD}/${P0}
 
 # Log the originating call
 echo "$@"

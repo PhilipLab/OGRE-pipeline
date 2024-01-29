@@ -4,28 +4,15 @@
 
 [ -z ${FSLDIR+x} ] && export FSLDIR=/usr/local/fsl
 
-
-
-#[ -z ${FREESURFDIR+x} ] && export FREESURFDIR=/Applications/freesurfer
-#if [ -z ${FREESURFER_HOME+x} ];then
-#    #echo "FREESURFER_HOME not set. Setting to FREESURFER_HOME=${FREESURFDIR}/5.3.0-HCP"
-#    echo "FREESURFER_HOME not set. Setting to FREESURFER_HOME=${FREESURFDIR}/7.3.2"
-#    #export FREESURFER_HOME=${FREESURFDIR}/5.3.0-HCP
-#    export FREESURFER_HOME=${FREESURFDIR}/7.3.2
-#fi
-#echo "FREESURFER_HOME=$FREESURFER_HOME"
-#START230319
 [ -z ${FREESURFDIR+x} ] && export FREESURFDIR=/Applications/freesurfer
-[ -z ${FREESURFVER+x} ] && export FREESURFVER=7.3.2
+[ -z ${FREESURFVER+x} ] && export FREESURFVER=7.4.0
 if [ -z ${FREESURFER_HOME+x} ];then
     echo "FREESURFER_HOME not set. Setting to FREESURFER_HOME=${FREESURFDIR}/${FREESURFVER}"
     export FREESURFER_HOME=${FREESURFDIR}/${FREESURFVER}
 fi
 
-#START230614
 echo "    **** OGRESetUpHCPPipeline.sh FREESURFER_HOME=${FREESURFER_HOME} ****"
-
-
+echo "    **** OGRESetUpHCPPipeline.sh OGREDIR=${OGREDIR} ****"
 
 #echo "This script must be SOURCED to correctly setup the environment prior to running any of the other HCP scripts contained here"
 
@@ -40,13 +27,9 @@ export FSL_DIR="${FSLDIR}"
 source ${FREESURFER_HOME}/SetUpFreeSurfer.sh > /dev/null 2>&1
 
 # Set up specific environment variables for the HCP Pipeline
-export HCPMOD=$HCPDIR/scripts
 export HCPPIPEDIR=$HCPDIR/HCPpipelines-3.27.0
 
-#export CARET7DIR=/Applications/workbench/bin_macosx64
-#START221204
 export CARET7DIR=/Users/Shared/pipeline/HCP/workbench-mac/bin_macosx64
-
 
 export MSMBINDIR=${HOME}/pipeline_tools/MSM-2015.01.14
 export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
