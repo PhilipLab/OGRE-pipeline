@@ -110,11 +110,14 @@ def read_scanlist(file):
                 #print('    **** func ****')
                 #print(f'    **** len(fmap) = {len(fmap)} ****')
                 #print(f'    **** len(fmap)-2 = {len(fmap)-2} ****')
-                if line2[-1].find('SBRef') != -1:
-                    SBRef2.append((file0,len(fmap)-2))
+                if line2[-1].find('sbref') != -1:
+                    #SBRef2.append((file0,len(fmap)-2))
+                    SBRef2.append((file0,int(len(fmap)/2-1)))
                 else:
-                    bold2.append((file0,len(fmap)-2))
+                    #bold2.append((file0,len(fmap)-2))
+                    bold2.append((file0,int(len(fmap)/2-1)))
 
+    print(f'fmap={fmap}')
     print(f'SBRef2={SBRef2}')
     print(f'bold2={bold2}')
     if len(SBRef2) != len(bold2):
@@ -286,6 +289,47 @@ def check_phase_dims(bold,SBRef):
     print(f'dim={dim}')
     return lcSBRef,ped,dim
 
+def check_phase_dims_fmap(bold,SBRef):
+    lcSBRef = []
+    ped = []
+    dim = []
+    for j in range(len(bold)):
+
+        lcSBRef.append(0)
+
+        ped.append(get_phase(bold[j]))
+        ped0 = get_phase(SBRef[j])
+
+        print(f'ped0[0]={ped0[0]}')
+
+        if ped0[0] != ped[j][0]:
+            print(f'    ERROR: {bold[j]} {ped[j][0]}')
+            print(f'    ERROR: {SBRef[j]} {ped0[0]}')
+            print(f'           Fieldmap encoding direction must be the same!')
+            continue
+        if ped0 == ped[j]:
+            print(f'    ERROR: {bold[j]} {ped[j]}')
+            print(f'    ERROR: {SBRef[j]} {ped0}')
+            print(f'           Fieldmap phases must be opposite!')
+            continue
+
+        dim.append(get_dim(bold[j]))
+        dim0 = get_dim(SBRef[j])
+
+        if dim0 != dim[j]:
+            print(f'    ERROR: {bold[j]} {dim[j]}')
+            print(f'    ERROR: {SBRef[j]} {dim0}')
+            print(f'           Dimensions should be the same. Will not use these fieldmaps.')
+            continue
+
+        lcSBRef[j]=1
+
+    print(f'lcSBRef={lcSBRef}')
+    print(f'ped={ped}')
+    print(f'dim={dim}')
+    return lcSBRef,ped,dim
+
+
 
 if __name__ == "__main__":
     get_env_vars()
@@ -445,10 +489,10 @@ if __name__ == "__main__":
         #lcSBRef2,ped,dim = check_phase_dims(bold2,SBRef2)
         lcSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
 
-
-        #lcfmap,ped_fmap,dim_fmap = check_phase_dims(fmap[0::2],fmap[1::2])
+        lcfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
         #need to first check that letter is the same (ie j and j), then check for opposite signs (ie - and +)
         
+        exit()
 
 
 

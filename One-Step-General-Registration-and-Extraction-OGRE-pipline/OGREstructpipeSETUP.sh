@@ -20,8 +20,8 @@ SETUP=OGRESetUpHCPPipeline.sh
 #Resolution. options: 1, 0.7 or 0.8
 Hires=1
 
-T1SEARCHSTR=t1
-T2SEARCHSTR=t2
+T1SEARCHSTR=T1w
+T2SEARCHSTR=T2w
 
 function join_by {
   local d=${1-} f=${2-}
@@ -84,7 +84,7 @@ helpmsg(){
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, or 7.4.0. Default is 7.3.2 unless set elsewhere via variable FREESURFVER."
     echo "    -p --pipedir -pipedir"
     echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
-    echo "        Optional. Default if <scanlist.csv path>."
+    echo "        Optional. Default is <scanlist.csv path>."
     echo "    -n --name -name"
     echo "        Use with -pipedir to provide the subject name."
     echo "        If not provided, then root of scanlist.csv."
@@ -256,7 +256,7 @@ for((i=0;i<${#dat[@]};++i));do
             continue
         fi
     fi
-    echo "T1f = ${T1f}"
+    #echo "T1f = ${T1f}"
     if [ -z "${T2f}" ];then 
         echo -e "    WARNING: T2 not found with searchstr = \"${T2SEARCHSTR}\""
     else
@@ -266,32 +266,42 @@ for((i=0;i<${#dat[@]};++i));do
             unset T2f
         fi
     fi
-    [ -n "${T2f}" ] && echo "T2f = ${T2f}"
+    #[ -n "${T2f}" ] && echo "T2f = ${T2f}"
 
     if [ -z "$pipedir" ];then
-        idx=1
-        unset dir0 dir1
-        #If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not a path then extract the current working directory and if path ../ then set idx=2
-        [[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir1=$(pwd) && [[ "${dir0}" == ".." ]] && idx=2
-        [ -n ${dir1} ] && dir0=${dir1}
-        echo "initial dir0=${dir0}"
-        echo "idx=${idx}"
-
+        #idx=1
+        #unset dir0 dir1
+        ##If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not a path then extract the current working directory and if path ../ then set idx=2
+        #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir1=$(pwd) && [[ "${dir0}" == ".." ]] && idx=2
+        #[ -n ${dir1} ] && dir0=${dir1}
+        #echo "initial dir0=${dir0}"
+        #echo "idx=${idx}"
+        #
+        #IFS='/' read -ra subj <<< "${dir0}"
+        #s0=${subj[${#subj[@]}-$idx]}
+        #
+        #T1f=${T1f//${s0}/'${s0}'}
+        #T2f=${T2f//${s0}/'${s0}'}
+        #
+        #dir0=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/${s0}/pipeline${FREESURFVER}
+        #dir1=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/'${s0}'/pipeline'${FREESURFVER}'
+        #START240127
+        datf=$(readlink -f ${dat[i]})
+        dir0=${datf%/*}
         IFS='/' read -ra subj <<< "${dir0}"
-        s0=${subj[${#subj[@]}-$idx]}
-
+        s0=${subj[${#subj[@]}-1]}
         T1f=${T1f//${s0}/'${s0}'}
         T2f=${T2f//${s0}/'${s0}'}
+        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
+        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
 
-        dir0=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/${s0}/pipeline${FREESURFVER}
-        dir1=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/'${s0}'/pipeline'${FREESURFVER}'
     else
         dir0=${pipedir}/pipeline${FREESURFVER}
         dir1=${pipedir}/pipeline'${FREESURFVER}'
     fi
-    echo "s0=${s0}"
-    echo "dir0=${dir0}"
-    echo "dir1=${dir1}"
+    #echo "s0=${s0}"
+    #echo "dir0=${dir0}"
+    #echo "dir1=${dir1}"
 
     [ -n "$name" ] && s0=$name
 
@@ -312,8 +322,8 @@ for((i=0;i<${#dat[@]};++i));do
 
     F0=${F0stem}.sh
     F1=${F0stem}_fileout.sh
-    echo  "F0=${F0}"
-    echo  "F1=${F1}"
+    #echo  "F0=${F0}"
+    #echo  "F1=${F1}"
 
     if [ -n "${bs}" ];then
         echo "    ${F0}"
@@ -350,7 +360,6 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    --T2='${T2f}' \' >> ${F0}
     echo '    --GREfieldmapMag="NONE" \' >> ${F0}
     echo '    --GREfieldmapPhase="NONE" \' >> ${F0}
-    echo '    --EnvironmentScript=${SETUP} \' >> ${F0}
     echo '    --Hires=${Hires} \' >> ${F0}
     echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
 
@@ -375,6 +384,10 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
     echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
     echo "fi" >> ${F1}
+
+    #START240127
+    echo "cd ${dir0}" >> ${F1} 
+
     echo ${F0}' >> ${out} 2>&1 &' >> ${F1}
 
     chmod +x ${F0}
@@ -392,9 +405,14 @@ for((i=0;i<${#dat[@]};++i));do
         echo "    Output written to ${bs1}"
     fi
     if((lcautorun==1));then
-        cd ${dir0}
+
+        #cd ${dir0}
+        #echo "    ${F1} has been executed"
+        #cd ${wd0} #"cd -" echoes the path
+        #START240127
+        ${F1}
         echo "    ${F1} has been executed"
-        cd ${wd0} #"cd -" echoes the path
+
     fi
 done
 
