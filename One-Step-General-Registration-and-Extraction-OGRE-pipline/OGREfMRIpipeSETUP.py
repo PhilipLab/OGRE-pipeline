@@ -257,12 +257,13 @@ def check_phase_dims(bold2,SBRef2):
 """
 
 def check_phase_dims(bold,SBRef):
-    lcSBRef = []
+    #lcSBRef = []
+    bSBRef = [False]*len(bold)
     ped = []
     dim = []
     for j in range(len(bold)):
 
-        lcSBRef.append(0)
+        #lcSBRef.append(0)
 
         ped.append(get_phase(bold[j]))
         ped0 = get_phase(SBRef[j])
@@ -282,20 +283,26 @@ def check_phase_dims(bold,SBRef):
             print(f'           Dimensions should be the same. Will not use this SBRef.')
             continue
 
-        lcSBRef[j]=1
+        #lcSBRef[j]=1
+        bSBRef[j]=True
 
-    print(f'lcSBRef={lcSBRef}')
+    #print(f'lcSBRef={lcSBRef}')
+    print(f'bSBRef={bSBRef}')
     print(f'ped={ped}')
     print(f'dim={dim}')
-    return lcSBRef,ped,dim
+    return bSBRef,ped,dim
 
 def check_phase_dims_fmap(bold,SBRef):
-    lcSBRef = []
+
+    #lcSBRef = []
+    #lcSBRef = [0]*len(bold)
+    bSBRef = [False]*len(bold)
+
     ped = []
     dim = []
     for j in range(len(bold)):
 
-        lcSBRef.append(0)
+        #lcSBRef.append(0)
 
         ped.append(get_phase(bold[j]))
         ped0 = get_phase(SBRef[j])
@@ -322,12 +329,43 @@ def check_phase_dims_fmap(bold,SBRef):
             print(f'           Dimensions should be the same. Will not use these fieldmaps.')
             continue
 
-        lcSBRef[j]=1
+        #lcSBRef[j]=1
+        bSBRef[j]=True
 
-    print(f'lcSBRef={lcSBRef}')
+    #print(f'lcSBRef={lcSBRef}')
+    print(f'bSBRef={bSBRef}')
     print(f'ped={ped}')
     print(f'dim={dim}')
-    return lcSBRef,ped,dim
+    #return lcSBRef,ped,dim
+    return bSBRef,ped,dim
+
+#def check_ped_dims(bold,ped,dim,lcfmap,ped_fmap,dim_fmap,fmap):
+def check_ped_dims(bold,ped,dim,bfmap,ped_fmap,dim_fmap,fmap):
+    #lcbold_fmap=[0]*len(ped)
+    bbold_fmap=[False]*len(ped)
+    #if sum(lcfmap) > 0:
+    if any(bfmap):
+        for j in range(len(ped)):
+            #if lcfmap[bold[j][1]] == 0:  
+            if bfmap[bold[j][1]]:  
+                if dim[j] != dim_fmap[bold[j][1]]:
+                    print(f'    ERROR: {bold[j][0]} {dim[j]}')
+                    print(f'    ERROR: {fmap[bold[j][1]]} {dim_fmap[bold[j][1]]}')
+                    print(f'           Dimensions should be the same. Will not use these fieldmaps.')
+                    continue
+                if ped[j][0] != ped_fmap[bold[j][1]][0]:
+                    print(f'    ERROR: {bold[j][0]} {ped[j][0]}')
+                    print(f'    ERROR: {fmap[bold[j][1]]} {ped_fmap[bold[j][1]][0]}')
+                    print(f'           Fieldmap encoding direction must be the same!')
+                    continue
+                #lcbold_fmap[j]=1  
+                bbold_fmap[j]=True  
+
+    #print(f'lcbold_fmap={lcbold_fmap}')
+    print(f'bbold_fmap={bbold_fmap}')
+    #return lcbold_fmap
+    return bbold_fmap
+
 
 
 
@@ -487,10 +525,12 @@ if __name__ == "__main__":
         fmap,SBRef2,bold2 = read_scanlist(i)
 
         #lcSBRef2,ped,dim = check_phase_dims(bold2,SBRef2)
-        lcSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
+        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
 
-        lcfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
-        #need to first check that letter is the same (ie j and j), then check for opposite signs (ie - and +)
+        #lcfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
+        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
+
+        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
         
         exit()
 
