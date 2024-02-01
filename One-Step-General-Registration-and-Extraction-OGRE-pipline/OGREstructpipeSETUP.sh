@@ -30,32 +30,6 @@ function join_by {
   fi
 }
 
-#UNTESTED
-#https://stackoverflow.com/questions/3915040/how-to-obtain-the-absolute-path-of-a-file-via-shell-bash-zsh-sh
-#get_abs_filename() {
-#  # $1 : relative filename
-#  filename=$1
-#  parentdir=$(dirname "${filename}")
-#
-#  if [ -d "${filename}" ]; then
-#      echo "$(cd "${filename}" && pwd)"
-#  elif [ -d "${parentdir}" ]; then
-#    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
-#  fi
-#}
-#function get_abs_filename {
-#  filename=$1
-#  parentdir=$(dirname "${filename}")
-#
-#  if [ -d "${filename}" ]; then
-#      echo "$(cd "${filename}" && pwd)"
-#  elif [ -d "${parentdir}" ]; then
-#    echo "$(cd "${parentdir}" && pwd)/$(basename "${filename}")"
-#  fi
-#}
-
-
-
 root0=${0##*/}
 helpmsg(){
     echo "Required: ${root0} <scanlist.csv file(s)>"
@@ -269,31 +243,29 @@ for((i=0;i<${#dat[@]};++i));do
     #[ -n "${T2f}" ] && echo "T2f = ${T2f}"
 
     if [ -z "$pipedir" ];then
-        #idx=1
-        #unset dir0 dir1
-        ##If scanlist.csv includes a path, then extract the path, however if the path is ./ or ../ or there is not a path then extract the current working directory and if path ../ then set idx=2
-        #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} && [[ ! "${dir0}" =~ [.]+ ]] || dir1=$(pwd) && [[ "${dir0}" == ".." ]] && idx=2
-        #[ -n ${dir1} ] && dir0=${dir1}
-        #echo "initial dir0=${dir0}"
-        #echo "idx=${idx}"
-        #
-        #IFS='/' read -ra subj <<< "${dir0}"
-        #s0=${subj[${#subj[@]}-$idx]}
-        #
-        #T1f=${T1f//${s0}/'${s0}'}
-        #T2f=${T2f//${s0}/'${s0}'}
-        #
-        #dir0=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/${s0}/pipeline${FREESURFVER}
-        #dir1=/$(join_by / ${subj[@]::${#subj[@]}-$idx})/'${s0}'/pipeline'${FREESURFVER}'
-        #START240127
         datf=$(readlink -f ${dat[i]})
         dir0=${datf%/*}
         IFS='/' read -ra subj <<< "${dir0}"
         s0=${subj[${#subj[@]}-1]}
         T1f=${T1f//${s0}/'${s0}'}
         T2f=${T2f//${s0}/'${s0}'}
-        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
-        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+
+
+        #dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
+        #dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+        #START240131
+        if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
+            dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
+            dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+        else
+            for j in "${!subj[@]}";do
+                if [[ "${subj[j]}" = "raw_data" ]];then
+                    dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}
+                    dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'
+                    break
+                fi
+            done
+        fi
 
     else
         dir0=${pipedir}/pipeline${FREESURFVER}

@@ -374,6 +374,7 @@ if __name__ == "__main__":
 
     fwhm=0
     paradigm_hp_sec=0
+    bhostname=False
 
     import argparse
     parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
@@ -411,8 +412,8 @@ if __name__ == "__main__":
     parser.add_argument('-V','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER','--freesurferVersion','-freesurferVersion',dest='FREESURFVER',metavar='FreeSurferVersion', \
         help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0'])
 
-    hlchostname='Flag. Use machine name instead of user named file.'
-    parser.add_argument('-m','--HOSTNAME',dest='lchostname',action='store_true',help=hlchostname)
+    hbhostname='Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003'
+    parser.add_argument('-m','--HOSTNAME',dest='bhostname',action='store_true',help=hbhostname)
 
     hlcdate='Flag. Add date (YYMMDD) to name of output script.'
     parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate,default=0)
@@ -459,16 +460,12 @@ if __name__ == "__main__":
         args.dat=args.dat0
     else:
         exit()
+    args.dat = [os.path.abspath(i) for i in args.dat]
 
-
-    #START240114
     if args.OGREDIR: OGREDIR = args.OGREDIR
     if not 'OGREDIR' in locals():
         print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
         exit()
-
-
-#STARTHERE
 
     if fwhm==0 and not args.lcfeatadapter: 
         print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
@@ -521,20 +518,59 @@ if __name__ == "__main__":
         bs.write(f'{SHEBANG}\n')
     """
 
+    if args.lcdate == 1:
+        date0 = datetime.today().strftime("%y%m%d")
+        print(f'date0 = {date0}')
+    elif args.lcdate == 2:
+        date0 = datetime.today().strftime("%y%m%d%H%M%S")
+        print(f'date0 = {date0}')
+
+    if not args.lcfeatadapter: 
+        if not args.lcsmoothonly: 
+            l0 = 'hcp3.27fMRIvol' 
+        else: 
+            l0 = 'smooth'
+    else:
+        l0 = 'FEATADAPTER'
+
     for i in args.dat:
         fmap,SBRef2,bold2 = read_scanlist(i)
 
-        #lcSBRef2,ped,dim = check_phase_dims(bold2,SBRef2)
         bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
 
-        #lcfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
         bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
 
         bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
+
+        idx = i.find('sub-')
+        if idx != -1:
+            s0 = i[idx: idx + i[idx:].find('/')]
+            print(f's0={s0}')
         
+
+        idx = i.find('raw_data')
+        if idx == -1:
+            pass
+        else:
+            print(i[:idx])
+            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
+            dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
+            print(f'dir0={dir0}\ndir1={dir1}')
+
+        if bhostname:
+            hostname = run_cmd('hostname')
+            dir0 += '_' + hostname 
+            dir1 += '_$(hostname)' 
+
+        F0stem = dir0 + '/' + s0 + '_' + l0
+        if args.lcdate > 0: F0stem += '_' + date0 
+
+        F0stem += '.sh'
+        F1stem = F0stem + '_fileout.sh'
+        print(f'F0stem={F0stem}\nF1stem={F1stem}')
+
+
         exit()
-
-
 
 """
             with open(i[j],encoding="utf8",errors='ignore') as f0:
