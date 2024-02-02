@@ -76,6 +76,13 @@ def get_env_vars():
         pass 
 
 
+#STARTHERE
+class Scans:
+    def __init__(self,file)
+        read_scanlist
+
+    def read_scanlist(self,file):
+
 
 
 #START240115
@@ -518,12 +525,22 @@ if __name__ == "__main__":
         bs.write(f'{SHEBANG}\n')
     """
 
-    if args.lcdate == 1:
-        date0 = datetime.today().strftime("%y%m%d")
+    #if args.lcdate == 1:
+    #    date0 = datetime.today().strftime("%y%m%d")
+    #    print(f'date0 = {date0}')
+    #elif args.lcdate == 2:
+    #    date0 = datetime.today().strftime("%y%m%d%H%M%S")
+    #    print(f'date0 = {date0}')
+    #START240201
+    datestr = ''
+    if args.lcdate > 0:
+        if args.lcdate == 1:
+            date0 = datetime.today().strftime("%y%m%d")
+        elif args.lcdate == 2:
+            date0 = datetime.today().strftime("%y%m%d%H%M%S")
         print(f'date0 = {date0}')
-    elif args.lcdate == 2:
-        date0 = datetime.today().strftime("%y%m%d%H%M%S")
-        print(f'date0 = {date0}')
+        datestr = '_' + date0
+
 
     if not args.lcfeatadapter: 
         if not args.lcsmoothonly: 
@@ -562,12 +579,45 @@ if __name__ == "__main__":
             dir0 += '_' + hostname 
             dir1 += '_$(hostname)' 
 
-        F0stem = dir0 + '/' + s0 + '_' + l0
-        if args.lcdate > 0: F0stem += '_' + date0 
+        stem0 = dir0 + '/' + s0
+        #str0 = stem0 + '_' + l0
+        #if args.lcdate > 0: str0 += '_' + date0 
+        str0 = stem0 + '_' + l0 + datestr
 
-        F0stem += '.sh'
-        F1stem = F0stem + '_fileout.sh'
-        print(f'F0stem={F0stem}\nF1stem={F1stem}')
+        F0 = [str0 + '.sh']
+        F1 = str0 + '_fileout.sh'
+        print(f'F0={F0}\nF1={F1}')
+
+        if not args.lcfeatadapter and args.fsf1: 
+            str0 = stem0 + '_FEATADAPTER' + datestr
+            F0.append(str0 + '.sh')
+
+        if args.bs:
+            str0 = stem0 + '_hcp3.27batch' + datestr
+            bs0 = str0 + '.sh'
+            if not os.path.isfile(bs0):
+                mode0 = 'wt'
+            else:
+                mode0 = 'at'
+            bsf0 = open(bs0,mode=mode0,encoding="utf8")
+            if not os.path.isfile(bs0): bsf0.write(f'{SHEBANG}\n')
+            bs1 = str0 + '_fileout.sh'
+            bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
+            bsf1.write(f'{SHEBANG}\nset -e\n')
+
+#        ind_task = check_bolds(d0.task, d0.task_SBRef)
+#        print(f'ind_task = {ind_task}')
+#        print(f'd0.task = {d0.task}')
+#        print(f'd0.task_SBRef = {d0.task_SBRef}')
+#
+#        ind_rest = check_bolds(d0.rest, d0.rest_SBRef)
+#        print(f'ind_rest = {ind_rest}')
+#        print(f'd0.rest = {d0.rest}')
+#        print(f'd0.rest_SBRef = {d0.rest_SBRef}')
+#
+#        if not args.lcfeatadapter:
+#            ind_task_SBRef, ped_task = check_phase_dims(d0.task,d0.task_SBRef,ind_task)
+#            ind_rest_SBRef, ped_rest = check_phase_dims(d0.rest,d0.rest_SBRef,ind_rest)
 
 
         exit()
