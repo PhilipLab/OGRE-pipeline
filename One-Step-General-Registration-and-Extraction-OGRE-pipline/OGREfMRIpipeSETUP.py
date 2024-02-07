@@ -78,13 +78,151 @@ def get_env_vars():
 
 #STARTHERE
 class Scans:
-    def __init__(self,file)
-        read_scanlist
+    def __init__(self,file):
+        self.fmap = []
+        self.sbref = []
+        self.bold = [] 
+        self.taskidx = []
+        self.restidx = []
 
-    def read_scanlist(self,file):
+#        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
+#        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
+#        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
+
+
+        with open(file,encoding="utf8",errors='ignore') as f0:
+            i=-1
+            for line0 in f0:
+                i+=1
+                if not line0.strip() or line0.startswith('#'): continue
+                #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
+                line1 = re.findall(r'[^,\s]+', line0)
+                print(line1[1])
+                file0 = line1[1] + '.nii.gz'
+                if not os.path.isfile(file0):
+                    print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i+1}')
+                    exit()
+
+                line2=file0.split('/')
+                if line2[-2] == 'fmap':
+                    if line2[-1].find('dbsi') == -1:
+                        self.fmap.append(file0)
+                elif line2[-2] == 'func':
+                    if line2[-1].find('sbref') != -1:
+                        self.sbref.append((file0,int(len(self.fmap)/2-1)))
+                    else:
+                        self.bold.append((file0,int(len(self.fmap)/2-1)))
+                        if line2[-1].find('task-rest') != -1:
+                            self.taskidx.append(i)
+                        else:
+                            self.restidx.append(i)
+
+        if len(self.sbref) != len(self.bold):
+            print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
+            exit()
+        print(f'self.fmap={self.fmap}')
+        print(f'self.sbref={self.sbref}')
+        print(f'self.bold={self.bold}')
+        print(f'self.taskidx={self.taskidx}')
+        print(f'self.restidx={self.restidx}')
+
+#        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
+#        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
+#        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
+class Par:
+    def __init__(self,lenbold,lenfmap0):
+        self.bsbref = [False]*lenbold
+        self.ped = []
+        self.dim = []
+        self.bfmap = [False]*lenfmap0
+        self.ped_fmap = []
+        self.dim_fmap = []
+        self.bbold_fmap = []
+
+    def check_phase_dims(self,bold,sbref):
+        for j in range(len(bold)):
+            self.ped.append(get_phase(bold[j]))
+            ped0 = get_phase(sbref[j])
+
+            if ped0 != self.ped[j]:
+                print(f'    ERROR: {bold[j]} {self.ped[j]}')
+                print(f'    ERROR: {sbref[j]} {ped0}')
+                print(f'           Phases should be the same. Will not use this SBRef.')
+                continue
+
+            self.dim.append(get_dim(bold[j]))
+            dim0 = get_dim(sbref[j])
+    
+            if dim0 != self.dim[j]:
+                print(f'    ERROR: {bold[j]} {self.dim[j]}')
+                print(f'    ERROR: {sbref[j]} {dim0}')
+                print(f'           Dimensions should be the same. Will not use this SBRef.')
+                continue
+
+            self.bsbref[j]=True
+
+        print(f'bsbref={self.bsbref}')
+        print(f'ped={self.ped}')
+        print(f'dim={self.dim}')
+
+    def check_phase_dims_fmap(self,fmap0,fmap1):
+        for j in range(len(fmap0)):
+            self.ped_fmap.append(get_phase(fmap0[j]))
+            ped0 = get_phase(fmap1[j])
+
+            #print(f'ped0[0]={ped0[0]}')
+
+            if ped0[0] != self.ped_fmap[j][0]:
+                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j][0]}')
+                print(f'    ERROR: {fmap1[j]} {ped0[0]}')
+                print(f'           Fieldmap encoding direction must be the same!')
+                continue
+            if ped0 == self.ped_fmap[j]:
+                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j]}')
+                print(f'    ERROR: {fmap1[j]} {ped0}')
+                print(f'           Fieldmap phases must be opposite!')
+                continue
+
+            self.dim_fmap.append(get_dim(fmap0[j]))
+            dim0 = get_dim(fmap1[j])
+
+            if dim0 != self.dim_fmap[j]:
+                print(f'    ERROR: {fmap0[j]} {self.dim_fmap[j]}')
+                print(f'    ERROR: {fmap1[j]} {dim0}')
+                print(f'           Dimensions should be the same. Will not use these fieldmaps.')
+                continue
+
+            self.bfmap[j]=True
+
+        print(f'bfmap={self.bfmap}')
+        print(f'ped_fmap={self.ped_fmap}')
+        print(f'dim_fmap={self.dim_fmap}')
+
+    def check_ped_dims(self,bold,fmap):
+        self.bbold_fmap=[False]*len(self.ped)
+        if any(self.bfmap):
+            for j in range(len(self.ped)):
+                if self.bfmap[bold[j][1]]:
+                    if self.dim[j] != self.dim_fmap[bold[j][1]]:
+                        print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
+                        print(f'    ERROR: {fmap[bold[j][1]]} {self.dim_fmap[bold[j][1]]}')
+                        print(f'           Dimensions should be the same. Will not use these fieldmaps.')
+                        continue
+                    if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
+                        print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
+                        print(f'    ERROR: {fmap[bold[j][1]]} {self.ped_fmap[bold[j][1]][0]}')
+                        print(f'           Fieldmap encoding direction must be the same!')
+                        continue
+                    self.bbold_fmap[j]=True
+        print(f'bbold_fmap={self.bbold_fmap}')
 
 
 
+
+
+
+
+"""
 #START240115
 def read_scanlist(file):
     with open(file,encoding="utf8",errors='ignore') as f0:
@@ -132,6 +270,7 @@ def read_scanlist(file):
         exit()
                 
     return fmap,SBRef2,bold2
+"""
 
 
 #**** dat file is stored here ****
@@ -231,47 +370,11 @@ def get_dim(file):
     return (line1[1],line1[3],line1[5])
 
 """
-def check_phase_dims(bold2,SBRef2):
-    lcSBRef2 = []
-    ped = []
-    dim = []
-    for j in range(len(bold2)):
-
-        lcSBRef2.append(0)
-
-        ped.append(get_phase(bold2[j][0]))
-        ped0 = get_phase(SBRef2[j][0])
-
-        if ped0 != ped[j]:
-            print(f'    ERROR: {bold2[j][0]} {ped[j]}')
-            print(f'    ERROR: {SBRef2[j][0]} {ped0}')
-            print(f'           Phases should be the same. Will not use this SBRef.')
-            continue
-
-        dim.append(get_dim(bold2[j][0]))
-        dim0 = get_dim(SBRef2[j][0])
-
-        if dim0 != dim[j]:
-            print(f'    ERROR: {bold2[j][0]} {dim[j]}')
-            print(f'    ERROR: {SBRef2[j][0]} {dim0}')
-            print(f'           Dimensions should be the same. Will not use this SBRef.')
-            continue
-
-        lcSBRef2[j]=1
-
-    print(f'lcSBRef2={lcSBRef2}')
-    return lcSBRef2,ped,dim
-"""
-
 def check_phase_dims(bold,SBRef):
-    #lcSBRef = []
     bSBRef = [False]*len(bold)
     ped = []
     dim = []
     for j in range(len(bold)):
-
-        #lcSBRef.append(0)
-
         ped.append(get_phase(bold[j]))
         ped0 = get_phase(SBRef[j])
 
@@ -290,27 +393,18 @@ def check_phase_dims(bold,SBRef):
             print(f'           Dimensions should be the same. Will not use this SBRef.')
             continue
 
-        #lcSBRef[j]=1
         bSBRef[j]=True
 
-    #print(f'lcSBRef={lcSBRef}')
     print(f'bSBRef={bSBRef}')
     print(f'ped={ped}')
     print(f'dim={dim}')
     return bSBRef,ped,dim
 
 def check_phase_dims_fmap(bold,SBRef):
-
-    #lcSBRef = []
-    #lcSBRef = [0]*len(bold)
     bSBRef = [False]*len(bold)
-
     ped = []
     dim = []
     for j in range(len(bold)):
-
-        #lcSBRef.append(0)
-
         ped.append(get_phase(bold[j]))
         ped0 = get_phase(SBRef[j])
 
@@ -336,21 +430,15 @@ def check_phase_dims_fmap(bold,SBRef):
             print(f'           Dimensions should be the same. Will not use these fieldmaps.')
             continue
 
-        #lcSBRef[j]=1
         bSBRef[j]=True
 
-    #print(f'lcSBRef={lcSBRef}')
     print(f'bSBRef={bSBRef}')
     print(f'ped={ped}')
     print(f'dim={dim}')
-    #return lcSBRef,ped,dim
     return bSBRef,ped,dim
 
-#def check_ped_dims(bold,ped,dim,lcfmap,ped_fmap,dim_fmap,fmap):
 def check_ped_dims(bold,ped,dim,bfmap,ped_fmap,dim_fmap,fmap):
-    #lcbold_fmap=[0]*len(ped)
     bbold_fmap=[False]*len(ped)
-    #if sum(lcfmap) > 0:
     if any(bfmap):
         for j in range(len(ped)):
             #if lcfmap[bold[j][1]] == 0:  
@@ -367,11 +455,9 @@ def check_ped_dims(bold,ped,dim,bfmap,ped_fmap,dim_fmap,fmap):
                     continue
                 #lcbold_fmap[j]=1  
                 bbold_fmap[j]=True  
-
-    #print(f'lcbold_fmap={lcbold_fmap}')
     print(f'bbold_fmap={bbold_fmap}')
-    #return lcbold_fmap
     return bbold_fmap
+"""
 
 
 
@@ -551,13 +637,14 @@ if __name__ == "__main__":
         l0 = 'FEATADAPTER'
 
     for i in args.dat:
-        fmap,SBRef2,bold2 = read_scanlist(i)
 
-        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
+        #fmap,SBRef2,bold2 = read_scanlist(i)
+        #bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
+        #bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
+        #bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
+        #START240201
+        scans = Scans(i)
 
-        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
-
-        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
 
         idx = i.find('sub-')
         if idx != -1:
@@ -619,7 +706,16 @@ if __name__ == "__main__":
 #            ind_task_SBRef, ped_task = check_phase_dims(d0.task,d0.task_SBRef,ind_task)
 #            ind_rest_SBRef, ped_rest = check_phase_dims(d0.rest,d0.rest_SBRef,ind_rest)
 
+        if not args.lcfeatadapter:
+            #bsbref,ped,dim = check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
+            #bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+            #bbold_fmap = check_ped_dims(scans.bold,ped,dim,bfmap,ped_fmap,dim_fmap,scans.fmap[0::2])
+            par = Par(len(scans.bold),int(len(scans.fmap)/2))
+            par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
+            par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+            par.check_ped_dims(scans.bold,scans.fmap[0::2])
 
+            print(f'len(scans.bold)={len(scans.bold)}')
         exit()
 
 """
