@@ -251,9 +251,6 @@ for((i=0;i<${#dat[@]};++i));do
         T2f=${T2f//${s0}/'${s0}'}
 
 
-        #dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
-        #dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
-        #START240131
         if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
             dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
             dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'

@@ -76,7 +76,6 @@ def get_env_vars():
         pass 
 
 
-#STARTHERE
 class Scans:
     def __init__(self,file):
         self.fmap = []
@@ -84,11 +83,6 @@ class Scans:
         self.bold = [] 
         self.taskidx = []
         self.restidx = []
-
-#        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
-#        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
-#        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
-
 
         with open(file,encoding="utf8",errors='ignore') as f0:
             i=-1
@@ -138,6 +132,10 @@ class Par:
         self.ped_fmap = []
         self.dim_fmap = []
         self.bbold_fmap = []
+
+        #START240207 
+        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
+        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
 
     def check_phase_dims(self,bold,sbref):
         for j in range(len(bold)):
@@ -193,6 +191,9 @@ class Par:
                 continue
 
             self.bfmap[j]=True
+            if self.ped_fmap[j][1] == '+': 
+                self.fmapnegidx[j]=1
+                self.fmapposidx[j]=0
 
         print(f'bfmap={self.bfmap}')
         print(f'ped_fmap={self.ped_fmap}')
@@ -222,141 +223,14 @@ class Par:
                             junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
                             self.dim_fmap[bold[j][1]] = self.dim[j]
                             fmap[j] = fmap0
-
-#STARTHERE
-
                     self.bbold_fmap[j]=True
         print(f'bbold_fmap={self.bbold_fmap}')
 
 
 
 
-
-
-
-"""
-#START240115
-def read_scanlist(file):
-    with open(file,encoding="utf8",errors='ignore') as f0:
-        fmap = []
-        SBRef2 = []
-        bold2 = [] 
-        i=1
-        for line0 in f0:
-            if not line0.strip() or line0.startswith('#'): continue
-            #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
-            line1 = re.findall(r'[^,\s]+', line0)
-            print(line1[1])
-            file0 = line1[1] + '.nii.gz'
-            if not os.path.isfile(file0):
-                print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
-                exit()
-            i+=1
-         
-            #line1=file0.split('/')
-            #print(f'line1={line1}')
-            #print(f'line1[-2]={line1[-2]}')
-
-            #line1=file0.split('/')[-2]
-            line2=file0.split('/')
-            if line2[-2] == 'fmap':
-                if line2[-1].find('dbsi') == -1:
-                    print('    **** fmap ****')
-                    fmap.append(file0)
-            elif line2[-2] == 'func':
-                #print('    **** func ****')
-                #print(f'    **** len(fmap) = {len(fmap)} ****')
-                #print(f'    **** len(fmap)-2 = {len(fmap)-2} ****')
-                if line2[-1].find('sbref') != -1:
-                    #SBRef2.append((file0,len(fmap)-2))
-                    SBRef2.append((file0,int(len(fmap)/2-1)))
-                else:
-                    #bold2.append((file0,len(fmap)-2))
-                    bold2.append((file0,int(len(fmap)/2-1)))
-
-    print(f'fmap={fmap}')
-    print(f'SBRef2={SBRef2}')
-    print(f'bold2={bold2}')
-    if len(SBRef2) != len(bold2):
-        print(f'There are {len(SBRef2)} reference files and {len(bold2)} bolds. Must be equal. Abort!')
-        exit()
-                
-    return fmap,SBRef2,bold2
-"""
-
-
-#**** dat file is stored here ****
-class Dat:
-    def __init__(self,dict0):
-        assumed = ['SUBNAME','OUTDIR','T1','T2','FM1','FM2']
-        for key in assumed:
-            setattr(self, key, dict0[key])
-            dict0.pop(key, None)
-        print(f'dict0 = {dict0}')
-
-        self.task_SBRef = []
-        self.task = []
-        self.rest_SBRef = []
-        self.rest = []
-        assumed = ['SBRef','rest']
-        for key in dict0:
-            if key.find(assumed[0]) != -1:
-                if key.find(assumed[1]) != -1:
-                    self.rest_SBRef.append(dict0.get(key))
-                else:
-                    self.task_SBRef.append(dict0.get(key))
-            else:
-                if key.find(assumed[1]) != -1:
-                    self.rest.append(dict0.get(key))
-                else:
-                    self.task.append(dict0.get(key))
-
-#def main(file):
-#    with open(file,encoding="utf8",errors='ignore') as f0:
-#        for line0 in f0:
-#            if not line0.strip() or line0.startswith('#'): continue
-#            #print(line0.split())
-#            if not 'keys' in locals():
-#                keys = line0.split()
-#            else:
-#                dict0 = dict(zip(keys,line0.split()))
-#                #print(f'dict0 = {dict0}')
-#                d0 = Dat(dict0)
-#                print(f'd0 = {vars(d0)}')
-
-#def dat2dictlist:
-#    dictlist = []
-#    with open(file,encoding="utf8",errors='ignore') as f0:
-#        for line0 in f0:
-#            if not line0.strip() or line0.startswith('#'): continue
-#            if not 'keys' in locals():
-#                keys = line0.split()
-#            else:
-#                dictlist.append(dict(zip(keys,line0.split())))
-
 def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
-
-#def check_bolds(bold,bold_SBRef):
-#    ind = []
-#    for k in range(len(bold)):
-#        if bold[k] != 'NONE' and bold[k] != 'NOTUSEABLE':
-#            if not os.path.isfile(bold[k]):
-#                print(f'{bold[k]} does not exist.')
-#            else:
-#                ind.append(1)
-#                if bold_SBRef[k] != 'NONE' and bold_SBRef[k] != 'NOTUSEABLE':
-#                    if not os.path.isfile(bold_SBRef[k]):
-#                        print(f'{bold_SBRef[k]} does not exist.')
-#                        bold_SBRef[k] = 'NONE'
-#                continue;
-#        ind.append(0)
-#    return ind
-
-
-
-
-
 
 def get_phase(file):
     jsonf = file.split('.')[0] + '.json'
@@ -380,98 +254,6 @@ def get_dim(file):
     line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
     line1=line0.split()
     return (line1[1],line1[3],line1[5])
-
-"""
-def check_phase_dims(bold,SBRef):
-    bSBRef = [False]*len(bold)
-    ped = []
-    dim = []
-    for j in range(len(bold)):
-        ped.append(get_phase(bold[j]))
-        ped0 = get_phase(SBRef[j])
-
-        if ped0 != ped[j]:
-            print(f'    ERROR: {bold[j]} {ped[j]}')
-            print(f'    ERROR: {SBRef[j]} {ped0}')
-            print(f'           Phases should be the same. Will not use this SBRef.')
-            continue
-
-        dim.append(get_dim(bold[j]))
-        dim0 = get_dim(SBRef[j])
-
-        if dim0 != dim[j]:
-            print(f'    ERROR: {bold[j]} {dim[j]}')
-            print(f'    ERROR: {SBRef[j]} {dim0}')
-            print(f'           Dimensions should be the same. Will not use this SBRef.')
-            continue
-
-        bSBRef[j]=True
-
-    print(f'bSBRef={bSBRef}')
-    print(f'ped={ped}')
-    print(f'dim={dim}')
-    return bSBRef,ped,dim
-
-def check_phase_dims_fmap(bold,SBRef):
-    bSBRef = [False]*len(bold)
-    ped = []
-    dim = []
-    for j in range(len(bold)):
-        ped.append(get_phase(bold[j]))
-        ped0 = get_phase(SBRef[j])
-
-        print(f'ped0[0]={ped0[0]}')
-
-        if ped0[0] != ped[j][0]:
-            print(f'    ERROR: {bold[j]} {ped[j][0]}')
-            print(f'    ERROR: {SBRef[j]} {ped0[0]}')
-            print(f'           Fieldmap encoding direction must be the same!')
-            continue
-        if ped0 == ped[j]:
-            print(f'    ERROR: {bold[j]} {ped[j]}')
-            print(f'    ERROR: {SBRef[j]} {ped0}')
-            print(f'           Fieldmap phases must be opposite!')
-            continue
-
-        dim.append(get_dim(bold[j]))
-        dim0 = get_dim(SBRef[j])
-
-        if dim0 != dim[j]:
-            print(f'    ERROR: {bold[j]} {dim[j]}')
-            print(f'    ERROR: {SBRef[j]} {dim0}')
-            print(f'           Dimensions should be the same. Will not use these fieldmaps.')
-            continue
-
-        bSBRef[j]=True
-
-    print(f'bSBRef={bSBRef}')
-    print(f'ped={ped}')
-    print(f'dim={dim}')
-    return bSBRef,ped,dim
-
-def check_ped_dims(bold,ped,dim,bfmap,ped_fmap,dim_fmap,fmap):
-    bbold_fmap=[False]*len(ped)
-    if any(bfmap):
-        for j in range(len(ped)):
-            #if lcfmap[bold[j][1]] == 0:  
-            if bfmap[bold[j][1]]:  
-                if dim[j] != dim_fmap[bold[j][1]]:
-                    print(f'    ERROR: {bold[j][0]} {dim[j]}')
-                    print(f'    ERROR: {fmap[bold[j][1]]} {dim_fmap[bold[j][1]]}')
-                    print(f'           Dimensions should be the same. Will not use these fieldmaps.')
-                    continue
-                if ped[j][0] != ped_fmap[bold[j][1]][0]:
-                    print(f'    ERROR: {bold[j][0]} {ped[j][0]}')
-                    print(f'    ERROR: {fmap[bold[j][1]]} {ped_fmap[bold[j][1]][0]}')
-                    print(f'           Fieldmap encoding direction must be the same!')
-                    continue
-                #lcbold_fmap[j]=1  
-                bbold_fmap[j]=True  
-    print(f'bbold_fmap={bbold_fmap}')
-    return bbold_fmap
-"""
-
-
 
 
 if __name__ == "__main__":
@@ -623,13 +405,6 @@ if __name__ == "__main__":
         bs.write(f'{SHEBANG}\n')
     """
 
-    #if args.lcdate == 1:
-    #    date0 = datetime.today().strftime("%y%m%d")
-    #    print(f'date0 = {date0}')
-    #elif args.lcdate == 2:
-    #    date0 = datetime.today().strftime("%y%m%d%H%M%S")
-    #    print(f'date0 = {date0}')
-    #START240201
     datestr = ''
     if args.lcdate > 0:
         if args.lcdate == 1:
@@ -707,21 +482,127 @@ if __name__ == "__main__":
             if not args.lcsmoothonly and not args.lct1copymaskonly: 
                 par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
 
-                #par.check_ped_dims(scans.bold,scans.fmap[0::2])
-                #START240206
                 fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
                 par.check_ped_dims(scans.bold,fmap)
 
 
 
         #STARTHERE
+        from contextlib import ExitStack
+        with ExitStack() as fs:
+            F0f = [fs.enter_context(open(fn, "w")) for fn in F0]
+            F1f = fs.enter_context(open(F1, "w"))
 
+            for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
+            F1f.write("{SHEBANG}\nset -e\n\n")          
 
+            if not args.lcfeatadapter:
+                F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
 
+            if args.fsf1 or args.fsf2:
+                for fn in F0f: fn.write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
 
+            if not args.lcfeatadapter:
+                F0f[0].write(f'export OGREDIR={OGREDIR}\n')
+                if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                    F0f[0].write('P0={OGREDIR}/HCP/scripts/'+P0+'\n')
+                if not args.lcsmoothonly:
+                    F0f[0].write('P1={OGREDIR}/HCP/scripts/'+P1+'\n')
+                if not args.lct1copymaskonly:
+                    F0f[0].write('P2={OGREDIR}/HCP/scripts/'+P2+'\n')
 
+            if args.fsf1:
+                for fn in F0f: fn.write(f'P3={OGREDIR}/HCP/scripts/'+P3+'\n')          
+
+            if not args.lcfeatadapter:
+                F0f[0].write('SETUP={OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
+                F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
+
+                if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                    F0f[0].write('${P0} \\\n')
+                    F0f[0].write('    --StudyFolder=${sf0} \\\n')
+                    F0f[0].write('    --Subject=${s0} \\\n')
+                    F0f[0].write('    --runlocal \\\n')
+                    F0f[0].write('    --fMRITimeSeries="\\\n')
+                    for j in range(len(scans.bold)-1): F0f[0].write(f'        {scans.bold[j][0]} \\\n')
+                    F0f[0].write(f'        {scans.bold[j+1][0]}"\n')
+                    
+                    if scans.sbref:
+                        if any(par.bsbref):
+                            F0f[0].write('    --fMRISBRef="\\\n')
+                            for j in range(len(scans.bold)-1): 
+                                if par.bsbref[j]: 
+                                    F0f[0].write(f'        {scans.sbref[j][0]} \\\n')
+                                else:
+                                    F0f[0].write('        NONE \\\n')
+                            if par.bsbref[j+1]: 
+                                F0f[0].write(f'        {scans.sbref[j+1][0]}"\n')
+                            else:
+                                F0f[0].write('        NONE"\n')
+                            
+                    if scans.fmap:
+                        if any(par.bfmap):
+                            if any(par.bbold_fmap):
+                                F0f[0].write('    --SpinEchoPhaseEncodeNegative="\\\n')
+                                for j in range(len(scans.bold)-1): 
+                                    if par.bbold_fmap[j]: 
+                                        F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
+                                    else:
+                                        F0f[0].write('        NONE \\\n')
+                                if par.bbold_fmap[j+1]: 
+                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
+                                else:
+                                    F0f[0].write('        NONE \\\n')
+                                F0f[0].write('    --SpinEchoPhaseEncodePositive="\\\n')
+                                for j in range(len(scans.bold)-1): 
+                                    if par.bbold_fmap[j]: 
+                                        F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
+                                    else:
+                                        F0f[0].write('        NONE \\\n')
+                                if par.bbold_fmap[j+1]: 
+                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
+                                else:
+                                    F0f[0].write('        NONE \\\n')
 
         exit()
+
+"""
+    echo "s0=${s0}" >> ${F0}
+    echo "sf0=${dir1}" >> ${F0}
+
+
+    if args.fsf1:
+        outputdir1 = []
+        for i in args.fsf1:
+            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
+            outputdir1.append(line0.split('"')[1])
+        print(f'outputdir1 = {outputdir1}')
+
+    if args.fsf2:
+        outputdir2 = []
+        for i in args.fsf1:
+            #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
+            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
+            outputdir2.append(line0.split('"')[1])
+        print(f'outputdir2 = {outputdir2}')
+
+
+from contextlib import ExitStack
+with ExitStack() as stack:
+    files = [
+        stack.enter_context(open(filename))
+        for filename in filenames
+    ]
+
+
+
+filenames = "file1.txt", "file2.txt", "file3.txt", "file4.txt"
+with ExitStack() as fs:
+    file1, file2, file3, file4 = (fs.enter_context(open(fn, "w")) for fn in filenames)
+    ...
+    file2.write("Some text")
+"""
+
 
 """
             with open(i[j],encoding="utf8",errors='ignore') as f0:

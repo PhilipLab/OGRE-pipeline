@@ -482,58 +482,28 @@ for((i=0;i<${#csv[@]};++i));do
     fi
 
     for((j=0;j<${#F0[@]};++j));do
-
-        #echo -e "$shebang\n" > ${F0[j]} 
-        #START230610
         echo -e "$shebang\nset -e\n" > ${F0[j]} 
-
         echo -e "#$0 $@\n" >> ${F0[j]}
     done 
 
-    #echo -e "$shebang\n" > ${F1}
-    #START230610
     echo -e "$shebang\nset -e\n" > ${F1}
 
     if((lcfeatadapter==0));then
         echo "FREESURFDIR=${FREESURFDIR}" >> ${F0[0]}
         echo "FREESURFVER=${FREESURFVER}" >> ${F0[0]}
-
-        #if((lccleanonly==0));then
-        #    echo -e export FREESURFER_HOME='${FREESURFDIR}/${FREESURFVER}'"\n" >> ${F0[0]}
-        #fi
-        #START230623
         echo -e export FREESURFER_HOME='${FREESURFDIR}/${FREESURFVER}'"\n" >> ${F0[0]}
 
     fi
 
-    #if [ -n "${outputdir1}" ];then
-    #START230605
     if [[ -n "${outputdir1}" || -n "${outputdir2}" ]];then
-
         for((j=0;j<${#F0[@]};++j));do
             echo "FSLDIR=${FSLDIR}" >> ${F0[j]}
-
-            #echo -e export FSLDIR='${FSLDIR}'"\n" >> ${F0[j]}
-            #START230605
-            #echo export FSLDIR='${FSLDIR}' >> ${F0[j]}
-            #START231107
             echo -e export FSLDIR='${FSLDIR}'"\n" >> ${F0[j]}
 
         done
     fi
+
     if((lcfeatadapter==0));then
-
-
-        #if((lcsmoothonly==0)) && ((lccleanonly==0)) && ((lct1copymaskonly==0));then
-        #    echo 'P0='${SCRIPT0} >> ${F0[0]}
-        #fi
-        #if((lcsmoothonly==0)) && ((lccleanonly==0));then
-        #    echo 'P1='${SCRIPT1} >> ${F0[0]}
-        #fi
-        #if((lct1copymaskonly==0)) && ((lccleanonly==0));then
-        #    echo 'P2='${SCRIPT2} >> ${F0[0]}
-        #fi
-        #START230623
         if((lcsmoothonly==0)) && ((lct1copymaskonly==0));then
             echo 'P0='${SCRIPT0} >> ${F0[0]}
         fi
@@ -543,36 +513,20 @@ for((i=0;i<${#csv[@]};++i));do
         if((lct1copymaskonly==0));then
             echo 'P2='${SCRIPT2} >> ${F0[0]}
         fi
-
-
-
     fi
+
     if [ -n "${outputdir1}" ];then
         for((j=0;j<${#F0[@]};++j));do
-
-            #echo 'P3='${SCRIPT3} >> ${F0[j]}
-            #START230605
-            #echo -e "\n"'P3='${SCRIPT3} >> ${F0[j]}
-            #START231107
             echo 'P3='${SCRIPT3} >> ${F0[j]}
-
         done
     fi
-    if((lcfeatadapter==0));then
 
-        #((lccleanonly==0)) && echo 'ES='${ES} >> ${F0[0]}
-        #START230623
-        #echo 'ES='${ES} >> ${F0[0]}
-        #echo "" >> ${F0[0]}
-        #START231107
+    if((lcfeatadapter==0));then
         echo -e  'ES='${ES}"\n" >> ${F0[0]}
 
         echo "sf0=${line[1]}"'${FREESURFVER}' >> ${F0[0]}
 
-        #if((lct1copymaskonly==0)) && ((lccleanonly==0));then
-        #START230623
         if((lct1copymaskonly==0));then
-
             if((lchostname==1));then
                 echo 's0=$(hostname)' >> ${F0[0]}
             else
@@ -583,8 +537,6 @@ for((i=0;i<${#csv[@]};++i));do
         fi
         echo "" >> ${F0[0]}
 
-        #if((lcsmoothonly==0)) && ((lccleanonly==0)) && ((lct1copymaskonly==0));then
-        #START230623
         if((lcsmoothonly==0)) && ((lct1copymaskonly==0));then
 
             echo '${P0} \' >> ${F0[0]}
@@ -592,50 +544,34 @@ for((i=0;i<${#csv[@]};++i));do
             echo '    --Subject=${s0} \' >> ${F0[0]}
             echo '    --runlocal \' >> ${F0[0]}
 
-            #endquote=
-            #START230712
             unset endquote
-
-            #echo "here0 endquote=${endquote[@]} nelements=${#endquote[@]}"
-
             for((j=23;j>=7;j-=2));do
                 if [ "${line[j]}" != "NONE" ] && [ "${line[j]}" != "NOTUSEABLE" ];then
                     endquote[j]='"'
                     break
                 fi
             done
+
             echo '    --fMRITimeSeries="\' >> ${F0[0]}
             for((j=7;j<=23;j+=2));do
                 ((${bold[j]}==1)) && echo '        '${line[j]}${endquote[j]}' \' >> ${F0[0]}
             done
+
             if((lcSBRef>0));then
                 echo '    --fMRISBRef="\' >> ${F0[0]}
                 for((j=6;j<=22;j+=2));do
-
-                    #if((${bold[j+1]}==1));then
-                    #    echo '        '${bold[j]}${endquote[j+1]}' \' >> ${F0[0]}
-                    #fi
-                    #START230521
                     if((${bold[j+1]}==1));then
                         ((${bold[j]}==1)) && echo '        '${line[j]}${endquote[j+1]}' \' >> ${F0[0]} || echo '        '${endquote[j+1]}' \' >> ${F0[0]}
                     fi
 
                 done
             fi
+
             if((lcbadFM==0));then
                 for((j=4;j<=5;j++));do
                     if [[ "${ped[j]:1:1}" == "-" ]];then
                         echo '    --SpinEchoPhaseEncodeNegative="\' >> ${F0[0]}
 
-
-                        #for((k=7;k<=23;k+=2));do
-                        #    if [[ -n "${fm_idx[k]}" ]];then
-                        #        echo '        '${line[fm_idx[k]]}${endquote[k]}' \' >> ${F0[0]}
-                        #    else
-                        #        echo '       '${endquote[k]}' \' >> ${F0[0]}
-                        #    fi
-                        #done
-                        #START230618
                         for((k=7;k<=23;k+=2));do
                             if((${bold[k]}==1));then
                                 if [[ -n "${fm_idx[k]}" ]];then
