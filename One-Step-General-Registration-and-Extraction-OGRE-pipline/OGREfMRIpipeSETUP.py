@@ -134,7 +134,7 @@ class Par:
         self.bsbref = [False]*lenbold
         self.ped = []
         self.dim = []
-        self.bfmap = [False]*lenfmap0
+        self.bfmap = [False]*int(lenfmap0/2)
         self.ped_fmap = []
         self.dim_fmap = []
         self.bbold_fmap = []
@@ -189,7 +189,7 @@ class Par:
             if dim0 != self.dim_fmap[j]:
                 print(f'    ERROR: {fmap0[j]} {self.dim_fmap[j]}')
                 print(f'    ERROR: {fmap1[j]} {dim0}')
-                print(f'           Dimensions should be the same. Will not use these fieldmaps.')
+                print(f'           Dimensions must be the same. Will not use these fieldmaps.')
                 continue
 
             self.bfmap[j]=True
@@ -203,16 +203,28 @@ class Par:
         if any(self.bfmap):
             for j in range(len(self.ped)):
                 if self.bfmap[bold[j][1]]:
-                    if self.dim[j] != self.dim_fmap[bold[j][1]]:
-                        print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
-                        print(f'    ERROR: {fmap[bold[j][1]]} {self.dim_fmap[bold[j][1]]}')
-                        print(f'           Dimensions should be the same. Will not use these fieldmaps.')
-                        continue
                     if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
                         print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
-                        print(f'    ERROR: {fmap[bold[j][1]]} {self.ped_fmap[bold[j][1]][0]}')
-                        print(f'           Fieldmap encoding direction must be the same!')
+                        #print(f'    ERROR: {fmap[bold[j][1]]} {self.ped_fmap[bold[j][1]][0]}')
+                        print(f'    ERROR: {fmap[bold[j][1]*2]} {self.ped_fmap[bold[j][1]][0]}')
+                        print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
                         continue
+                    if self.dim[j] != self.dim_fmap[bold[j][1]]:
+                        print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
+                        #print(f'    ERROR: {fmap[bold[j][1]]} {self.dim_fmap[bold[j][1]]}')
+                        print(f'    ERROR: {fmap[bold[j][1]*2]} {self.dim_fmap[bold[j][1]]}')
+                        print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
+                        ynq = input('    Would like to resample the field maps? y, n, q').casefold()
+                        if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
+                        if ynq=='n' or ynq=='no': continue
+                        for i in bold[j][1]*2,bold[j][1]*2+1:
+                            fmap0 = pathlib.Path(fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
+                            junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
+                            self.dim_fmap[bold[j][1]] = self.dim[j]
+                            fmap[j] = fmap0
+
+#STARTHERE
+
                     self.bbold_fmap[j]=True
         print(f'bbold_fmap={self.bbold_fmap}')
 
@@ -638,14 +650,7 @@ if __name__ == "__main__":
 
     for i in args.dat:
 
-        #fmap,SBRef2,bold2 = read_scanlist(i)
-        #bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
-        #bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
-        #bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
-        #START240201
         scans = Scans(i)
-
-
         idx = i.find('sub-')
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
@@ -692,30 +697,30 @@ if __name__ == "__main__":
             bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
             bsf1.write(f'{SHEBANG}\nset -e\n')
 
-#        ind_task = check_bolds(d0.task, d0.task_SBRef)
-#        print(f'ind_task = {ind_task}')
-#        print(f'd0.task = {d0.task}')
-#        print(f'd0.task_SBRef = {d0.task_SBRef}')
-#
-#        ind_rest = check_bolds(d0.rest, d0.rest_SBRef)
-#        print(f'ind_rest = {ind_rest}')
-#        print(f'd0.rest = {d0.rest}')
-#        print(f'd0.rest_SBRef = {d0.rest_SBRef}')
-#
-#        if not args.lcfeatadapter:
-#            ind_task_SBRef, ped_task = check_phase_dims(d0.task,d0.task_SBRef,ind_task)
-#            ind_rest_SBRef, ped_rest = check_phase_dims(d0.rest,d0.rest_SBRef,ind_rest)
-
         if not args.lcfeatadapter:
-            #bsbref,ped,dim = check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
-            #bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
-            #bbold_fmap = check_ped_dims(scans.bold,ped,dim,bfmap,ped_fmap,dim_fmap,scans.fmap[0::2])
-            par = Par(len(scans.bold),int(len(scans.fmap)/2))
-            par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
-            par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
-            par.check_ped_dims(scans.bold,scans.fmap[0::2])
 
-            print(f'len(scans.bold)={len(scans.bold)}')
+            #print(f'len(scans.bold)={len(scans.bold)}')
+
+            par = Par(len(scans.bold),int(len(scans.fmap)))
+            par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
+
+            if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+
+                #par.check_ped_dims(scans.bold,scans.fmap[0::2])
+                #START240206
+                fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
+                par.check_ped_dims(scans.bold,fmap)
+
+
+
+        #STARTHERE
+
+
+
+
+
+
         exit()
 
 """
