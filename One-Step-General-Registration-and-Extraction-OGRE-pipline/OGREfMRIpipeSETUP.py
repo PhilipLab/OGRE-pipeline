@@ -85,7 +85,7 @@ class Scans:
         self.restidx = []
 
         with open(file,encoding="utf8",errors='ignore') as f0:
-            i=-1
+            i,j = 0,0
             for line0 in f0:
                 i+=1
                 if not line0.strip() or line0.startswith('#'): continue
@@ -94,7 +94,7 @@ class Scans:
                 print(line1[1])
                 file0 = line1[1] + '.nii.gz'
                 if not os.path.isfile(file0):
-                    print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i+1}')
+                    print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
                     exit()
 
                 line2=file0.split('/')
@@ -107,9 +107,10 @@ class Scans:
                     else:
                         self.bold.append((file0,int(len(self.fmap)/2-1)))
                         if line2[-1].find('task-rest') != -1:
-                            self.taskidx.append(i)
+                            self.restidx.append(j)
                         else:
-                            self.restidx.append(i)
+                            self.taskidx.append(j)
+                        j+=1
 
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
@@ -259,10 +260,6 @@ def get_dim(file):
 if __name__ == "__main__":
     get_env_vars()
 
-    fwhm=0
-    paradigm_hp_sec=0
-    bhostname=False
-
     import argparse
     parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
 
@@ -310,11 +307,21 @@ if __name__ == "__main__":
 
     hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
     mfwhm='FWHM'
-    parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int,default=0)
+    parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='+',help=hfwhm,type=int)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,default='0')
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,default='dog')
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='+',help=hfwhm,default=0)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='+',help=hfwhm,default=0,type=int)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='*',help=hfwhm,default=0,type=int)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='*',help=hfwhm,default=0,type=int)
 
     hparadigm_hp_sec='High pass filter cutoff (s)'
     mparadigm_hp_sec='HPFcutoff'
-    parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+    parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec,default=0)
 
     hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
     parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
@@ -354,11 +361,27 @@ if __name__ == "__main__":
         print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
         exit()
 
-    if fwhm==0 and not args.lcfeatadapter: 
-        print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
+    print(f'args.fwhm={args.fwhm}')
+    print(f'args.paradigm_hp_sec={args.paradigm_hp_sec}')
 
-    if paradigm_hp_sec==0 and not args.lcfeatadapter:
-        print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+    #if args.fwhm==0 and not args.lcfeatadapter: 
+    #    print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
+    #if args.paradigm_hp_sec==0 and not args.lcfeatadapter:
+    #    print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+    if not args.lcfeatadapter: 
+        #args.fwhm = int(args.fwhm)
+        #if args.fwhm==0: print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
+        #if args.paradigm_hp_sec==0: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+        if not args.fwhm: 
+            print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
+        else:
+            args.fwhm = sum(args.fwhm,[])
+        if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+
+    print(f'args.fwhm={args.fwhm}')
+    exit()
+
+
 
     if args.HCPDIR: HCPDIR = args.HCPDIR 
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
@@ -441,7 +464,7 @@ if __name__ == "__main__":
             dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
             print(f'dir0={dir0}\ndir1={dir1}')
 
-        if bhostname:
+        if args.bhostname:
             hostname = run_cmd('hostname')
             dir0 += '_' + hostname 
             dir1 += '_$(hostname)' 
@@ -550,9 +573,9 @@ if __name__ == "__main__":
                                     else:
                                         F0f[0].write('        NONE \\\n')
                                 if par.bbold_fmap[j+1]: 
-                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
+                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}"\n')
                                 else:
-                                    F0f[0].write('        NONE \\\n')
+                                    F0f[0].write('        NONE"\n')
                                 F0f[0].write('    --SpinEchoPhaseEncodePositive="\\\n')
                                 for j in range(len(scans.bold)-1): 
                                     if par.bbold_fmap[j]: 
@@ -560,9 +583,33 @@ if __name__ == "__main__":
                                     else:
                                         F0f[0].write('        NONE \\\n')
                                 if par.bbold_fmap[j+1]: 
-                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
+                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}"\n')
                                 else:
-                                    F0f[0].write('        NONE \\\n')
+                                    F0f[0].write('        NONE"\n')
+
+                    F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
+                    F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
+
+                if not args.lcsmoothonly: 
+                    F0f[0].write('${P1} \\\n')
+                    str0 = pathlib.Path(scans.bold[0][0]).name.split('.nii')[0]
+                    F0f[0].write('    --t1=${sf0}/'+f'{str0}/T1w_restore.2.nii.gz \\\n')
+                    F0f[0].write('    --mask=${sf0}/'+f'{str0}/brainmask_fs.2.nii.gz \\\n')
+                    F0f[0].write('    --outpath=${sf0}/MNINonLinear/Results \\\n')
+                    F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
+
+                if scans.taskidx and not args.lct1copymaskonly: 
+                    F0f[0].write('${P2} \\\n')
+                    F0f[0].write('    --fMRITimeSeries="\\\n')
+                    for j in range(len(scans.taskidx)-1): 
+                        str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
+                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/${str0}.nii.gz\\\n')
+                    str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
+                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/${str0}.nii.gz"\n')
+                    if args.fwhm>0: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
+
+            #f0.write(' '.join(d0.values()))
+
 
         exit()
 

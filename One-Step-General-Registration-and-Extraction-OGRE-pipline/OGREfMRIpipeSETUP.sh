@@ -585,16 +585,6 @@ for((i=0;i<${#csv[@]};++i));do
 
                     else
                         echo '    --SpinEchoPhaseEncodePositive="\' >> ${F0[0]}
-
-
-                        #for((k=7;k<=23;k+=2));do
-                        #    if [[ -n "${fm_idx[k]}" ]];then
-                        #        echo '        '${line[fm_idx[k]+1]}${endquote[k]}' \' >> ${F0[0]}
-                        #    else
-                        #        echo '       '${endquote[k]}' \' >> ${F0[0]}
-                        #    fi
-                        #done
-                        #START230618
                         for((k=7;k<=23;k+=2));do
                             if((${bold[k]}==1));then
                                 if [[ -n "${fm_idx[k]}" ]];then
@@ -613,10 +603,7 @@ for((i=0;i<${#csv[@]};++i));do
             fi
         fi
 
-        #if((lcsmoothonly==0)) && ((lccleanonly==0)) && ((lcbadFM==0));then
-        #START230623
         if((lcsmoothonly==0)) && ((lcbadFM==0));then
-
             echo '${P1} \' >> ${F0[0]}
             for((j=7;j<=23;j+=2));do
                 if((bold[j]==1));then
