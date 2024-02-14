@@ -575,7 +575,7 @@ if __name__ == "__main__":
 
                 if scans.taskidx and not args.lct1copymaskonly: 
                     F0f[0].write('${P2} \\\n')
-                    F0f[0].write('    --fMRITimeSeries="\\\n')
+                    F0f[0].write('    --fMRITimeSeriesResults="\\\n')
                     for j in range(len(scans.taskidx)-1): 
                         str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
                         F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
