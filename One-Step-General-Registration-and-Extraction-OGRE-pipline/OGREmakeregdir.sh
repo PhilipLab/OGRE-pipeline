@@ -77,9 +77,6 @@ arg=("$@")
 
 for((i=0;i<${#@};++i));do
     case "${arg[i]}" in
-
-
-
         #-s | --sub | -sub)
         #    SUBJECT=${arg[((++i))]}
         #    echo "SUBJECT=$SUBJECT"
@@ -90,82 +87,59 @@ for((i=0;i<${#@};++i));do
             SUBJECT=${arg[((++i))]}
             #echo "SUBJECT=$SUBJECT"
             ;;
-
-
-
-
         -f | --feat | -feat)
             FEATDIR=${arg[((++i))]}
             #echo "FEATDIR=$FEATDIR"
-
             #START231219
             #((idx+=2))
-
             ;;
-
 
         -S | -y | --study | -study)
             STUDYPATH=${arg[((++i))]}
             echo "STUDYPATH=$STUDYPATH"
-
             #START231218
             #((narg-=2))
-
             ;;
         -t | --t1 | -t1)
             T1=${arg[((++i))]}
             echo "T1=$T1"
-
-
             #START231218
             #((narg-=2))
-
             ;;
         --t1highreshead | -t1highreshead | --t1hireshead | -t1hireshead)
             T1HIGHRESHEAD=${arg[((++i))]}
             echo "T1HIGHRESHEAD=$T1HIGHRESHEAD"
-
             #START231218
             #((narg-=2))
-
             ;;
         --t1highres | -t1highres | --t1hires | -t1hires)
             T1HIGHRES=${arg[((++i))]}
             echo "T1HIGHRES=$T1HIGHRES"
-
             #START231218
             #((narg-=2))
-
             ;;
         -u | --atlas | -atlas)
             ATLAS=${arg[((++i))]}
             echo "ATLAS=$ATLAS"
-
             #START231218
             #((narg-=2))
-
             ;;
         --standardhead | -standardhead)
             STANDARDHEAD=${arg[((++i))]}
             echo "STANDARDHEAD=$STANDARDHEAD"
-
             #START231218
             #((narg-=2))
-
             ;;
         --standard | -standard)
             STANDARD=${arg[((++i))]}
             echo "STANDARD=$STANDARD"
-
             #START231218
             #((narg-=2))
-
             ;;
         -h | --help | -help)
             helpmsg
             exit
             ;;
-
         #START231218
         *) unexpected+=(${arg[i]})
             ;;
@@ -211,7 +185,7 @@ if [ -z "${T1HIGHRESHEAD}" ];then
         elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.nii.gz ]; then
             T1HIGHRESHEAD=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.nii.gz
         else
-            echo "T1 not found: ${T1}"
+            echo "T1 head 1mm not found: ${T1}"
             exit
         fi
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
@@ -220,7 +194,7 @@ if [ -z "${T1HIGHRESHEAD}" ];then
         elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
             T1HIGHRESHEAD=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz
         else
-            echo "T1 not found: ${T1}"
+            echo "T1 head 2mm not found: ${T1}"
             exit
         fi
         #T1HIGHRESHEAD=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/anat/sub-${SUBJECT}_T1w_restore.2.nii.gz
@@ -237,7 +211,7 @@ if [ -z "${T1HIGHRES}" ];then
         elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz ]; then
             T1HIGHRES=${PIPEDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz
         else
-            echo "T1 not found: ${T1}"
+            echo "T1 brain 1mm not found: ${T1}"
             exit
         fi
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
@@ -246,7 +220,7 @@ if [ -z "${T1HIGHRES}" ];then
         elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
             T1HIGHRES=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
         else
-            echo "T1 not found: ${T1}"
+            echo "T1 brain 2mm not found: ${T1}"
             exit
         fi
         #T1HIGHRESHEAD=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/anat/sub-${SUBJECT}_T1w_restore.2.nii.gz
