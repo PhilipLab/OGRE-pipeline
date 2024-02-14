@@ -366,7 +366,6 @@ for((i=0;i<${#csv[@]};++i));do
                         echo "    ERROR: ${line[j]} ${ped[j]}, ${line[j+1]} ${ped[j+1]}. Phases should be the same. Will not use this SBRef."
                         continue
                     fi
-#STARTHERE
                     for((k=j;k<=((j+1));++k));do
                         IFS=$'\r\n,\t ' read -d '' -ra line1 <<< $(fslinfo ${line[k]} | grep -w dim[1-3])
                         dim1[k]=${line1[@]:1:1}
@@ -672,18 +671,9 @@ for((i=0;i<${#csv[@]};++i));do
             printf '${FSLDIR}/bin/feat %s\n' "${FSF1[@]}" >> ${F0[j]}
             echo "" >> ${F0[j]}
             printf '${P3}'" ${line[0]} %s\n" "${outputdir1[@]##*/}" >> ${F0[j]}
-
-
-            #START230605
-            #if [ -n "${outputdir2}" ];then
-            #    echo "" >> ${F0[j]}
-            #    printf '${FSLDIR}/bin/feat %s\n' "${FSF2[@]}" >> ${F0[j]}
-            #fi
-
         done
     fi
 
-    #START230605
     if [ -n "${outputdir2}" ];then
         for((j=0;j<${#F0[@]};++j));do
             echo "" >> ${F0[j]}
@@ -691,18 +681,7 @@ for((i=0;i<${#csv[@]};++i));do
         done
     fi
 
-    #echo "${F0[0]} > ${F0[0]}.txt 2>&1 &" >> ${F1}
-    #for((j=0;j<${#F0[@]};++j));do
-    #    chmod +x ${F0[j]}
-    #    echo "    Output written to ${F0[j]}"
-    #done
-    #chmod +x ${F1}
-    #echo "    Output written to ${F1}"
-    #START230502
     if [ -f "${F0[0]}" ];then
-
-        #echo "${F0[0]} > ${F0[0]}.txt 2>&1 &" >> ${F1}
-        #START230623
         echo "out=${F0[0]}.txt" >> ${F1}
         echo 'if [ -f "${out}" ];then' >> ${F1}
         echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
@@ -710,8 +689,6 @@ for((i=0;i<${#csv[@]};++i));do
         echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
         echo "fi" >> ${F1}
         echo ${F0[0]}' >> ${out} 2>&1 &' >> ${F1}
-
-
 
         for((j=0;j<${#F0[@]};++j));do
             chmod +x ${F0[j]}

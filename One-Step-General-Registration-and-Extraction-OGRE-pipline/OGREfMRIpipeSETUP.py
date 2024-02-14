@@ -91,7 +91,7 @@ class Scans:
                 if not line0.strip() or line0.startswith('#'): continue
                 #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
                 line1 = re.findall(r'[^,\s]+', line0)
-                print(line1[1])
+                #print(line1[1])
                 file0 = line1[1] + '.nii.gz'
                 if not os.path.isfile(file0):
                     print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
@@ -115,11 +115,11 @@ class Scans:
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
             exit()
-        print(f'self.fmap={self.fmap}')
-        print(f'self.sbref={self.sbref}')
-        print(f'self.bold={self.bold}')
-        print(f'self.taskidx={self.taskidx}')
-        print(f'self.restidx={self.restidx}')
+        #print(f'self.fmap={self.fmap}')
+        #print(f'self.sbref={self.sbref}')
+        #print(f'self.bold={self.bold}')
+        #print(f'self.taskidx={self.taskidx}')
+        #print(f'self.restidx={self.restidx}')
 
 #        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
 #        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
@@ -160,9 +160,9 @@ class Par:
 
             self.bsbref[j]=True
 
-        print(f'bsbref={self.bsbref}')
-        print(f'ped={self.ped}')
-        print(f'dim={self.dim}')
+        #print(f'bsbref={self.bsbref}')
+        #print(f'ped={self.ped}')
+        #print(f'dim={self.dim}')
 
     def check_phase_dims_fmap(self,fmap0,fmap1):
         for j in range(len(fmap0)):
@@ -196,9 +196,9 @@ class Par:
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
-        print(f'bfmap={self.bfmap}')
-        print(f'ped_fmap={self.ped_fmap}')
-        print(f'dim_fmap={self.dim_fmap}')
+        #print(f'bfmap={self.bfmap}')
+        #print(f'ped_fmap={self.ped_fmap}')
+        #print(f'dim_fmap={self.dim_fmap}')
 
     def check_ped_dims(self,bold,fmap):
         self.bbold_fmap=[False]*len(self.ped)
@@ -207,13 +207,11 @@ class Par:
                 if self.bfmap[bold[j][1]]:
                     if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
                         print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
-                        #print(f'    ERROR: {fmap[bold[j][1]]} {self.ped_fmap[bold[j][1]][0]}')
                         print(f'    ERROR: {fmap[bold[j][1]*2]} {self.ped_fmap[bold[j][1]][0]}')
                         print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
                         continue
                     if self.dim[j] != self.dim_fmap[bold[j][1]]:
                         print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
-                        #print(f'    ERROR: {fmap[bold[j][1]]} {self.dim_fmap[bold[j][1]]}')
                         print(f'    ERROR: {fmap[bold[j][1]*2]} {self.dim_fmap[bold[j][1]]}')
                         print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
                         ynq = input('    Would like to resample the field maps? y, n, q').casefold()
@@ -225,7 +223,7 @@ class Par:
                             self.dim_fmap[bold[j][1]] = self.dim[j]
                             fmap[j] = fmap0
                     self.bbold_fmap[j]=True
-        print(f'bbold_fmap={self.bbold_fmap}')
+        #print(f'bbold_fmap={self.bbold_fmap}')
 
 
 
@@ -236,18 +234,15 @@ def run_cmd(cmd):
 def get_phase(file):
     jsonf = file.split('.')[0] + '.json'
     if not os.path.isfile(jsonf):
-        print(f'    {jsonf} does not exist. Abort!')
-        return 'ERROR'
-    print(f'get_phase jsonf={jsonf}')
-
-    #line0 = run_cmd(f'grep PhaseEncodingDirection {jsonf}')
-    #print(f'get_phase line0={line0}')
-    #dict0 = json.loads(line0)
+        print(f'    ERROR: {jsonf} does not exist. Abort!')
+        #return 'ERROR'
+        exit()
+    #print(f'get_phase jsonf={jsonf}')
 
     with open(jsonf,encoding="utf8",errors='ignore') as f0:
         dict0 = json.load(f0)
 
-    print(f"get_phase {dict0['PhaseEncodingDirection']}")
+    #print(f"get_phase {dict0['PhaseEncodingDirection']}")
 
     return dict0['PhaseEncodingDirection']
 
@@ -255,6 +250,18 @@ def get_dim(file):
     line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
     line1=line0.split()
     return (line1[1],line1[3],line1[5])
+
+def get_TR(file):
+    jsonf = file.split('.')[0] + '.json'
+    if not os.path.isfile(jsonf):
+        print(f'    ERROR: {jsonf} does not exist. Abort!')
+        #return 'ERROR'
+        exit()
+
+    with open(jsonf,encoding="utf8",errors='ignore') as f0:
+        dict0 = json.load(f0)
+
+    return dict0['RepetitionTime']
 
 
 if __name__ == "__main__":
@@ -307,21 +314,13 @@ if __name__ == "__main__":
 
     hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
     mfwhm='FWHM'
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int,default=0)
-    parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='+',help=hfwhm,type=int)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,default='0')
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,default='dog')
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='+',help=hfwhm,default=0)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='+',help=hfwhm,default=0,type=int)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append_const',nargs='*',help=hfwhm,default=0,type=int)
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='*',help=hfwhm,default=0,type=int)
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int)
+    parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
 
-    hparadigm_hp_sec='High pass filter cutoff (s)'
+    hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
-    parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec,default=0)
+    #parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec,type=float)
+    parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
 
     hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
     parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
@@ -361,41 +360,25 @@ if __name__ == "__main__":
         print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
         exit()
 
-    print(f'args.fwhm={args.fwhm}')
-    print(f'args.paradigm_hp_sec={args.paradigm_hp_sec}')
-
-    #if args.fwhm==0 and not args.lcfeatadapter: 
-    #    print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
-    #if args.paradigm_hp_sec==0 and not args.lcfeatadapter:
-    #    print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
     if not args.lcfeatadapter: 
-        #args.fwhm = int(args.fwhm)
-        #if args.fwhm==0: print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
-        #if args.paradigm_hp_sec==0: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
         if not args.fwhm: 
             print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
         else:
             args.fwhm = sum(args.fwhm,[])
         if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
-    print(f'args.fwhm={args.fwhm}')
-    exit()
-
-
-
     if args.HCPDIR: HCPDIR = args.HCPDIR 
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
 
-
-    print(f'HCPDIR={HCPDIR}')
-    print(f'FREESURFVER={FREESURFVER}')
+    #print(f'HCPDIR={HCPDIR}')
+    #print(f'FREESURFVER={FREESURFVER}')
 
     if args.fsf1:
         outputdir1 = []
         for i in args.fsf1:
             line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
             outputdir1.append(line0.split('"')[1])
-        print(f'outputdir1 = {outputdir1}')
+        #print(f'outputdir1 = {outputdir1}')
 
     if args.fsf2:
         outputdir2 = []
@@ -403,7 +386,7 @@ if __name__ == "__main__":
             #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
             line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
             outputdir2.append(line0.split('"')[1])
-        print(f'outputdir2 = {outputdir2}')
+        #print(f'outputdir2 = {outputdir2}')
 
 
     """
@@ -434,7 +417,7 @@ if __name__ == "__main__":
             date0 = datetime.today().strftime("%y%m%d")
         elif args.lcdate == 2:
             date0 = datetime.today().strftime("%y%m%d%H%M%S")
-        print(f'date0 = {date0}')
+        #print(f'date0 = {date0}')
         datestr = '_' + date0
 
 
@@ -452,17 +435,18 @@ if __name__ == "__main__":
         idx = i.find('sub-')
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
-            print(f's0={s0}')
+            #print(f's0={s0}')
+            print(f'{s0}')
         
 
         idx = i.find('raw_data')
         if idx == -1:
             pass
         else:
-            print(i[:idx])
+            #print(i[:idx])
             dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
             dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
-            print(f'dir0={dir0}\ndir1={dir1}')
+            #print(f'dir0={dir0}\ndir1={dir1}')
 
         if args.bhostname:
             hostname = run_cmd('hostname')
@@ -470,13 +454,11 @@ if __name__ == "__main__":
             dir1 += '_$(hostname)' 
 
         stem0 = dir0 + '/' + s0
-        #str0 = stem0 + '_' + l0
-        #if args.lcdate > 0: str0 += '_' + date0 
         str0 = stem0 + '_' + l0 + datestr
 
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
-        print(f'F0={F0}\nF1={F1}')
+        #print(f'F0={F0}\nF1={F1}')
 
         if not args.lcfeatadapter and args.fsf1: 
             str0 = stem0 + '_FEATADAPTER' + datestr
@@ -496,28 +478,21 @@ if __name__ == "__main__":
             bsf1.write(f'{SHEBANG}\nset -e\n')
 
         if not args.lcfeatadapter:
-
-            #print(f'len(scans.bold)={len(scans.bold)}')
-
             par = Par(len(scans.bold),int(len(scans.fmap)))
             par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
-
             if not args.lcsmoothonly and not args.lct1copymaskonly: 
                 par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
-
                 fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
                 par.check_ped_dims(scans.bold,fmap)
 
 
-
-        #STARTHERE
         from contextlib import ExitStack
         with ExitStack() as fs:
             F0f = [fs.enter_context(open(fn, "w")) for fn in F0]
             F1f = fs.enter_context(open(F1, "w"))
 
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
-            F1f.write("{SHEBANG}\nset -e\n\n")          
+            F1f.write(f'{SHEBANG}\nset -e\n\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -528,17 +503,17 @@ if __name__ == "__main__":
             if not args.lcfeatadapter:
                 F0f[0].write(f'export OGREDIR={OGREDIR}\n')
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
-                    F0f[0].write('P0={OGREDIR}/HCP/scripts/'+P0+'\n')
+                    F0f[0].write('P0=${OGREDIR}/HCP/scripts/'+P0+'\n')
                 if not args.lcsmoothonly:
-                    F0f[0].write('P1={OGREDIR}/HCP/scripts/'+P1+'\n')
+                    F0f[0].write('P1=${OGREDIR}/HCP/scripts/'+P1+'\n')
                 if not args.lct1copymaskonly:
-                    F0f[0].write('P2={OGREDIR}/HCP/scripts/'+P2+'\n')
+                    F0f[0].write('P2=${OGREDIR}/HCP/scripts/'+P2+'\n')
 
             if args.fsf1:
-                for fn in F0f: fn.write(f'P3={OGREDIR}/HCP/scripts/'+P3+'\n')          
+                for fn in F0f: fn.write(f'P3=${OGREDIR}/HCP/scripts/'+P3+'\n')          
 
             if not args.lcfeatadapter:
-                F0f[0].write('SETUP={OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
+                F0f[0].write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
                 F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
@@ -548,7 +523,7 @@ if __name__ == "__main__":
                     F0f[0].write('    --runlocal \\\n')
                     F0f[0].write('    --fMRITimeSeries="\\\n')
                     for j in range(len(scans.bold)-1): F0f[0].write(f'        {scans.bold[j][0]} \\\n')
-                    F0f[0].write(f'        {scans.bold[j+1][0]}"\n')
+                    F0f[0].write(f'        {scans.bold[j+1][0]}" \\\n')
                     
                     if scans.sbref:
                         if any(par.bsbref):
@@ -559,9 +534,9 @@ if __name__ == "__main__":
                                 else:
                                     F0f[0].write('        NONE \\\n')
                             if par.bsbref[j+1]: 
-                                F0f[0].write(f'        {scans.sbref[j+1][0]}"\n')
+                                F0f[0].write(f'        {scans.sbref[j+1][0]}" \\\n')
                             else:
-                                F0f[0].write('        NONE"\n')
+                                F0f[0].write('        NONE" \\\n')
                             
                     if scans.fmap:
                         if any(par.bfmap):
@@ -573,7 +548,7 @@ if __name__ == "__main__":
                                     else:
                                         F0f[0].write('        NONE \\\n')
                                 if par.bbold_fmap[j+1]: 
-                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}"\n')
+                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}" \\\n')
                                 else:
                                     F0f[0].write('        NONE"\n')
                                 F0f[0].write('    --SpinEchoPhaseEncodePositive="\\\n')
@@ -583,7 +558,7 @@ if __name__ == "__main__":
                                     else:
                                         F0f[0].write('        NONE \\\n')
                                 if par.bbold_fmap[j+1]: 
-                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}"\n')
+                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}" \\\n')
                                 else:
                                     F0f[0].write('        NONE"\n')
 
@@ -603,338 +578,40 @@ if __name__ == "__main__":
                     F0f[0].write('    --fMRITimeSeries="\\\n')
                     for j in range(len(scans.taskidx)-1): 
                         str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/${str0}.nii.gz\\\n')
+                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
                     str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/${str0}.nii.gz"\n')
-                    if args.fwhm>0: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
+                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+                    if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
+                    if args.paradigm_hp_sec: 
+                        F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
+                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
+                    F0f[0].write('    --EnvironmentScript=${SETUP}\n')
 
-            #f0.write(' '.join(d0.values()))
+                if args.fsf1:
+                    for fn in F0f: 
+                        for j in args.fsf1: fn.write('\n${FSLDIR}/bin/feat '+f'{j}\n')
+                        for j in outputdir1: fn.write('\n${P3} ${s0} '+f'{pathlib.Path(j).stem}\n')
 
+                if args.fsf2:
+                    for fn in F0f: 
+                        for j in args.fsf2: fn.write('\n${FSLDIR}/bin/feat '+f'{j}\n')
+
+                if not os.path.isfile(F0[0]):
+                    junk=run_cmd(f'rm -f {F1}')
+                else:
+                    F1f.write(f'F0={F0[0]}\n\n'+'out=${F0}.txt\n')
+                    F1f.write('if [ -f "${out}" ];then\n')
+                    F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
+                    F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
+                    F1f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
+                    F1f.write('fi\n')
+                    F1f.write('${F0} >> ${out} 2>&1 &\n')
+                    
+                    #print(f'len(F0)={len(F0)}')
+                    for j in F0: 
+                        junk=run_cmd(f'chmod +x {j}')
+                        print(f'    Output written to {j}')
+                    junk=run_cmd(f'chmod +x {F1}')
+                    print(f'    Output written to {F1}')
 
         exit()
-
-"""
-    echo "s0=${s0}" >> ${F0}
-    echo "sf0=${dir1}" >> ${F0}
-
-
-    if args.fsf1:
-        outputdir1 = []
-        for i in args.fsf1:
-            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
-            outputdir1.append(line0.split('"')[1])
-        print(f'outputdir1 = {outputdir1}')
-
-    if args.fsf2:
-        outputdir2 = []
-        for i in args.fsf1:
-            #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
-            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
-            outputdir2.append(line0.split('"')[1])
-        print(f'outputdir2 = {outputdir2}')
-
-
-from contextlib import ExitStack
-with ExitStack() as stack:
-    files = [
-        stack.enter_context(open(filename))
-        for filename in filenames
-    ]
-
-
-
-filenames = "file1.txt", "file2.txt", "file3.txt", "file4.txt"
-with ExitStack() as fs:
-    file1, file2, file3, file4 = (fs.enter_context(open(fn, "w")) for fn in filenames)
-    ...
-    file2.write("Some text")
-"""
-
-
-"""
-            with open(i[j],encoding="utf8",errors='ignore') as f0:
-                for line0 in f0:
-                    if not line0.strip() or line0.startswith('#'): continue
-                    if not 'keys' in locals():
-                        keys = line0.split()
-                        continue
-                    d0 = Dat(dict(zip(keys,line0.split())))
-                    dir0 = d0.OUTDIR + FREESURFVER
-
-                    if args.lcdate == 1:
-                        date0 = datetime.today().strftime("%y%m%d")
-                    elif args.lcdate == 2:
-                        date0 = datetime.today().strftime("%y%m%d%H%M%S")
-                    #print(f'date0 = {date0}')
-
-                    #stem0 = dir0 + '/' + line0.split()[0].replace("/","_")
-                    stem0 = dir0 + '/' + d0.SUBNAME.split()[0].replace("/","_")
-
-                    if not args.lcfeatadapter: 
-                        if not args.lcsmoothonly: 
-                            l0 = 'hcp3.27fMRIvol' 
-                        else: 
-                            l0 = 'smooth'
-                    else:
-                        l0 = 'FEATADAPTER'
-                    str0 = stem0 + l0
-                    if args.lcdate > 0: str0 += '_' + date0 
-                    F0 = [str0 + '.sh']
-                    F1 = str0 + '_fileout.sh'
-
-                    if not args.lcfeatadapter and args.fsf1: 
-                        str0 = stem0 + '_FEATADAPTER'
-                        if args.lcdate > 0: str0 += '_' + date0 
-                        F0.append(str0 + '.sh')
-
-                    if args.bs:
-                        str0 = stem0 + '_hcp3.27batch'
-                        if args.lcdate > 0: str0 += '_' + date0
-                        bs0 = str0 + '.sh'
-                        if not os.path.isfile(bs0):
-                            mode0 = 'wt'
-                        else:
-                            mode0 = 'at'
-                        bsf0 = open(bs0,mode=mode0,encoding="utf8")
-                        if not os.path.isfile(bs0): bsf0.write(f'{SHEBANG}\n')
-                        bs1 = str0 + '_fileout.sh'
-                        bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
-                        bsf1.write(f'{SHEBANG}\nset -e\n')
-         
-                    ind_task = check_bolds(d0.task, d0.task_SBRef)
-                    print(f'ind_task = {ind_task}')
-                    print(f'd0.task = {d0.task}')
-                    print(f'd0.task_SBRef = {d0.task_SBRef}') 
-
-                    ind_rest = check_bolds(d0.rest, d0.rest_SBRef)
-                    print(f'ind_rest = {ind_rest}')
-                    print(f'd0.rest = {d0.rest}')
-                    print(f'd0.rest_SBRef = {d0.rest_SBRef}') 
-
-                    if not args.lcfeatadapter: 
-                        ind_task_SBRef, ped_task = check_phase_dims(d0.task,d0.task_SBRef,ind_task)                    
-                        ind_rest_SBRef, ped_rest = check_phase_dims(d0.rest,d0.rest_SBRef,ind_rest)                    
-
-            del keys
-
-
-
-#        self.task_SBRef = []
-#        self.task = []
-#        self.rest_SBRef = []
-#        self.rest = []
-
-if args.bs: bs0.close()
-"""
-
-#if __name__ == "__main__":
-#    #file = '/Users/Shared/10_Connectivity/10_2000/10_2000_new.dat'
-#    #main(file)
-#
-#    get_env_vars()
-
-#d0={"SUBNAME":"NONE",
-#    "OUTDIR":"NONE",
-#    "t1_mpr_1mm_p2_pos50":"NONE",
-#    "t2_spc_sag_p2_iso_1.0":"NONE",
-#    "SpinEchoFieldMap2_AP":"NONE",
-#    "SpinEchoFieldMap2_PA":"NONE",
-#    "run1_LH_SBRef":"NONE",
-#    "run1_LH":"NONE",
-#    "run1_RH_SBRef":"NONE",
-#    "run1_RH":"NONE",
-#    "run2_LH_SBRef":"NONE",
-#    "run2_LH":"NONE",
-#    "run2_RH_SBRef":"NONE",
-#    "run2_RH":"NONE",
-#    "run3_LH_SBRef":"NONE",
-#    "run3_LH":"NONE",
-#    "run3_RH_SBRef":"NONE",
-#    "run3_RH":"NONE",
-#    "rest01_SBRef":"NONE",
-#    "rest01":"NONE",
-#    "rest02_SBRef":"NONE",
-#    "rest02":"NONE",
-#    "rest03_SBRef":"NONE",
-#    "rest03":"NONE"}
-#
-#
-#def readdat(file):
-
-
-
-
-
-
-"""
-text='Convert *scanlist.csv to *.dat. Multiple *scanlist.csv for a single subject are ok. Each subject is demarcated by -s|--sub.'
-#print(text)
-
-import argparse
-parser=argparse.ArgumentParser(description=text,formatter_class=argparse.RawTextHelpFormatter)
-
-#START230410
-#parser.add_argument('sub0',nargs='*',help='Input scanlist.csv(s) are assumed all to belong to the same subject.')
-parser.add_argument('sub0',action='extend',nargs='*',help='Input scanlist.csv(s) are assumed all to belong to the same subject.')
-
-parser.add_argument('-s','--sub',action='append',nargs='+',help='Input scanlist.csv(s). Each subject is written to its own file (eg 10_1002.dat and 10_2002.dat).\nEx. -s 10_1002_scanlist.csv -s 10_2002a_scanlist.csv 10_2002b_scanlist.csv')
-parser.add_argument('-a','--all',help='Write all subjects to a single file. Individual files are still written.')
-parser.add_argument('-o','--out',help='Write all subjects to a single file. Individual files are not written.')
-
-#START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
-import sys
-if len(sys.argv)==1:
-    parser.print_help()
-    # parser.print_usage() # for just the usage line
-    parser.exit()
-
-
-
-
-args=parser.parse_args()
-
-#print(f'args={args}')
-#print(parser.parse_args([]))
-
-#if args.sub:
-#    print(f'-s --sub {args.sub}')
-#    #if args.all: print(f'-a --all {args.all}')
-#    print(f'args.all={args.all}')
-#    if args.out: print(f'-o --out {args.out}')
-#    print(f'args.out={args.out}')
-#else:
-#    exit()
-#START230410
-if args.sub:
-    #print(f'-s --sub {args.sub}')
-    #if args.all: print(f'-a --all {args.all}')
-    #print(f'args.all={args.all}')
-    if args.out: print(f'-o --out {args.out}')
-    #print(f'args.out={args.out}')
-    if args.sub0:
-        args.sub.append(args.sub0)
-    #print(f'-s --sub {args.sub}')
-elif args.sub0:
-    args.sub=[args.sub0]
-    #print(f'-s --sub {args.sub}')
-else:
-    exit()
-
-import re
-import pathlib
-
-import csv
-#START230410
-#import pandas
-
-str0='#Scans can be labeled NONE or NOTUSEABLE. Lines beginning with a # are ignored.\n'
-str1='#SUBNAME OUTDIR T1 T2 FM1 FM2 run1_LH_SBRef run1_LH run1_RH_SBRef run1_RH run2_LH_SBRef run2_LH run2_RH_SBRef run2_RH run3_LH_SBRef run3_LH run3_RH_SBRef run3_RH rest01_SBRef rest01 rest02_SBRef rest02 rest03_SBRef rest03\n'
-str2='#----------------------------------------------------------------------------------------------------------------------------------------------\n'
-
-if args.all or args.out:
-    if args.all:
-        str3=args.all
-    elif args.out:
-        str3=args.out
-    f2=open(str3,mode='wt',encoding="utf8")
-    f2.write(str0+str1+str2)
-
-
-for i in args.sub:
-    #print(f'i={i} len(i)={len(i)}') 
-
-    d0={"SUBNAME":"NONE",
-        "OUTDIR":"NONE",
-        "t1_mpr_1mm_p2_pos50":"NONE",
-        "t2_spc_sag_p2_iso_1.0":"NONE",
-        "SpinEchoFieldMap2_AP":"NONE",
-        "SpinEchoFieldMap2_PA":"NONE",
-        "run1_LH_SBRef":"NONE",
-        "run1_LH":"NONE",
-        "run1_RH_SBRef":"NONE",
-        "run1_RH":"NONE",
-        "run2_LH_SBRef":"NONE",
-        "run2_LH":"NONE",
-        "run2_RH_SBRef":"NONE",
-        "run2_RH":"NONE",
-        "run3_LH_SBRef":"NONE",
-        "run3_LH":"NONE",
-        "run3_RH_SBRef":"NONE",
-        "run3_RH":"NONE",
-        "rest01_SBRef":"NONE",
-        "rest01":"NONE",
-        "rest02_SBRef":"NONE",
-        "rest02":"NONE",
-        "rest03_SBRef":"NONE",
-        "rest03":"NONE"}
-
-   
-    n0=pathlib.Path(i[0]).stem
-    #print(f'here0 n0={n0}')
-
-    #m=re.match('([0-9_]+?)[a-zA-Z]_scanlist|([0-9_]+?)[a-zA-Z]',n0)
-    m=re.match('([0-9_]+?)[a-zA-Z]_scanlist|([0-9_]+?)_scanlist|([0-9_]+?)[a-zA-Z]',n0)
-
-    if m is not None: n0=m[m.lastindex]
-    subname=n0
-    ext='.dat'
-    if pathlib.Path(i[0]).suffix=='.dat':ext+=ext
-    n0=pathlib.Path(i[0]).with_name(n0+ext)
-    #print(f'here1 n0={n0}')
-
-    #p0=pathlib.Path(i[0]).parent
-    #START230410
-    p0=pathlib.Path(i[0]).resolve().parent
-    #print(f'here2 p0={p0}')
-
-
-    d0['SUBNAME']=subname
-    d0['OUTDIR']=str(p0)+'/pipeline'
-
-    for j in range(len(i)):
-
-        #print(f'i[{j}]={i[j]}')
-
-        with open(i[j],encoding="utf8",errors='ignore') as f1:
-
-            csv1=csv.DictReader(f1)
-            #START230410
-            #csv1=pandas.read_csv(f1,sep=', ',engine='python')
-
-            for row in csv1:
-                #print(f'row={row}')
-                if row['Scan'].casefold()=='none'.casefold():continue
-                for k in d0:
-
-                    #if k==row['nii']:
-                    #START230411
-                    if k==row['nii'].strip():
-
-                        #print(f'k={k}')
-
-                        #d0[k]=str(p0)+'/nifti/'+k+'.nii.gz'
-                        #START231018
-                        file=str(p0)+'/nifti/'+k+'.nii.gz' 
-                        if pathlib.Path(file).exists():
-                            d0[k]=file
-                        else:
-                            print(f'{file} does not exist!')
-
-                        break
-
-
-    if args.out is None:
-        with open(n0,mode='wt',encoding="utf8") as f0:
-            f0.write(str0+str1+str2)
-            f0.write(' '.join(d0.values()))
-            f0.write('\n')
-        print(f'Output written to {n0}')
-
-    if args.all or args.out:
-        f2.write(' '.join(d0.values()))
-        f2.write('\n')
-
-if args.all or args.out:
-    f2.close() 
-    print(f'Output written to {str3}')
-"""
