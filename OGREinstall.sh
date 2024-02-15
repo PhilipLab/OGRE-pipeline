@@ -29,11 +29,11 @@ for((i=0;i<${#@};++i));do
     case "${arg[i]}" in
         -i | --install | -install)
             install=${arg[((++i))]}
-            echo "install=$install"
+            #echo "install=$install"
             ;;
         -v | --version | --version)
             version=${arg[((++i))]}
-            echo "version=$version"
+            #echo "version=$version"
             ;;
         -h | --help | -help)
             helpmsg
@@ -49,8 +49,8 @@ if [ -z "${install}" ];then
     echo "install not set. Abort!"
     exit
 fi
-echo "install=$install"
-echo "version=$version"
+#echo "install=$install"
+#echo "version=$version"
 id=$install/$version
 
  
