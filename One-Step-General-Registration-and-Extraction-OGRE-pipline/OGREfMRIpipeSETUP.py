@@ -268,17 +268,33 @@ if __name__ == "__main__":
     get_env_vars()
 
     import argparse
-    parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
+    #parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
+    parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument('dat0',metavar='<datfile(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
-    hdat = '-d --dat -dat\n' \
-         + '        Ex 1. '+parser.prog+' 1001.dat 2000.dat\n' \
-         + '        Ex 2. '+parser.prog+' "1001.dat -d 2000.dat"\n' \
-         + '        Ex 3. '+parser.prog+' -d 1001.dat 2000.dat\n' \
-         + '        Ex 4. '+parser.prog+' -d "1001.dat 2000.dat"\n' \
-         + '        Ex 5. '+parser.prog+' -d 1001.dat -d 2000.dat\n' \
-         + '        Ex 6. '+parser.prog+' 1001.dat -d 2000.dat\n'
-    parser.add_argument('-d','--dat','-dat',dest='dat',metavar='*.dat',action='append',nargs='+',help=hdat)
+    #parser.add_argument('dat0',metavar='<datfile(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
+    #parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
+    parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be scanlist.csv files.')
+    #hdat = '-d --dat -dat\n' \
+    #hdat = '    Ex 1. '+parser.prog+' 1001.dat 2000.dat\n' \
+    #     + '    Ex 2. '+parser.prog+' "1001.dat -d 2000.dat"\n' \
+    #     + '    Ex 3. '+parser.prog+' -d 1001.dat 2000.dat\n' \
+    #     + '    Ex 4. '+parser.prog+' -d "1001.dat 2000.dat"\n' \
+    #     + '    Ex 5. '+parser.prog+' -d 1001.dat -d 2000.dat\n' \
+    #     + '    Ex 6. '+parser.prog+' 1001.dat -d 2000.dat\n'
+    #hdat = '    Ex 1. '+parser.prog+' sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
+    #     + '    Ex 2. '+parser.prog+' "sub-1001_scanlist.csv -d sub-2000_scanlist.csv"\n' \
+    #     + '    Ex 3. '+parser.prog+' -s sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
+    #     + '    Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
+    #     + '    Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n' \
+    #     + '    Ex 6. '+parser.prog+' sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n'
+    hdat = 'Ex 1. '+parser.prog+' sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
+         + 'Ex 2. '+parser.prog+' "sub-1001_scanlist.csv -d sub-2000_scanlist.csv"\n' \
+         + 'Ex 3. '+parser.prog+' -s sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
+         + 'Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
+         + 'Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n' \
+         + 'Ex 6. '+parser.prog+' sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n'
+    #parser.add_argument('-d','--dat','-dat',dest='dat',metavar='*.dat',action='append',nargs='+',help=hdat)
+    parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='append',nargs='+',help=hdat)
 
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
     parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
@@ -326,7 +342,7 @@ if __name__ == "__main__":
     parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
 
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.'
-    parser.add_argument('-s','--SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
+    parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
     hfsf1='fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
     parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='append',nargs='+',help=hfsf1)
@@ -423,7 +439,8 @@ if __name__ == "__main__":
 
     if not args.lcfeatadapter: 
         if not args.lcsmoothonly: 
-            l0 = 'hcp3.27fMRIvol' 
+            #l0 = 'hcp3.27fMRIvol' 
+            l0 = 'OGREfMRIvol' 
         else: 
             l0 = 'smooth'
     else:
@@ -465,7 +482,8 @@ if __name__ == "__main__":
             F0.append(str0 + '.sh')
 
         if args.bs:
-            str0 = stem0 + '_hcp3.27batch' + datestr
+            #str0 = stem0 + '_hcp3.27batch' + datestr
+            str0 = stem0 + '_OGREbatch' + datestr
             bs0 = str0 + '.sh'
             if not os.path.isfile(bs0):
                 mode0 = 'wt'
