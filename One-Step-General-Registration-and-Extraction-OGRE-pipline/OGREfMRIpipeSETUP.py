@@ -313,32 +313,15 @@ if __name__ == "__main__":
     get_env_vars()
 
     import argparse
-    #parser=argparse.ArgumentParser(description='Create OGRE fMRI pipeline script.\nRequired: <datfile(s)>',formatter_class=argparse.RawTextHelpFormatter)
     parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
 
-    #parser.add_argument('dat0',metavar='<datfile(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
-    #parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be dat files.')
     parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be scanlist.csv files.')
-    #hdat = '-d --dat -dat\n' \
-    #hdat = '    Ex 1. '+parser.prog+' 1001.dat 2000.dat\n' \
-    #     + '    Ex 2. '+parser.prog+' "1001.dat -d 2000.dat"\n' \
-    #     + '    Ex 3. '+parser.prog+' -d 1001.dat 2000.dat\n' \
-    #     + '    Ex 4. '+parser.prog+' -d "1001.dat 2000.dat"\n' \
-    #     + '    Ex 5. '+parser.prog+' -d 1001.dat -d 2000.dat\n' \
-    #     + '    Ex 6. '+parser.prog+' 1001.dat -d 2000.dat\n'
-    #hdat = '    Ex 1. '+parser.prog+' sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
-    #     + '    Ex 2. '+parser.prog+' "sub-1001_scanlist.csv -d sub-2000_scanlist.csv"\n' \
-    #     + '    Ex 3. '+parser.prog+' -s sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
-    #     + '    Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
-    #     + '    Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n' \
-    #     + '    Ex 6. '+parser.prog+' sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n'
     hdat = 'Ex 1. '+parser.prog+' sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
          + 'Ex 2. '+parser.prog+' "sub-1001_scanlist.csv -d sub-2000_scanlist.csv"\n' \
          + 'Ex 3. '+parser.prog+' -s sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
          + 'Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
          + 'Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n' \
          + 'Ex 6. '+parser.prog+' sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n'
-    #parser.add_argument('-d','--dat','-dat',dest='dat',metavar='*.dat',action='append',nargs='+',help=hdat)
     parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='append',nargs='+',help=hdat)
 
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
@@ -349,13 +332,10 @@ if __name__ == "__main__":
     #sbs = ['-b','--batchscript','-batchscript']
     #parser.add_argument(sbs,dest='bs',metavar='batchscript',help=hbs)
 
-
-    #START240114
     hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
         +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
         +'The path provided by this option will be used instead of any other setting.\n'
     parser.add_argument('-O','--OGREDIR','-OGREDIR','--ogredir','-ogredir',dest='OGREDIR',metavar='OGREdirectory',help=hOGREDIR)
-
 
     hHCPDIR='HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR.'
     parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
@@ -499,21 +479,26 @@ if __name__ == "__main__":
             dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
             #print(f'dir0={dir0}\ndir1={dir1}')
 
+            #START240217
+            dir2 = i[:idx] + 'derivatives/preprocessed/${s0}'
+
         if args.bhostname:
             hostname = run_cmd('hostname')
             dir0 += '_' + hostname 
             dir1 += '_$(hostname)' 
 
         stem0 = dir0 + '/' + s0
-        str0 = stem0 + '_' + l0 + datestr
 
+        str0 = stem0 + '_' + l0 + datestr
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
-        #print(f'F0={F0}\nF1={F1}')
-
         if not args.lcfeatadapter and args.fsf1: 
-            str0 = stem0 + '_FEATADAPTER' + datestr
-            F0.append(str0 + '.sh')
+            F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
+
+
+        #START240217
+        F2 = stem0 + '_copy' + datestr + '.sh' 
+
 
         if args.bs:
             #str0 = stem0 + '_hcp3.27batch' + datestr
@@ -543,8 +528,14 @@ if __name__ == "__main__":
             F0f = [fs.enter_context(open(fn, "w")) for fn in F0]
             F1f = fs.enter_context(open(F1, "w"))
 
+            #START240217
+            F2f = fs.enter_context(open(F2, "w"))
+
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
             F1f.write(f'{SHEBANG}\nset -e\n\n')          
+
+            #START240217
+            F2f.write(f'{SHEBANG}\nset -e\n\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -649,8 +640,30 @@ if __name__ == "__main__":
                     for fn in F0f: 
                         for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
+                #START240217
+                #F2f.write(f's0={s0}\nsf0={dir1}\n\n')
+                F2f.write(f's0={s0}\nsf0={dir1}\nsf1={dir2}\n\n')
+                F2f.write('FILES=(\\\n')
+                for j in range(len(scans.bold)-1): 
+                    str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
+                    F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz \\\n')
+                str0 = pathlib.Path(scans.bold[j+1][0]).name.split('.nii')[0]
+                F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz)\n\n')
+                F2f.write('for i in ${FILES};do\n')
+                F2f.write('    if [ ! -f "${i}" ];then\n')
+                F2f.write('        ${i} not found.\n')
+                F2f.write('        continue\n')
+                F2f.write('    fi\n')
+                F2f.write('    cp -p $i ${sf1}/func\n')
+                F2f.write('done\n')
+
+
+
+
                 if not os.path.isfile(F0[0]):
-                    junk=run_cmd(f'rm -f {F1}')
+                    for j in F0: _=run_cmd(f'rm -f {j}')
+                    _=run_cmd(f'rm -f {F1}')
+                    _=run_cmd(f'rm -f {F2}')
                 else:
                     F1f.write(f'F0={F0[0]}\n\n'+'out=${F0}.txt\n')
                     F1f.write('if [ -f "${out}" ];then\n')
@@ -660,11 +673,14 @@ if __name__ == "__main__":
                     F1f.write('fi\n')
                     F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
-                    #print(f'len(F0)={len(F0)}')
                     for j in F0: 
                         junk=run_cmd(f'chmod +x {j}')
                         print(f'    Output written to {j}')
-                    junk=run_cmd(f'chmod +x {F1}')
+                    _=run_cmd(f'chmod +x {F1}')
                     print(f'    Output written to {F1}')
+
+                    #START240217
+                    _=run_cmd(f'chmod +x {F2}')
+                    print(f'    Output written to {F2}')
 
         exit()

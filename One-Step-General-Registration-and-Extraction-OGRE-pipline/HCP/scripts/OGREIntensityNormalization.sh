@@ -79,7 +79,11 @@ ScoutOutput=`getopt1 "--oscout" $@`  # "$7"
 UseJacobian=`getopt1 "--usejacobian" $@`  # 
 
 # default parameters
-OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
+
+#OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
+#START240217
+OutputfMRI=$($FSLDIR/bin/remove_ext $OutputfMRI)_OGRE
+
 WD=`defaultopt $WD ${OutputfMRI}.wdir`
 
 #sanity check the jacobian option
