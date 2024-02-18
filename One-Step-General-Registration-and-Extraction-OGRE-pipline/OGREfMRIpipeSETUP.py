@@ -24,6 +24,7 @@ import pathlib
 from datetime import datetime
 import json
 import re
+import glob
 
 #**** default global variables **** 
 
@@ -263,6 +264,50 @@ def get_TR(file):
 
     return dict0['RepetitionTime']
 
+class Feat:
+    def __init__(self,arg):
+        self.outputdir = []
+        self.fsf = []
+        for i in arg:
+            #print(f'i={i}')
+            for j in i:
+                #print(f'j={j}')
+                if j[-4:]=='feat':
+                    #if os.path.isdir(j):
+                    if pathlib.Path(j).exists():
+                        fsf0 = glob.glob(f'{j}/*.fsf')
+                        if fsf0:
+                            if len(fsf0)==1:
+                                line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                self.outputdir.append(line0.split('"')[1])
+                                self.fsf.append(fsf0)
+                elif j[-3:]=='fsf':
+                    line0 = run_cmd(f'grep "set fmri(outputdir)" {j}')
+                    self.outputdir.append(line0.split('"')[1])
+                    self.fsf.append(fsf0)
+                else:
+                    with open(j,encoding="utf8",errors='ignore') as f0:
+                        for line0 in f0:
+                            line1=line0.strip()
+                            #print(f'line1={line1}')
+                            if not line1 or line1.startswith('#'): continue
+                            if line1[-4:]=='feat':
+                                #if os.path.isdir(line0):
+                                if pathlib.Path(line1).exists():
+                                    fsf0 = glob.glob(f'{line1}/*.fsf')
+                                    if fsf0:
+                                        if len(fsf0)==1:
+                                            line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                            self.outputdir.append(line0.split('"')[1])
+                                            self.fsf.append(fsf0)
+                            elif line1[-3:]=='fsf':
+                                line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+                                self.outputdir.append(line0.split('"')[1])
+                                self.fsf.append(line1)
+        #print(f'self.outputdir={self.outputdir}')
+        #print(f'self.fsf={self.fsf}')
+
+
 
 if __name__ == "__main__":
     get_env_vars()
@@ -389,21 +434,10 @@ if __name__ == "__main__":
     #print(f'HCPDIR={HCPDIR}')
     #print(f'FREESURFVER={FREESURFVER}')
 
-    if args.fsf1:
-        outputdir1 = []
-        for i in args.fsf1:
-            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
-            outputdir1.append(line0.split('"')[1])
-        #print(f'outputdir1 = {outputdir1}')
-
-    if args.fsf2:
-        outputdir2 = []
-        for i in args.fsf1:
-            #line0 = subprocess.check_output(f'grep "set fmri(outputdir)" {str(i).strip("[]")}',shell=True,text=True)
-            line0 = run_cmd(f'grep "set fmri(outputdir)" {str(i).strip("[]")}')
-            outputdir2.append(line0.split('"')[1])
-        #print(f'outputdir2 = {outputdir2}')
-
+    #if args.fsf1: outputdir1 = get_feat(args.fsf1)
+    #if args.fsf2: outputdir2 = get_feat(args.fsf2)
+    if args.fsf1: feat1 = Feat(args.fsf1)
+    if args.fsf2: feat2 = Feat(args.fsf2)
 
     """
     if not args.bs:
@@ -607,12 +641,13 @@ if __name__ == "__main__":
 
                 if args.fsf1:
                     for fn in F0f: 
-                        for j in args.fsf1: fn.write('\n${FSLDIR}/bin/feat '+f'{j}\n')
-                        for j in outputdir1: fn.write('\n${P3} ${s0} '+f'{pathlib.Path(j).stem}\n')
+                        for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+                        for j in feat1.outputdir: fn.write('\n${P3} ${s0} '+f'{pathlib.Path(j).stem}')
+                        fn.write('\n')
 
                 if args.fsf2:
                     for fn in F0f: 
-                        for j in args.fsf2: fn.write('\n${FSLDIR}/bin/feat '+f'{j}\n')
+                        for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
                 if not os.path.isfile(F0[0]):
                     junk=run_cmd(f'rm -f {F1}')
