@@ -107,6 +107,12 @@ source $EnvironmentScript
 
 for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
 
+    if [ ! -f "${fMRITimeSeriesResults[i]}" ];then
+        echo ${fMRITimeSeriesResults[i]} not found.
+        continue
+    fi
+
+
     prefiltered_func_data_unwarp=${fMRITimeSeriesResults[i]}
     #od0=${fMRITimeSeriesResults[i]%/*}
     sd0=${fMRITimeSeriesResults[i]%/*}/SCRATCH$(date +%y%m%d%H%M%S)

@@ -122,6 +122,70 @@ class Scans:
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
+    #START240218
+    def write_copy_smooth_script(self,file,pathstr,fwhm,paradigm_hp_sec):
+        with open(file,'w') as f0:
+            f0.write(f'{SHEBANG}\nset -e\n\n')          
+            f0.write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
+            f0.write(f'export OGREDIR={OGREDIR}\n\n')
+            f0.write(pathstr+'\n')
+            f0.write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
+            f0.write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
+
+            f0.write('BOLD=(\\\n')
+            for j in range(len(self.bold)-1):
+                str0 = pathlib.Path(self.bold[j][0]).name.split('_bold.nii')[0]
+                f0.write(f'    {str0} \\\n')
+            str0 = pathlib.Path(self.bold[j+1][0]).name.split('_bold.nii')[0]
+            f0.write(f'    {str0})\n\n')
+
+            f0.write('for i in ${BOLD[@]};do\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold_OGRE.nii.gz\n')
+            f0.write('    if [ ! -f "${file}" ];then\n')
+            f0.write('        echo ${file} not found.\n')
+            f0.write('        continue\n')
+            f0.write('    fi\n')
+            f0.write('    cp -p $file ${bids}/func\n')
+            f0.write('done\n\n')
+
+            f0.write('for i in ${BOLD[@]};do\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/brainmask_fs.2.nii.gz\n')
+            f0.write('    if [ ! -f "${file}" ];then\n')
+            f0.write('        echo ${file} not found.\n')
+            f0.write('        continue\n')
+            f0.write('    fi\n')
+            f0.write('    cp -p $file ${bids}/func/${i}_brainmask-2_OGRE.nii.gz\n')
+            f0.write('done\n\n')
+
+            f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
+            f0.write('for i in ${ANAT[@]};do\n')
+            f0.write('    file=${sf0}/MNINonLinear/${i}.nii.gz\n')
+            f0.write('    if [ ! -f "${file}" ];then\n')
+            f0.write('        echo ${file} not found.\n')
+            f0.write('        continue\n')
+            f0.write('    fi\n')
+            f0.write('    cp -p $file ${bids}/func/${s0}_${i}_OGRE.nii.gz\n')
+            f0.write('done\n\n')
+
+            f0.write('${SMOOTH} \\\n')
+            f0.write('    --fMRITimeSeriesResults="\\\n')
+            for j in range(len(self.taskidx)-1):
+                str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+                f0.write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
+            str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
+            f0.write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz" \\\n')
+
+            if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+            if paradigm_hp_sec:
+                f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+                f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
+            f0.write('    --EnvironmentScript=${SETUP}\n')
+
+
+
+
+
+
 #        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
 #        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
 #        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
@@ -476,11 +540,17 @@ if __name__ == "__main__":
         else:
             #print(i[:idx])
             dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
-            dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
-            #print(f'dir0={dir0}\ndir1={dir1}')
 
+            #dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
             #START240217
-            dir2 = i[:idx] + 'derivatives/preprocessed/${s0}'
+            #dir2 = i[:idx] + 'derivatives/preprocessed/${s0}'
+            #START240218
+            bids = i[:idx] + 'derivatives/preprocessed/${s0}'
+            dir1 = '${bids}/pipeline${FREESURFVER}'
+
+
+
+            #print(f'dir0={dir0}\ndir1={dir1}')
 
         if args.bhostname:
             hostname = run_cmd('hostname')
@@ -496,8 +566,8 @@ if __name__ == "__main__":
             F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
 
 
-        #START240217
-        F2 = stem0 + '_copy' + datestr + '.sh' 
+        F2 = stem0 + '_copy_smooth' + datestr + '.sh' 
+        F2name = '${s0}_copy_smooth' + datestr + '.sh'
 
 
         if args.bs:
@@ -529,13 +599,13 @@ if __name__ == "__main__":
             F1f = fs.enter_context(open(F1, "w"))
 
             #START240217
-            F2f = fs.enter_context(open(F2, "w"))
+            #F2f = fs.enter_context(open(F2, "w"))
 
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
             F1f.write(f'{SHEBANG}\nset -e\n\n')          
 
             #START240217
-            F2f.write(f'{SHEBANG}\nset -e\n\n')          
+            #F2f.write(f'{SHEBANG}\nset -e\n\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -549,17 +619,31 @@ if __name__ == "__main__":
                     F0f[0].write('P0=${OGREDIR}/HCP/scripts/'+P0+'\n')
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/HCP/scripts/'+P1+'\n')
-                if not args.lct1copymaskonly:
-                    F0f[0].write('P2=${OGREDIR}/HCP/scripts/'+P2+'\n')
+
+                #if not args.lct1copymaskonly:
+                #    F0f[0].write('P2=${OGREDIR}/HCP/scripts/'+P2+'\n')
 
             if args.fsf1:
                 for fn in F0f: fn.write(f'P3=${OGREDIR}/HCP/scripts/'+P3+'\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
-                F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
+
+                #F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
+                #START240218
+                #F0f[0].write(f's0={s0}\nsf0={dir1}\n')
+                #F0f[0].write(f's0={s0}\nbids={bids}\nsf0={dir1}\n')
+                #str0=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
+                #F0f[0].write(str0)
+                pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
+                F0f[0].write(pathstr)
+                #F2f.write(str0+'\n')
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+                    #START240218
+                    F0f[0].write('COPY_SMOOTH=${sf0}/'+f'{F2name}\n\n')
+
                     F0f[0].write('${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
@@ -617,18 +701,29 @@ if __name__ == "__main__":
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
                 if scans.taskidx and not args.lct1copymaskonly: 
-                    F0f[0].write('${P2} \\\n')
-                    F0f[0].write('    --fMRITimeSeriesResults="\\\n')
-                    for j in range(len(scans.taskidx)-1): 
-                        str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-                    str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-                    if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
-                    if args.paradigm_hp_sec: 
-                        F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
-                    F0f[0].write('    --EnvironmentScript=${SETUP}\n')
+
+                    #F0f[0].write('${P2} \\\n')
+                    #F0f[0].write('    --fMRITimeSeriesResults="\\\n')
+                    ##for j in range(len(scans.taskidx)-1): 
+                    ##    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
+                    ##    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
+                    ##str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
+                    ##F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+                    #START240218
+                    #for j in range(len(scans.taskidx)-1): 
+                    #    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
+                    #    F0f[0].write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
+                    #str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
+                    #F0f[0].write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
+                    #if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
+                    #if args.paradigm_hp_sec: 
+                    #    F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
+                    #    F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
+                    #F0f[0].write('    --EnvironmentScript=${SETUP}\n')
+                    #START240218
+                    scans.write_copy_smooth_script(F2,pathstr,args.fwhm,args.paradigm_hp_sec)
+                    F0f[0].write('${COPY_SMOOTH}\n\n')
+
 
                 if args.fsf1:
                     for fn in F0f: 
@@ -641,23 +736,19 @@ if __name__ == "__main__":
                         for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
                 #START240217
-                #F2f.write(f's0={s0}\nsf0={dir1}\n\n')
-                F2f.write(f's0={s0}\nsf0={dir1}\nsf1={dir2}\n\n')
-                F2f.write('FILES=(\\\n')
-                for j in range(len(scans.bold)-1): 
-                    str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
-                    F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz \\\n')
-                str0 = pathlib.Path(scans.bold[j+1][0]).name.split('.nii')[0]
-                F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz)\n\n')
-                F2f.write('for i in ${FILES};do\n')
-                F2f.write('    if [ ! -f "${i}" ];then\n')
-                F2f.write('        ${i} not found.\n')
-                F2f.write('        continue\n')
-                F2f.write('    fi\n')
-                F2f.write('    cp -p $i ${sf1}/func\n')
-                F2f.write('done\n')
-
-
+                #F2f.write('FILES=(\\\n')
+                #for j in range(len(scans.bold)-1): 
+                #    str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
+                #    F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz \\\n')
+                #str0 = pathlib.Path(scans.bold[j+1][0]).name.split('.nii')[0]
+                #F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz)\n\n')
+                #F2f.write('for i in ${FILES};do\n')
+                #F2f.write('    if [ ! -f "${i}" ];then\n')
+                #F2f.write('        ${i} not found.\n')
+                #F2f.write('        continue\n')
+                #F2f.write('    fi\n')
+                #F2f.write('    cp -p $i ${bids}/func\n')
+                #F2f.write('done\n')
 
 
                 if not os.path.isfile(F0[0]):
