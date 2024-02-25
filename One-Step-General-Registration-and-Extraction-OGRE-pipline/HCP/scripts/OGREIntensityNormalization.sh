@@ -80,9 +80,10 @@ UseJacobian=`getopt1 "--usejacobian" $@`  #
 
 # default parameters
 
-#OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
+#START240224
+OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
 #START240217
-OutputfMRI=$($FSLDIR/bin/remove_ext $OutputfMRI)_OGRE
+#OutputfMRI=$($FSLDIR/bin/remove_ext $OutputfMRI)_OGRE
 
 WD=`defaultopt $WD ${OutputfMRI}.wdir`
 
