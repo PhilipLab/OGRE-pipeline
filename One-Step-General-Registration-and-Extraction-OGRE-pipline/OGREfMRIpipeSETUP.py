@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
 
-#https://docs.python.org/3/tutorial/classes.html
-#https://www.digitalocean.com/community/tutorials/how-to-construct-classes-and-define-objects-in-python-3
-#https://www.sanfoundry.com/python-program-form-dictionary-object-class/
-#https://www.geeksforgeeks.org/python-initialize-a-dictionary-with-only-keys-from-a-list/
-#https://stackoverflow.com/questions/209840/make-a-dictionary-dict-from-separate-lists-of-keys-and-values
-#https://www.geeksforgeeks.org/how-to-change-a-dictionary-into-a-class/
-#https://pynative.com/python-class-variables/
-#https://docs.python.org/3/howto/argparse.html
-#https://stackoverflow.com/questions/31127366/single-dash-for-argparse-long-options
-#https://stackoverflow.com/questions/42818876/python-3-argparse-call-function
-#https://ioflood.com/blog/python-get-environment-variable/#:~:text=To%20get%20an%20environment%20variable,with%20your%20system's%20environment%20variables.
-#python3 equivalent to grep on a file
-#https://docs.python.org/3/library/os.html
-#https://docs.python.org/3/c-api/datetime.html
-#https://blog.devgenius.io/the-weird-side-effects-of-modifying-python-variables-inside-a-function-ba1e5ca65192
-#https://stackoverflow.com/questions/986006/how-do-i-pass-a-variable-by-reference
-#https://docs.python.org/3/library/json.html
-
 import os
 import subprocess
 import pathlib
@@ -122,15 +104,16 @@ class Scans:
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
-    #START240218
-    def write_copy_smooth_script(self,file,pathstr,fwhm,paradigm_hp_sec):
+    def write_copy_script(self,file,pathstr,fwhm,paradigm_hp_sec):
         with open(file,'w') as f0:
             f0.write(f'{SHEBANG}\nset -e\n\n')          
             f0.write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
             f0.write(f'export OGREDIR={OGREDIR}\n\n')
-            f0.write(pathstr+'\n')
+            f0.write(pathstr+'\n') # s0, bids and sf0
             f0.write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
             f0.write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
+
+            f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
 
             f0.write('BOLD=(\\\n')
             for j in range(len(self.bold)-1):
@@ -140,12 +123,13 @@ class Scans:
             f0.write(f'    {str0})\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold_OGRE.nii.gz\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func\n')
+            #f0.write('    cp -p $file ${bids}/func\n')
+            f0.write('    cp -p $file ${bids}/func/${i}_bold_OGRE.nii.gz\n')
             f0.write('done\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
@@ -157,31 +141,104 @@ class Scans:
             f0.write('    cp -p $file ${bids}/func/${i}_brainmask-2_OGRE.nii.gz\n')
             f0.write('done\n\n')
 
+
+            #f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
+            #f0.write('for i in ${ANAT[@]};do\n')
+            #f0.write('    file=${sf0}/MNINonLinear/${i}.nii.gz\n')
+            #f0.write('    if [ ! -f "${file}" ];then\n')
+            #f0.write('        echo ${file} not found.\n')
+            #f0.write('        continue\n')
+            #f0.write('    fi\n')
+            #f0.write('    cp -p $file ${bids}/anat/${s0}_${i}_OGRE.nii.gz\n')
+            #f0.write('done\n\n')
+            #START240224
             f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-            f0.write('for i in ${ANAT[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/${i}.nii.gz\n')
+            f0.write('OUT=(T1w_restore_OGRE T1w_restore_OGRE_brain T2w_restore_OGRE T2w_restore_OGRE_brain)\n')
+            f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
+            f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func/${s0}_${i}_OGRE.nii.gz\n')
+            f0.write('    cp -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
             f0.write('done\n\n')
 
-            f0.write('${SMOOTH} \\\n')
-            f0.write('    --fMRITimeSeriesResults="\\\n')
-            for j in range(len(self.taskidx)-1):
-                str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-                f0.write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
-            str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
-            f0.write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz" \\\n')
-
-            if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-            if paradigm_hp_sec:
-                f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-                f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
-            f0.write('    --EnvironmentScript=${SETUP}\n')
+            if fwhm: 
+                pstr=''
+                if paradigm_hp_sec: pstr = f'HPTF{paradigm_hp_sec}s'
+            
+                for j in range(len(self.taskidx)):
+                    str0 = self.bold[self.taskidx[j]][0].split('.nii')[0]
+                    str1 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+                    for k in fwhm:
+                        if os.path.isfile(str0+'_SUSAN'+k+'mmHPTF60s.nii.gz'):
 
 
+                    if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz'):
+                        f0.write(f'cp -p {str0}_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
+                    elif os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
+                        f0.write(f'cp -p {str0}_bold_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
+                    else:
+                        f0.write('${SMOOTH} \\\n')
+                        f0.write('    --fMRITimeSeriesResults="${bids}/func/'+{str0}+'.nii.gz" \\\n')
+                        if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+                        if paradigm_hp_sec:
+                            f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+                            f0.write(f'    --TR="{str(get_TR(self.bold[self.taskidx[j]][0]))}" \\\n')
+                        f0.write('    --EnvironmentScript=${SETUP}\n')
+
+
+
+
+            #KEEP
+            #f0.write('${SMOOTH} \\\n')
+            #f0.write('    --fMRITimeSeriesResults="\\\n')
+            #for j in range(len(self.taskidx)-1):
+            #    str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+            #    f0.write('        ${bids}/func/'+f'{str0}.nii.gz \\\n')
+            #str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
+            #f0.write('        ${bids}/func/'+f'{str0}.nii.gz" \\\n')
+            #if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+            #if paradigm_hp_sec:
+            #    f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+            #    f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
+            #f0.write('    --EnvironmentScript=${SETUP}\n')
+            #CHEAT 
+            flag=False
+            for j in range(len(self.taskidx)):
+                str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
+                if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz') or os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
+                    flag=True
+                    break 
+            if not flag:
+                f0.write('${SMOOTH} \\\n')
+                f0.write('    --fMRITimeSeriesResults="\\\n')
+                for j in range(len(self.taskidx)-1):
+                    str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+                    f0.write('        ${bids}/func/'+f'{str0}.nii.gz \\\n')
+                str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
+                f0.write('        ${bids}/func/'+f'{str0}.nii.gz" \\\n')
+                if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+                if paradigm_hp_sec:
+                    f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+                    f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
+                f0.write('    --EnvironmentScript=${SETUP}\n')
+            else:
+                for j in range(len(self.taskidx)):
+                    str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
+                    str1 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+                    if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz'):
+                        f0.write(f'cp -p {str0}_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
+                    elif os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
+                        f0.write(f'cp -p {str0}_bold_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
+                    else:
+                        f0.write('${SMOOTH} \\\n')
+                        f0.write('    --fMRITimeSeriesResults="${bids}/func/'+{str0}+'.nii.gz" \\\n')
+                        if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+                        if paradigm_hp_sec:
+                            f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+                            f0.write(f'    --TR="{str(get_TR(self.bold[self.taskidx[j]][0]))}" \\\n')
+                        f0.write('    --EnvironmentScript=${SETUP}\n')
 
 
 
@@ -561,8 +618,11 @@ if __name__ == "__main__":
         F1 = str0 + '_fileout.sh'
         if not args.lcfeatadapter and args.fsf1: 
             F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
-        F2 = stem0 + '_copy_smooth' + datestr + '.sh' 
-        F2name = '${s0}_copy_smooth' + datestr + '.sh'
+
+        #F2 = stem0 + '_copy_smooth' + datestr + '.sh' 
+        #F2name = '${s0}_copy_smooth' + datestr + '.sh'
+        F2 = stem0 + '_copy' + datestr + '.sh' 
+        F2name = '${s0}_copy' + datestr + '.sh'
 
         #START240221
         #stem1 = dir1 + '/${s0}'
@@ -626,8 +686,8 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/HCP/scripts/'+P1+'\n')
 
-                #if not args.lct1copymaskonly:
-                #    F0f[0].write('P2=${OGREDIR}/HCP/scripts/'+P2+'\n')
+                if not args.lct1copymaskonly:
+                    F0f[0].write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
 
             if args.fsf1:
                 for fn in F0f: fn.write(f'P3=${OGREDIR}/HCP/scripts/'+P3+'\n')          
@@ -645,7 +705,8 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
                     #START240218
-                    F0f[0].write('COPY_SMOOTH=${sf0}/'+f'{F2name}\n\n')
+                    #F0f[0].write('COPY_SMOOTH=${sf0}/'+f'{F2name}\n\n')
+                    F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
 
                     F0f[0].write('${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
@@ -705,27 +766,21 @@ if __name__ == "__main__":
 
                 if scans.taskidx and not args.lct1copymaskonly: 
 
-                    #F0f[0].write('${P2} \\\n')
-                    #F0f[0].write('    --fMRITimeSeriesResults="\\\n')
-                    ##for j in range(len(scans.taskidx)-1): 
-                    ##    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                    ##    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-                    ##str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    ##F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-                    #START240218
-                    #for j in range(len(scans.taskidx)-1): 
-                    #    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                    #    F0f[0].write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
-                    #str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    #F0f[0].write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
-                    #if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
-                    #if args.paradigm_hp_sec: 
-                    #    F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-                    #    F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
-                    #F0f[0].write('    --EnvironmentScript=${SETUP}\n')
-                    #START240218
-                    scans.write_copy_smooth_script(F2,pathstr,args.fwhm,args.paradigm_hp_sec)
-                    F0f[0].write('${COPY_SMOOTH}\n\n')
+                    F0f[0].write('${SMOOTH} \\\n')
+                    F0f[0].write('    --fMRITimeSeriesResults="\\\n')
+                    for j in range(len(scans.taskidx)-1): 
+                        str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
+                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
+                    str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
+                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+                    if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
+                    if args.paradigm_hp_sec: 
+                        F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
+                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
+                    F0f[0].write('    --EnvironmentScript=${SETUP}\n')
+
+                    scans.write_copy_script(F2,pathstr,args.fwhm,args.paradigm_hp_sec)
+                    F0f[0].write('${COPY}\n\n')
 
 
                 if args.fsf1:
