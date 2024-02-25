@@ -193,8 +193,8 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
         bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR[i]})" | bc))
         declare -p bptf 
         #${FSLDIR}/bin/fslmaths prefiltered_func_data_intnorm -bptf ${bptf} -1 -add tempMean prefiltered_func_data_tempfilt
-        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN${FWHM[j]}mmHPTF${PARADIGM_HP_SEC}s 
-        ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN-${FWHM[j]}_filt-${PARADIGM_HP_SEC}
+        ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN${FWHM[j]}mmHPTF${PARADIGM_HP_SEC}s 
+        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN-${FWHM[j]}_filt-${PARADIGM_HP_SEC}
     done
 
     rm -r ${sd0}
