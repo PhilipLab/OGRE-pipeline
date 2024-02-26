@@ -115,22 +115,38 @@ class Scans:
 
             f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
 
+            #f0.write('BOLD=(\\\n')
+            #for j in range(len(self.bold)-1):
+            #    str0 = pathlib.Path(self.bold[j][0]).name.split('_bold.nii')[0]
+            #    f0.write(f'    {str0} \\\n')
+            #str0 = pathlib.Path(self.bold[j+1][0]).name.split('_bold.nii')[0]
+            #f0.write(f'    {str0})\n\n')
+            #START240225
             f0.write('BOLD=(\\\n')
             for j in range(len(self.bold)-1):
-                str0 = pathlib.Path(self.bold[j][0]).name.split('_bold.nii')[0]
+                str0 = pathlib.Path(self.bold[j][0]).name.split('.nii')[0]
                 f0.write(f'    {str0} \\\n')
-            str0 = pathlib.Path(self.bold[j+1][0]).name.split('_bold.nii')[0]
+            str0 = pathlib.Path(self.bold[j+1][0]).name.split('.nii')[0]
             f0.write(f'    {str0})\n\n')
 
+            #f0.write('for i in ${BOLD[@]};do\n')
+            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold.nii.gz\n')
+            #f0.write('    if [ ! -f "${file}" ];then\n')
+            #f0.write('        echo ${file} not found.\n')
+            #f0.write('        continue\n')
+            #f0.write('    fi\n')
+            #f0.write('    cp -p $file ${bids}/func/${i}_bold_OGRE.nii.gz\n')
+            #f0.write('done\n\n')
+            #START240225
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold.nii.gz\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            #f0.write('    cp -p $file ${bids}/func\n')
-            f0.write('    cp -p $file ${bids}/func/${i}_bold_OGRE.nii.gz\n')
+            f0.write('    cp -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
             f0.write('done\n\n')
+
 
             f0.write('for i in ${BOLD[@]};do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/brainmask_fs.2.nii.gz\n')
@@ -164,28 +180,31 @@ class Scans:
             f0.write('done\n\n')
 
             if fwhm: 
-                pstr=''
-                if paradigm_hp_sec: pstr = f'HPTF{paradigm_hp_sec}s'
-            
+                f0.write('TASK_BOLD=(\\\n')
                 for j in range(len(self.taskidx)):
-                    str0 = self.bold[self.taskidx[j]][0].split('.nii')[0]
-                    str1 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-                    for k in fwhm:
-                        if os.path.isfile(str0+'_SUSAN'+k+'mmHPTF60s.nii.gz'):
+                    str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+                    f0.write(f'    {str0} \\\n')
+                str0 = pathlib.Path(self.bold[self.taskidx[j+]][0]).name.split('.nii')[0]
+                f0.write(f'    {str0})\n\n')
 
+                f0.write('PSTR_OGRE=;PSTR_BIDS=\n')
+                if paradigm_hp_sec: 
+                    f0.write(f'paradigm_hp_sec={paradigm_hp_sec}\n')
+                    f0.write('PSTR_OGRE=HPTF${paradigm_hp_sec}s\n')
+                    f0.write('PSTR_BIDS=_filt-${paradigm_hp_sec}\n')
 
-                    if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz'):
-                        f0.write(f'cp -p {str0}_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
-                    elif os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
-                        f0.write(f'cp -p {str0}_bold_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
-                    else:
-                        f0.write('${SMOOTH} \\\n')
-                        f0.write('    --fMRITimeSeriesResults="${bids}/func/'+{str0}+'.nii.gz" \\\n')
-                        if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-                        if paradigm_hp_sec:
-                            f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-                            f0.write(f'    --TR="{str(get_TR(self.bold[self.taskidx[j]][0]))}" \\\n')
-                        f0.write('    --EnvironmentScript=${SETUP}\n')
+                f0.write(f'fwhm=({' '.join(fwhm)})\n')
+
+                f0.write('for i in ${TASK_BOLD[@]};do\n')
+                f0.write('    for j in ${fwhm[@]};do\n')
+                f0.write('        file=${sf0}/MNINonLinear/Results/${i}/${i}_SUSAN${j}mm${PSTR_OGRE}.nii.gz\n')
+                f0.write('        if [ ! -f "${file}" ];then\n')
+                f0.write('            echo ${file} not found.\n')
+                f0.write('            continue\n')
+                f0.write('        fi\n')
+                f0.write('        cp -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
+                f0.write('    done\n\n')
+                f0.write('done\n\n')
 
 
 
@@ -204,41 +223,41 @@ class Scans:
             #    f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
             #f0.write('    --EnvironmentScript=${SETUP}\n')
             #CHEAT 
-            flag=False
-            for j in range(len(self.taskidx)):
-                str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
-                if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz') or os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
-                    flag=True
-                    break 
-            if not flag:
-                f0.write('${SMOOTH} \\\n')
-                f0.write('    --fMRITimeSeriesResults="\\\n')
-                for j in range(len(self.taskidx)-1):
-                    str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-                    f0.write('        ${bids}/func/'+f'{str0}.nii.gz \\\n')
-                str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
-                f0.write('        ${bids}/func/'+f'{str0}.nii.gz" \\\n')
-                if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-                if paradigm_hp_sec:
-                    f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-                    f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
-                f0.write('    --EnvironmentScript=${SETUP}\n')
-            else:
-                for j in range(len(self.taskidx)):
-                    str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
-                    str1 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-                    if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz'):
-                        f0.write(f'cp -p {str0}_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
-                    elif os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
-                        f0.write(f'cp -p {str0}_bold_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
-                    else:
-                        f0.write('${SMOOTH} \\\n')
-                        f0.write('    --fMRITimeSeriesResults="${bids}/func/'+{str0}+'.nii.gz" \\\n')
-                        if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-                        if paradigm_hp_sec:
-                            f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-                            f0.write(f'    --TR="{str(get_TR(self.bold[self.taskidx[j]][0]))}" \\\n')
-                        f0.write('    --EnvironmentScript=${SETUP}\n')
+            #flag=False
+            #for j in range(len(self.taskidx)):
+            #    str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
+            #    if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz') or os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
+            #        flag=True
+            #        break 
+            #if not flag:
+            #    f0.write('${SMOOTH} \\\n')
+            #    f0.write('    --fMRITimeSeriesResults="\\\n')
+            #    for j in range(len(self.taskidx)-1):
+            #        str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+            #        f0.write('        ${bids}/func/'+f'{str0}.nii.gz \\\n')
+            #    str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
+            #    f0.write('        ${bids}/func/'+f'{str0}.nii.gz" \\\n')
+            #    if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+            #    if paradigm_hp_sec:
+            #        f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+            #        f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
+            #    f0.write('    --EnvironmentScript=${SETUP}\n')
+            #else:
+            #    for j in range(len(self.taskidx)):
+            #        str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
+            #        str1 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
+            #        if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz'):
+            #            f0.write(f'cp -p {str0}_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
+            #        elif os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
+            #            f0.write(f'cp -p {str0}_bold_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
+            #        else:
+            #            f0.write('${SMOOTH} \\\n')
+            #            f0.write('    --fMRITimeSeriesResults="${bids}/func/'+{str0}+'.nii.gz" \\\n')
+            #            if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
+            #            if paradigm_hp_sec:
+            #                f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+            #                f0.write(f'    --TR="{str(get_TR(self.bold[self.taskidx[j]][0]))}" \\\n')
+            #            f0.write('    --EnvironmentScript=${SETUP}\n')
 
 
 
