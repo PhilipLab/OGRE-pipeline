@@ -108,35 +108,14 @@ class Scans:
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec):
         with open(file,'w') as f0:
 
-#list(zip(*scans.bold))[0]
-
             bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
 
-
             f0.write(f'{SHEBANG}\nset -e\n\n')          
-            #f0.write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
             f0.write(f'FREESURFVER={FREESURFVER}\n\n')
-            #f0.write(f'export OGREDIR={OGREDIR}\n\n')
             f0.write(pathstr+'\n') # s0, bids and sf0
-            #f0.write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
-            #f0.write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
 
             f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
 
-            #f0.write('BOLD=(\\\n')
-            #for j in range(len(self.bold)-1):
-            #    str0 = pathlib.Path(self.bold[j][0]).name.split('_bold.nii')[0]
-            #    f0.write(f'    {str0} \\\n')
-            #str0 = pathlib.Path(self.bold[j+1][0]).name.split('_bold.nii')[0]
-            #f0.write(f'    {str0})\n\n')
-            #START240225
-            #f0.write('BOLD=(\\\n')
-            #for j in range(len(self.bold)-1):
-            #    str0 = pathlib.Path(self.bold[j][0]).name.split('.nii')[0]
-            #    f0.write(f'    {str0} \\\n')
-            #str0 = pathlib.Path(self.bold[j+1][0]).name.split('.nii')[0]
-            #f0.write(f'    {str0})\n\n')
-            #START240225
             f0.write('BOLD=(\\\n')
             for j in range(len(bold_bash)-1):
                 str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
@@ -144,16 +123,6 @@ class Scans:
             str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
             f0.write(f'    {str0})\n\n')
 
-
-            #f0.write('for i in ${BOLD[@]};do\n')
-            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold.nii.gz\n')
-            #f0.write('    if [ ! -f "${file}" ];then\n')
-            #f0.write('        echo ${file} not found.\n')
-            #f0.write('        continue\n')
-            #f0.write('    fi\n')
-            #f0.write('    cp -p $file ${bids}/func/${i}_bold_OGRE.nii.gz\n')
-            #f0.write('done\n\n')
-            #START240225
             f0.write('for i in ${BOLD[@]};do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
@@ -163,28 +132,15 @@ class Scans:
             f0.write('    cp -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
             f0.write('done\n\n')
 
-
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/brainmask_fs.2.nii.gz\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            #f0.write('    cp -p $file ${bids}/func/${i}_brainmask-2_OGRE.nii.gz\n')
             f0.write('    cp -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
             f0.write('done\n\n')
 
-
-            #f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-            #f0.write('for i in ${ANAT[@]};do\n')
-            #f0.write('    file=${sf0}/MNINonLinear/${i}.nii.gz\n')
-            #f0.write('    if [ ! -f "${file}" ];then\n')
-            #f0.write('        echo ${file} not found.\n')
-            #f0.write('        continue\n')
-            #f0.write('    fi\n')
-            #f0.write('    cp -p $file ${bids}/anat/${s0}_${i}_OGRE.nii.gz\n')
-            #f0.write('done\n\n')
-            #START240224
             f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
             f0.write('OUT=(T1w_restore_OGRE T1w_restore_OGRE_brain T2w_restore_OGRE T2w_restore_OGRE_brain)\n')
             f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
@@ -197,20 +153,12 @@ class Scans:
             f0.write('done\n')
 
             if fwhm: 
-                #f0.write('\nTASK_BOLD=(\\\n')
-                #for j in range(len(self.taskidx)-1):
-                #    str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-                #    f0.write(f'    {str0} \\\n')
-                #str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
-                #f0.write(f'    {str0})\n\n')
                 f0.write('\nTASK_BOLD=(\\\n')
                 for j in range(len(self.taskidx)-1):
                     str0 = pathlib.Path(bold_bash[self.taskidx[j]]).name.split('.nii')[0]
                     f0.write(f'    {str0} \\\n')
                 str0 = pathlib.Path(bold_bash[self.taskidx[j+1]]).name.split('.nii')[0]
                 f0.write(f'    {str0})\n\n')
-
-
 
                 if paradigm_hp_sec: 
                     f0.write(f'paradigm_hp_sec={paradigm_hp_sec}\n')
@@ -231,60 +179,6 @@ class Scans:
                 f0.write('        cp -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
                 f0.write('    done\n')
                 f0.write('done\n')
-
-
-
-
-            #KEEP
-            #f0.write('${SMOOTH} \\\n')
-            #f0.write('    --fMRITimeSeriesResults="\\\n')
-            #for j in range(len(self.taskidx)-1):
-            #    str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-            #    f0.write('        ${bids}/func/'+f'{str0}.nii.gz \\\n')
-            #str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
-            #f0.write('        ${bids}/func/'+f'{str0}.nii.gz" \\\n')
-            #if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-            #if paradigm_hp_sec:
-            #    f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-            #    f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
-            #f0.write('    --EnvironmentScript=${SETUP}\n')
-            #CHEAT 
-            #flag=False
-            #for j in range(len(self.taskidx)):
-            #    str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
-            #    if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz') or os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
-            #        flag=True
-            #        break 
-            #if not flag:
-            #    f0.write('${SMOOTH} \\\n')
-            #    f0.write('    --fMRITimeSeriesResults="\\\n')
-            #    for j in range(len(self.taskidx)-1):
-            #        str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-            #        f0.write('        ${bids}/func/'+f'{str0}.nii.gz \\\n')
-            #    str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
-            #    f0.write('        ${bids}/func/'+f'{str0}.nii.gz" \\\n')
-            #    if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-            #    if paradigm_hp_sec:
-            #        f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-            #        f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
-            #    f0.write('    --EnvironmentScript=${SETUP}\n')
-            #else:
-            #    for j in range(len(self.taskidx)):
-            #        str0 = self.bold[self.taskidx[j]][0].split('_bold.nii')[0]
-            #        str1 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-            #        if os.path.isfile(str0+'SUSAN6mmHPTF60s.nii.gz'):
-            #            f0.write(f'cp -p {str0}_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
-            #        elif os.path.isfile(str0+'bold_SUSAN6mmHPTF60s.nii.gz'):
-            #            f0.write(f'cp -p {str0}_bold_SUSAN6mmHPTF60s.nii.gz '+'${bids}/func/'+f'{str1}.nii.gz \\\n')
-            #        else:
-            #            f0.write('${SMOOTH} \\\n')
-            #            f0.write('    --fMRITimeSeriesResults="${bids}/func/'+{str0}+'.nii.gz" \\\n')
-            #            if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-            #            if paradigm_hp_sec:
-            #                f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-            #                f0.write(f'    --TR="{str(get_TR(self.bold[self.taskidx[j]][0]))}" \\\n')
-            #            f0.write('    --EnvironmentScript=${SETUP}\n')
-
 
 
 
@@ -735,22 +629,20 @@ if __name__ == "__main__":
                     F0f[0].write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
 
             if args.fsf1:
-                for fn in F0f: fn.write(f'P3=${OGREDIR}/HCP/scripts/'+P3+'\n')          
+                F0f[1].write(f'OGREDIR={OGREDIR}\n')
+                for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/HCP/scripts/'+P3+'\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
 
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
 
-                #F0f[0].write(pathstr)
-                #START240221
                 F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
+                F0f[1].write(f's0={s0}\n')
                 F1f.write(f's0={s0}\nsf0={dir1}\n\n')
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
-                    #START240218
-                    #F0f[0].write('COPY_SMOOTH=${sf0}/'+f'{F2name}\n\n')
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
 
                     F0f[0].write('${P0} \\\n')
@@ -822,9 +714,8 @@ if __name__ == "__main__":
                     if args.paradigm_hp_sec: 
                         F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
                         F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
-                    F0f[0].write('    --EnvironmentScript=${SETUP}\n')
+                    F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                    #scans.write_copy_script(F2,pathstr,args.fwhm,args.paradigm_hp_sec)
                     scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
                     F0f[0].write('${COPY}\n\n')
 
@@ -832,35 +723,17 @@ if __name__ == "__main__":
                 if args.fsf1:
                     for fn in F0f: 
                         for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                        for j in feat1.outputdir: fn.write('\n${P3} ${s0} '+f'{pathlib.Path(j).stem}')
+                        for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
                         fn.write('\n')
 
                 if args.fsf2:
                     for fn in F0f: 
                         for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
-                #START240217
-                #F2f.write('FILES=(\\\n')
-                #for j in range(len(scans.bold)-1): 
-                #    str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
-                #    F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz \\\n')
-                #str0 = pathlib.Path(scans.bold[j+1][0]).name.split('.nii')[0]
-                #F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz)\n\n')
-                #F2f.write('for i in ${FILES};do\n')
-                #F2f.write('    if [ ! -f "${i}" ];then\n')
-                #F2f.write('        ${i} not found.\n')
-                #F2f.write('        continue\n')
-                #F2f.write('    fi\n')
-                #F2f.write('    cp -p $i ${bids}/func\n')
-                #F2f.write('done\n')
-
-
                 if not os.path.isfile(F0[0]):
                     for j in F0: _=run_cmd(f'rm -f {j}')
                     _=run_cmd(f'rm -f {F1}')
                     _=run_cmd(f'rm -f {F2}')
-
-                    #START240221
                     if arg.bs: _=run_cmd(f'rm -f {bs0}')
 
                 else:
@@ -881,7 +754,7 @@ if __name__ == "__main__":
                     F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
                     for j in F0: 
-                        junk=run_cmd(f'chmod +x {j}')
+                        _=run_cmd(f'chmod +x {j}')
                         print(f'    Output written to {j}')
                     _=run_cmd(f'chmod +x {F1}')
                     print(f'    Output written to {F1}')
