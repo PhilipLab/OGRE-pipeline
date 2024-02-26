@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
 
-#https://docs.python.org/3/tutorial/classes.html
-#https://www.digitalocean.com/community/tutorials/how-to-construct-classes-and-define-objects-in-python-3
-#https://www.sanfoundry.com/python-program-form-dictionary-object-class/
-#https://www.geeksforgeeks.org/python-initialize-a-dictionary-with-only-keys-from-a-list/
-#https://stackoverflow.com/questions/209840/make-a-dictionary-dict-from-separate-lists-of-keys-and-values
-#https://www.geeksforgeeks.org/how-to-change-a-dictionary-into-a-class/
-#https://pynative.com/python-class-variables/
-#https://docs.python.org/3/howto/argparse.html
-#https://stackoverflow.com/questions/31127366/single-dash-for-argparse-long-options
-#https://stackoverflow.com/questions/42818876/python-3-argparse-call-function
-#https://ioflood.com/blog/python-get-environment-variable/#:~:text=To%20get%20an%20environment%20variable,with%20your%20system's%20environment%20variables.
-#python3 equivalent to grep on a file
-#https://docs.python.org/3/library/os.html
-#https://docs.python.org/3/c-api/datetime.html
-#https://blog.devgenius.io/the-weird-side-effects-of-modifying-python-variables-inside-a-function-ba1e5ca65192
-#https://stackoverflow.com/questions/986006/how-do-i-pass-a-variable-by-reference
-#https://docs.python.org/3/library/json.html
-
 import os
 import subprocess
 import pathlib
@@ -122,67 +104,81 @@ class Scans:
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
-    #START240218
-    def write_copy_smooth_script(self,file,pathstr,fwhm,paradigm_hp_sec):
+    #def write_copy_script(self,file,pathstr,fwhm,paradigm_hp_sec):
+    def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec):
         with open(file,'w') as f0:
+
+            bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
+
             f0.write(f'{SHEBANG}\nset -e\n\n')          
-            f0.write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
-            f0.write(f'export OGREDIR={OGREDIR}\n\n')
-            f0.write(pathstr+'\n')
-            f0.write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
-            f0.write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
+            f0.write(f'FREESURFVER={FREESURFVER}\n\n')
+            f0.write(pathstr+'\n') # s0, bids and sf0
+
+            f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
 
             f0.write('BOLD=(\\\n')
-            for j in range(len(self.bold)-1):
-                str0 = pathlib.Path(self.bold[j][0]).name.split('_bold.nii')[0]
+            for j in range(len(bold_bash)-1):
+                str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
                 f0.write(f'    {str0} \\\n')
-            str0 = pathlib.Path(self.bold[j+1][0]).name.split('_bold.nii')[0]
+            str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
             f0.write(f'    {str0})\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/${i}_bold_OGRE.nii.gz\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func\n')
+            f0.write('    cp -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
             f0.write('done\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}_bold/brainmask_fs.2.nii.gz\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func/${i}_brainmask-2_OGRE.nii.gz\n')
+            f0.write('    cp -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
             f0.write('done\n\n')
 
             f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-            f0.write('for i in ${ANAT[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/${i}.nii.gz\n')
+            f0.write('OUT=(T1w_restore_OGRE T1w_restore_OGRE_brain T2w_restore_OGRE T2w_restore_OGRE_brain)\n')
+            f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
+            f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func/${s0}_${i}_OGRE.nii.gz\n')
-            f0.write('done\n\n')
+            f0.write('    cp -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
+            f0.write('done\n')
 
-            f0.write('${SMOOTH} \\\n')
-            f0.write('    --fMRITimeSeriesResults="\\\n')
-            for j in range(len(self.taskidx)-1):
-                str0 = pathlib.Path(self.bold[self.taskidx[j]][0]).name.split('.nii')[0]
-                f0.write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
-            str0 = pathlib.Path(self.bold[self.taskidx[j+1]][0]).name.split('.nii')[0]
-            f0.write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz" \\\n')
+            if fwhm: 
+                f0.write('\nTASK_BOLD=(\\\n')
+                for j in range(len(self.taskidx)-1):
+                    str0 = pathlib.Path(bold_bash[self.taskidx[j]]).name.split('.nii')[0]
+                    f0.write(f'    {str0} \\\n')
+                str0 = pathlib.Path(bold_bash[self.taskidx[j+1]]).name.split('.nii')[0]
+                f0.write(f'    {str0})\n\n')
 
-            if fwhm: f0.write(f'    --fwhm="{' '.join(fwhm)}" \\\n')
-            if paradigm_hp_sec:
-                f0.write(f'    --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-                f0.write(f'    --TR="{' '.join([str(get_TR(self.bold[self.taskidx[j]][0])) for j in self.taskidx])}" \\\n')
-            f0.write('    --EnvironmentScript=${SETUP}\n')
+                if paradigm_hp_sec: 
+                    f0.write(f'paradigm_hp_sec={paradigm_hp_sec}\n')
+                    f0.write('PSTR_OGRE=HPTF${paradigm_hp_sec}s\n')
+                    f0.write('PSTR_BIDS=_filt-${paradigm_hp_sec}\n')
+                else:
+                    f0.write('PSTR_OGRE=;PSTR_BIDS=\n')
 
+                f0.write(f'fwhm=({' '.join(fwhm)})\n')
 
-
+                f0.write('for i in ${TASK_BOLD[@]};do\n')
+                f0.write('    for j in ${fwhm[@]};do\n')
+                f0.write('        file=${sf0}/MNINonLinear/Results/${i}/${i}_SUSAN${j}mm${PSTR_OGRE}.nii.gz\n')
+                f0.write('        if [ ! -f "${file}" ];then\n')
+                f0.write('            echo ${file} not found.\n')
+                f0.write('            continue\n')
+                f0.write('        fi\n')
+                f0.write('        cp -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
+                f0.write('    done\n')
+                f0.write('done\n')
 
 
 
@@ -391,10 +387,8 @@ if __name__ == "__main__":
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
     parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
 
-    hbs='*_fileout.sh scripts are collected in the executable batchscript.'
-    parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
-    #sbs = ['-b','--batchscript','-batchscript']
-    #parser.add_argument(sbs,dest='bs',metavar='batchscript',help=hbs)
+    #hbs='*_fileout.sh scripts are collected in the executable batchscript.'
+    #parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
 
     hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
         +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
@@ -441,6 +435,10 @@ if __name__ == "__main__":
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
+
+    hbs = 'Flag. *_fileout.sh scripts are collected in an executable batchscript.\n' \
+          'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n'
+    parser.add_argument('-b','--batchscript','-batchscript',dest='bs',action='store_true',help=hbs)
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -517,7 +515,6 @@ if __name__ == "__main__":
 
     if not args.lcfeatadapter: 
         if not args.lcsmoothonly: 
-            #l0 = 'hcp3.27fMRIvol' 
             l0 = 'OGREfMRIvol' 
         else: 
             l0 = 'smooth'
@@ -540,15 +537,11 @@ if __name__ == "__main__":
         else:
             #print(i[:idx])
             dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
-
-            #dir1 = i[:idx] + 'derivatives/preprocessed/${s0}/pipeline${FREESURFVER}'
-            #START240217
-            #dir2 = i[:idx] + 'derivatives/preprocessed/${s0}'
-            #START240218
             bids = i[:idx] + 'derivatives/preprocessed/${s0}'
-            dir1 = '${bids}/pipeline${FREESURFVER}'
 
-
+            #dir1 = '${bids}/pipeline${FREESURFVER}'
+            #START240221
+            dir1 = bids + '/pipeline${FREESURFVER}'
 
             #print(f'dir0={dir0}\ndir1={dir1}')
 
@@ -558,31 +551,39 @@ if __name__ == "__main__":
             dir1 += '_$(hostname)' 
 
         stem0 = dir0 + '/' + s0
-
         str0 = stem0 + '_' + l0 + datestr
+
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
         if not args.lcfeatadapter and args.fsf1: 
             F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
 
+        #F2 = stem0 + '_copy_smooth' + datestr + '.sh' 
+        #F2name = '${s0}_copy_smooth' + datestr + '.sh'
+        F2 = stem0 + '_copy' + datestr + '.sh' 
+        F2name = '${s0}_copy' + datestr + '.sh'
 
-        F2 = stem0 + '_copy_smooth' + datestr + '.sh' 
-        F2name = '${s0}_copy_smooth' + datestr + '.sh'
+        #START240221
+        #stem1 = dir1 + '/${s0}'
+        #str1 = stem1 + '_' + l0 + datestr
+        #F00 = str1 + '.sh'
+        #F00 = stem1 + '_' + l0 + datestr + '.sh'
+        #F0str = dir1 + '/${s0}_' + l0 + datestr + '.sh'
+        F0name = '${s0}_' + l0 + datestr + '.sh'
 
 
         if args.bs:
-            #str0 = stem0 + '_hcp3.27batch' + datestr
             str0 = stem0 + '_OGREbatch' + datestr
             bs0 = str0 + '.sh'
             if not os.path.isfile(bs0):
                 mode0 = 'wt'
             else:
                 mode0 = 'at'
-            bsf0 = open(bs0,mode=mode0,encoding="utf8")
-            if not os.path.isfile(bs0): bsf0.write(f'{SHEBANG}\n')
+            #bsf0 = open(bs0,mode=mode0,encoding="utf8")
+            #if not os.path.isfile(bs0): bsf0.write(f'{SHEBANG}\n')
             bs1 = str0 + '_fileout.sh'
-            bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
-            bsf1.write(f'{SHEBANG}\nset -e\n')
+            #bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
+            #bsf1.write(f'{SHEBANG}\nset -e\n')
 
         if not args.lcfeatadapter:
             par = Par(len(scans.bold),int(len(scans.fmap)))
@@ -597,15 +598,19 @@ if __name__ == "__main__":
         with ExitStack() as fs:
             F0f = [fs.enter_context(open(fn, "w")) for fn in F0]
             F1f = fs.enter_context(open(F1, "w"))
-
-            #START240217
-            #F2f = fs.enter_context(open(F2, "w"))
+            
+            #START240221
+            if args.bs: 
+                bs0f = fs.enter_context(open(bs0, mode0))
+                bs1f = fs.enter_context(open(bs1, "w"))
 
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
             F1f.write(f'{SHEBANG}\nset -e\n\n')          
 
-            #START240217
-            #F2f.write(f'{SHEBANG}\nset -e\n\n')          
+            #START240221
+            if args.bs: 
+                if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
+                bs1f.write(f'{SHEBANG}\nset -e\n\n')
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -620,29 +625,25 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/HCP/scripts/'+P1+'\n')
 
-                #if not args.lct1copymaskonly:
-                #    F0f[0].write('P2=${OGREDIR}/HCP/scripts/'+P2+'\n')
+                if not args.lct1copymaskonly:
+                    F0f[0].write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
 
             if args.fsf1:
-                for fn in F0f: fn.write(f'P3=${OGREDIR}/HCP/scripts/'+P3+'\n')          
+                F0f[1].write(f'OGREDIR={OGREDIR}\n')
+                for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/HCP/scripts/'+P3+'\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
 
-                #F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
-                #START240218
-                #F0f[0].write(f's0={s0}\nsf0={dir1}\n')
-                #F0f[0].write(f's0={s0}\nbids={bids}\nsf0={dir1}\n')
-                #str0=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
-                #F0f[0].write(str0)
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
-                F0f[0].write(pathstr)
-                #F2f.write(str0+'\n')
+
+                F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
+                F0f[1].write(f's0={s0}\n')
+                F1f.write(f's0={s0}\nsf0={dir1}\n\n')
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
-                    #START240218
-                    F0f[0].write('COPY_SMOOTH=${sf0}/'+f'{F2name}\n\n')
+                    F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
 
                     F0f[0].write('${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
@@ -702,76 +703,73 @@ if __name__ == "__main__":
 
                 if scans.taskidx and not args.lct1copymaskonly: 
 
-                    #F0f[0].write('${P2} \\\n')
-                    #F0f[0].write('    --fMRITimeSeriesResults="\\\n')
-                    ##for j in range(len(scans.taskidx)-1): 
-                    ##    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                    ##    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-                    ##str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    ##F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-                    #START240218
-                    #for j in range(len(scans.taskidx)-1): 
-                    #    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                    #    F0f[0].write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
-                    #str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    #F0f[0].write('        ${bids}/func/'+f'{str0}_OGRE.nii.gz \\\n')
-                    #if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
-                    #if args.paradigm_hp_sec: 
-                    #    F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-                    #    F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
-                    #F0f[0].write('    --EnvironmentScript=${SETUP}\n')
-                    #START240218
-                    scans.write_copy_smooth_script(F2,pathstr,args.fwhm,args.paradigm_hp_sec)
-                    F0f[0].write('${COPY_SMOOTH}\n\n')
+                    F0f[0].write('${SMOOTH} \\\n')
+                    F0f[0].write('    --fMRITimeSeriesResults="\\\n')
+                    for j in range(len(scans.taskidx)-1): 
+                        str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
+                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
+                    str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
+                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+                    if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
+                    if args.paradigm_hp_sec: 
+                        F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
+                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
+                    F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
+
+                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
+                    F0f[0].write('${COPY}\n\n')
 
 
                 if args.fsf1:
                     for fn in F0f: 
                         for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                        for j in feat1.outputdir: fn.write('\n${P3} ${s0} '+f'{pathlib.Path(j).stem}')
+                        for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
                         fn.write('\n')
 
                 if args.fsf2:
                     for fn in F0f: 
                         for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
-                #START240217
-                #F2f.write('FILES=(\\\n')
-                #for j in range(len(scans.bold)-1): 
-                #    str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
-                #    F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz \\\n')
-                #str0 = pathlib.Path(scans.bold[j+1][0]).name.split('.nii')[0]
-                #F2f.write('    ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}_OGRE.nii.gz)\n\n')
-                #F2f.write('for i in ${FILES};do\n')
-                #F2f.write('    if [ ! -f "${i}" ];then\n')
-                #F2f.write('        ${i} not found.\n')
-                #F2f.write('        continue\n')
-                #F2f.write('    fi\n')
-                #F2f.write('    cp -p $i ${bids}/func\n')
-                #F2f.write('done\n')
-
-
                 if not os.path.isfile(F0[0]):
                     for j in F0: _=run_cmd(f'rm -f {j}')
                     _=run_cmd(f'rm -f {F1}')
                     _=run_cmd(f'rm -f {F2}')
+                    if arg.bs: _=run_cmd(f'rm -f {bs0}')
+
                 else:
-                    F1f.write(f'F0={F0[0]}\n\n'+'out=${F0}.txt\n')
+
+                    #F1f.write(f'F0={F0[0]}\n\n'+'out=${F0}.txt\n')
+                    #START240221
+                    #F1f.write(f'F0={F0str}\n\n'+'out=${F0}.txt\n')
+                    F1f.write('F0=${sf0}/'+f'{F0name}\n\n'+'out=${F0}.txt\n')
+
                     F1f.write('if [ -f "${out}" ];then\n')
                     F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
                     F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
                     F1f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
                     F1f.write('fi\n')
+
+                    F1f.write('cd ${sf0}\n')
+
                     F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
                     for j in F0: 
-                        junk=run_cmd(f'chmod +x {j}')
+                        _=run_cmd(f'chmod +x {j}')
                         print(f'    Output written to {j}')
                     _=run_cmd(f'chmod +x {F1}')
                     print(f'    Output written to {F1}')
 
-                    #START240217
                     _=run_cmd(f'chmod +x {F2}')
                     print(f'    Output written to {F2}')
+
+                    if args.bs: 
+                        bs0f.write(f'{F1}\n')
+                        _=run_cmd(f'chmod +x {bs0}')
+                        print(f'    Output written to {bs0}')
+
+                        bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
+                        _=run_cmd(f'chmod +x {bs1}')
+                        print(f'    Output written to {bs1}')
+
 
         exit()

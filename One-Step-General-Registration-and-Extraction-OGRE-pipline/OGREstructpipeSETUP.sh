@@ -46,8 +46,11 @@ helpmsg(){
     echo "        Flag. Automatically execute *_fileout.sh script. Default is to not execute."
     echo "    -B --bids -bids --BIDS -BIDS"
     echo "        Flag. OGRE output is copied to BIDS directories."
-    echo "    --bs -bs --batchscript -batchscript"
-    echo "        *_fileout.sh scripts are collected in the executable batchscript."
+
+    #START240221
+    #echo "    --bs -bs --batchscript -batchscript"
+    #echo "        *_fileout.sh scripts are collected in the executable batchscript."
+
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE scripts."
     echo "        Optional if set at the top of this script or elsewhere via variable OGREDIR."
@@ -70,6 +73,12 @@ helpmsg(){
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
     echo "    -r  --hires"
     echo "        Resolution. Should match that for the sturctural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
+
+    #START240221
+    echo "    -b --batchscript -batchscript"
+    echo "        Flag. *_fileout.sh scripts are collected in an executable batchscript."
+    echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
+
     echo "    -h --help -help"
     echo "        Echo this help message."
     exit
@@ -80,7 +89,10 @@ if((${#@}<1));then
 fi
 echo $0 $@
 
-lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
+#lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
+#START240221
+lcautorun=0;lcbids=0;lchostname=0;lcdate=0;lcbs=0 #do not set dat;unexpected
+
 unset bs pipedir name
 
 arg=("$@")
@@ -103,10 +115,13 @@ for((i=0;i<${#@};++i));do
             lcbids=1
             echo "lcbids=$lcbids"
             ;;
-        --bs | -bs | --batchscript | -batchscript)
-            bs=${arg[((++i))]}
-            echo "bs=$bs"
-            ;;
+
+        #START240221
+        #--bs | -bs | --batchscript | -batchscript)
+        #    bs=${arg[((++i))]}
+        #    echo "bs=$bs"
+        #    ;;
+
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
             echo "OGREDIR=$OGREDIR"
@@ -148,6 +163,13 @@ for((i=0;i<${#@};++i));do
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
             ;;
+
+        #START240221
+        -b |  --batchscript | -batchscript)
+            lcbs=1
+            echo "lcbs=$lcbs"
+            ;;
+
         -h | --help | -help)
             helpmsg
             exit
@@ -173,19 +195,20 @@ fi
 #echo "dat[@]=${dat[@]}"
 #echo "#dat[@]=${#dat[@]}"
 
-if [ -z "${bs}" ];then
-    num_sub=0
-    for((i=0;i<${#csv[@]};++i));do
-        IFS=$'\r\n\t, ' read -ra line <<< ${csv[i]}
-        if [[ "${line[0]:0:1}" = "#" ]];then
-            #echo "Skipping line $((i+1))"
-            continue
-        fi
-        ((num_sub++))
-    done
-    num_cores=$(sysctl -n hw.ncpu)
-    ((num_sub>num_cores)) && echo "${num_sub} will be run, however $(hostname) only has ${num_cores}. Please consider -b <batchscript>."
-fi    
+#START240221
+#if [ -z "${bs}" ];then
+#    num_sub=0
+#    for((i=0;i<${#csv[@]};++i));do
+#        IFS=$'\r\n\t, ' read -ra line <<< ${csv[i]}
+#        if [[ "${line[0]:0:1}" = "#" ]];then
+#            #echo "Skipping line $((i+1))"
+#            continue
+#        fi
+#        ((num_sub++))
+#    done
+#    num_cores=$(sysctl -n hw.ncpu)
+#    ((num_sub>num_cores)) && echo "${num_sub} will be run, however $(hostname) only has ${num_cores}. Please consider -b <batchscript>."
+#fi    
 
 lcsinglereconall=0;lctworeconall=0
 if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" ]];then
@@ -194,10 +217,14 @@ if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREES
 fi
 [[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" ]] && lctworeconall=1
 
-if [ -n "${bs}" ];then
-    [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
-    echo -e "$shebang\n" > $bs
-fi
+#START240221
+#if [ -n "${bs}" ];then
+#    [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
+#    echo -e "$shebang\n" > $bs
+#fi
+
+
+
 wd0=$(pwd) 
 
 for((i=0;i<${#dat[@]};++i));do
@@ -287,18 +314,31 @@ for((i=0;i<${#dat[@]};++i));do
         date0=$(date +%y%m%d%H%M%S)
     fi
 
-    ((lcdate==0)) && F0stem=${dir0}/${s0}_hcp3.27struct || F0stem=${dir0}/${s0}_hcp3.27struct_${date0} 
+    #((lcdate==0)) && F0stem=${dir0}/${s0}_hcp3.27struct || F0stem=${dir0}/${s0}_hcp3.27struct_${date0} 
+    #START240221
+    ((lcdate==0)) && F0stem=${dir0}/${s0}_OGREstruct || F0stem=${dir0}/${s0}_OGREstruct_${date0} 
 
     F0=${F0stem}.sh
     F1=${F0stem}_fileout.sh
     #echo  "F0=${F0}"
     #echo  "F1=${F1}"
 
-    if [ -n "${bs}" ];then
+    #if [ -n "${bs}" ];then
+    #START240221
+    if((lcbs==1));then
+
         echo "    ${F0}"
-        ((lcdate==0)) && bs0stem=${dir0}/${s0}_hcp3.27batch || bs0stem=${dir0}/${s0}_hcp3.27batch_${date0} 
+
+        #((lcdate==0)) && bs0stem=${dir0}/${s0}_hcp3.27batch || bs0stem=${dir0}/${s0}_hcp3.27batch_${date0} 
+        #START240221
+        ((lcdate==0)) && bs0stem=${dir0}/${s0}_OGREbatch || bs0stem=${dir0}/${s0}_OGREbatch_${date0} 
+
         bs0=${bs0stem}.sh
-        echo -e "$shebang\nset -e\nexport OGREDIR=$OGREDIR\n" > ${bs0} 
+
+        #echo -e "$shebang\nset -e\nexport OGREDIR=$OGREDIR\n" > ${bs0} 
+        #START240221
+        echo -e "$shebang\nset -e\n" > ${bs0} 
+
         bs1=${bs0stem}_fileout.sh
         echo -e "$shebang\nset -e\n" > ${bs1} 
     fi
@@ -363,10 +403,19 @@ for((i=0;i<${#dat[@]};++i));do
     chmod +x ${F1}
     echo "    Output written to ${F0}"
     echo "    Output written to ${F1}"
-    if [ -n "${bs}" ];then
-        echo "cd ${dir0}" >> $bs
-        echo -e "${bs0} > ${bs0}.txt 2>&1\n" >> $bs
-        echo -e "${F0} > ${F0}.txt 2>&1\n" >> $bs0
+
+    #if [ -n "${bs}" ];then
+    #START240221
+    if((lcbs==1));then
+
+        #START240221
+        #echo "cd ${dir0}" >> $bs
+        #echo -e "${bs0} > ${bs0}.txt 2>&1\n" >> $bs
+
+        #echo -e "${F0} > ${F0}.txt 2>&1\n" >> $bs0
+        #START240221
+        echo -e "${F1}\n" >> $bs0
+
         echo "${bs0} > ${bs0}.txt 2>&1 &" >> ${bs1}
         chmod +x ${bs0}
         chmod +x ${bs1}
@@ -385,12 +434,13 @@ for((i=0;i<${#dat[@]};++i));do
     fi
 done
 
-if [ -n "${bs}" ];then
-    [[ $bs != *"/"* ]] && bs=$(pwd)/${bs}
-    bs2=${bs%.*}_fileout.sh
-    echo -e "$shebang\n" > $bs2
-    echo "${bs} > ${bs}.txt 2>&1 &" >> ${bs2}
-    chmod +x $bs $bs2
-    echo "Output written to $bs"
-    echo "Output written to $bs2"
-fi
+#START240221
+#if [ -n "${bs}" ];then
+#    [[ $bs != *"/"* ]] && bs=$(pwd)/${bs}
+#    bs2=${bs%.*}_fileout.sh
+#    echo -e "$shebang\n" > $bs2
+#    echo "${bs} > ${bs}.txt 2>&1 &" >> ${bs2}
+#    chmod +x $bs $bs2
+#    echo "Output written to $bs"
+#    echo "Output written to $bs2"
+#fi
