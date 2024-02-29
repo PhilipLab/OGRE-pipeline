@@ -50,6 +50,13 @@ helpmsg(){
     #START240221
     #echo "    --bs -bs --batchscript -batchscript"
     #echo "        *_fileout.sh scripts are collected in the executable batchscript."
+    #START240228
+    echo "    -b --batchscript -batchscript"
+    echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
+    echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
+    echo "        If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename."
+
+#STARTHERE
 
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE scripts."
