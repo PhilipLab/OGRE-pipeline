@@ -59,6 +59,18 @@ def get_env_vars():
         pass 
 
 
+
+from contextlib import ExitStack
+def open_files(filenames,mode):
+    #https://www.rath.org/on-the-beauty-of-pythons-exitstack.html
+    #https://docs.python.org/3/library/contextlib.html#contextlib.ExitStack
+    with ExitStack() as stack:
+        files = [stack.enter_context(open(fname,mode)) for fname in filenames]
+        stack.pop_all()
+        return files
+
+
+
 class Scans:
     def __init__(self,file):
         self.fmap = []
@@ -129,7 +141,8 @@ class Scans:
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
+            #f0.write('    cp -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
+            f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
             f0.write('done\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
@@ -138,7 +151,8 @@ class Scans:
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
+            #f0.write('    cp -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
+            f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
             f0.write('done\n\n')
 
             f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
@@ -149,7 +163,8 @@ class Scans:
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
+            #f0.write('    cp -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
+            f0.write('    cp -f -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
             f0.write('done\n')
 
             if fwhm: 
@@ -176,7 +191,8 @@ class Scans:
                 f0.write('            echo ${file} not found.\n')
                 f0.write('            continue\n')
                 f0.write('        fi\n')
-                f0.write('        cp -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
+                #f0.write('        cp -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
+                f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
                 f0.write('    done\n')
                 f0.write('done\n')
 
@@ -382,7 +398,10 @@ if __name__ == "__main__":
          + 'Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
          + 'Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n' \
          + 'Ex 6. '+parser.prog+' sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n'
+
     parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='append',nargs='+',help=hdat)
+    #START240227
+    #parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='extend',nargs='+',help=hdat)
 
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
     parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
@@ -436,10 +455,17 @@ if __name__ == "__main__":
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
 
-    hbs = 'Flag. *_fileout.sh scripts are collected in an executable batchscript.\n' \
-          'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n'
-    parser.add_argument('-b','--batchscript','-batchscript',dest='bs',action='store_true',help=hbs)
+    hbs = '*_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv.\n' \
+        + 'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n' \
+        + 'If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename.\n' \
+        + 'This permits multiple subjects to be run sequentially and seamlessly.\n'
+    parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
 
+    happend='Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.0debug'
+    parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
+
+    hnobidscopy='Flag. Do not copy output files from OGRE pipeline directory to bids directories.'
+    parser.add_argument('-nobidscopy','--nobidscopy','-nobidscp','--nobidscp',dest='lcnobidscopy',action='store_true',help=hnobidscopy)
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     import sys
@@ -457,6 +483,16 @@ if __name__ == "__main__":
     else:
         exit()
     args.dat = [os.path.abspath(i) for i in args.dat]
+
+    #print(f'args.bs={args.bs}')
+    #if args.bs: 
+    #    print(f'    if args.bs')
+    #    if args.bs==True: 
+    #        print(f'    if args.bs==True')
+    #    if args.bs!=True: 
+    #        print(f'    if args.bs!=True')
+    #if not args.bs: print(f'    if not args.bs')
+    ##exit()
 
     if args.OGREDIR: OGREDIR = args.OGREDIR
     if not 'OGREDIR' in locals():
@@ -476,8 +512,6 @@ if __name__ == "__main__":
     #print(f'HCPDIR={HCPDIR}')
     #print(f'FREESURFVER={FREESURFVER}')
 
-    #if args.fsf1: outputdir1 = get_feat(args.fsf1)
-    #if args.fsf2: outputdir2 = get_feat(args.fsf2)
     if args.fsf1: feat1 = Feat(args.fsf1)
     if args.fsf2: feat2 = Feat(args.fsf2)
 
@@ -521,7 +555,22 @@ if __name__ == "__main__":
     else:
         l0 = 'FEATADAPTER'
 
+
+
+    if args.bs:
+        if args.bs!=True: #this explicit check is needed!
+            if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+            bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
+            #print(f'bs_fileout={bs_fileout}')
+            batchscriptf = open_files([args.bs,bs_fileout],'w') 
+            for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
+
+
     for i in args.dat:
+
+        #print(f'i={i}')  
+        #print(f'pathlib.Path(i).parent={pathlib.Path(i).parent}')  
+        #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
         scans = Scans(i)
         idx = i.find('sub-')
@@ -536,12 +585,16 @@ if __name__ == "__main__":
             pass
         else:
             #print(i[:idx])
-            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
+
+            #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
+            #START240227
+            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
+
             bids = i[:idx] + 'derivatives/preprocessed/${s0}'
 
-            #dir1 = '${bids}/pipeline${FREESURFVER}'
-            #START240221
-            dir1 = bids + '/pipeline${FREESURFVER}'
+            #dir1 = bids + '/pipeline${FREESURFVER}'
+            #START240227
+            dir1 = bids + '/pipeline${FREESURFVER}' + args.append
 
             #print(f'dir0={dir0}\ndir1={dir1}')
 
@@ -557,20 +610,10 @@ if __name__ == "__main__":
         F1 = str0 + '_fileout.sh'
         if not args.lcfeatadapter and args.fsf1: 
             F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
-
-        #F2 = stem0 + '_copy_smooth' + datestr + '.sh' 
-        #F2name = '${s0}_copy_smooth' + datestr + '.sh'
-        F2 = stem0 + '_copy' + datestr + '.sh' 
-        F2name = '${s0}_copy' + datestr + '.sh'
-
-        #START240221
-        #stem1 = dir1 + '/${s0}'
-        #str1 = stem1 + '_' + l0 + datestr
-        #F00 = str1 + '.sh'
-        #F00 = stem1 + '_' + l0 + datestr + '.sh'
-        #F0str = dir1 + '/${s0}_' + l0 + datestr + '.sh'
+        if not args.lcnobidscopy:
+            F2 = stem0 + '_bidscp' + datestr + '.sh' 
+            F2name = '${s0}_bidscp' + datestr + '.sh'
         F0name = '${s0}_' + l0 + datestr + '.sh'
-
 
         if args.bs:
             str0 = stem0 + '_OGREbatch' + datestr
@@ -579,11 +622,8 @@ if __name__ == "__main__":
                 mode0 = 'wt'
             else:
                 mode0 = 'at'
-            #bsf0 = open(bs0,mode=mode0,encoding="utf8")
-            #if not os.path.isfile(bs0): bsf0.write(f'{SHEBANG}\n')
             bs1 = str0 + '_fileout.sh'
-            #bsf1 = open(bs1,mode='wt',encoding="utf8") #ok to crush, because nothing new is written
-            #bsf1.write(f'{SHEBANG}\nset -e\n')
+
 
         if not args.lcfeatadapter:
             par = Par(len(scans.bold),int(len(scans.fmap)))
@@ -593,6 +633,7 @@ if __name__ == "__main__":
                 fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
                 par.check_ped_dims(scans.bold,fmap)
 
+        os.makedirs(pathlib.Path(F0[0]).parent, exist_ok=True)
 
         from contextlib import ExitStack
         with ExitStack() as fs:
@@ -610,7 +651,8 @@ if __name__ == "__main__":
             #START240221
             if args.bs: 
                 if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
-                bs1f.write(f'{SHEBANG}\nset -e\n\n')
+                #bs1f.write(f'{SHEBANG}\nset -e\n\n')
+                bs1f.write(f'{SHEBANG}\n\n')
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -638,12 +680,12 @@ if __name__ == "__main__":
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
 
                 F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
-                F0f[1].write(f's0={s0}\n')
+                if len(F0f)>1: F0f[1].write(f's0={s0}\n')
                 F1f.write(f's0={s0}\nsf0={dir1}\n\n')
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
-                    F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
+                    if not args.lcnobidscopy: F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
 
                     F0f[0].write('${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
@@ -716,8 +758,9 @@ if __name__ == "__main__":
                         F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
-                    F0f[0].write('${COPY}\n\n')
+                    if not args.lcnobidscopy:
+                        scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
+                        F0f[0].write('${COPY}\n\n')
 
 
                 if args.fsf1:
@@ -733,7 +776,7 @@ if __name__ == "__main__":
                 if not os.path.isfile(F0[0]):
                     for j in F0: _=run_cmd(f'rm -f {j}')
                     _=run_cmd(f'rm -f {F1}')
-                    _=run_cmd(f'rm -f {F2}')
+                    if not args.lcnobidscopy: _=run_cmd(f'rm -f {F2}')
                     if arg.bs: _=run_cmd(f'rm -f {bs0}')
 
                 else:
@@ -759,8 +802,9 @@ if __name__ == "__main__":
                     _=run_cmd(f'chmod +x {F1}')
                     print(f'    Output written to {F1}')
 
-                    _=run_cmd(f'chmod +x {F2}')
-                    print(f'    Output written to {F2}')
+                    if not args.lcnobidscopy:
+                        _=run_cmd(f'chmod +x {F2}')
+                        print(f'    Output written to {F2}')
 
                     if args.bs: 
                         bs0f.write(f'{F1}\n')
@@ -771,5 +815,13 @@ if __name__ == "__main__":
                         _=run_cmd(f'chmod +x {bs1}')
                         print(f'    Output written to {bs1}')
 
+                        if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
 
-        exit()
+
+    if 'batchscriptf' in locals(): 
+        _=run_cmd(f'chmod +x {args.bs}')
+        print(f'    Output written to {args.bs}')
+
+        batchscriptf[1].write(f'{args.bs} >> {args.bs}.txt 2>&1 &\n')
+        _=run_cmd(f'chmod +x {bs_fileout}')
+        print(f'    Output written to {bs_fileout}')
