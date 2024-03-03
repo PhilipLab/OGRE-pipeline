@@ -46,18 +46,6 @@ helpmsg(){
     echo "        Flag. Automatically execute *_fileout.sh script. Default is to not execute."
     echo "    -B --bids -bids --BIDS -BIDS"
     echo "        Flag. OGRE output is copied to BIDS directories."
-
-    #START240221
-    #echo "    --bs -bs --batchscript -batchscript"
-    #echo "        *_fileout.sh scripts are collected in the executable batchscript."
-    #START240228
-    echo "    -b --batchscript -batchscript"
-    echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
-    echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
-    echo "        If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename."
-
-#STARTHERE
-
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE scripts."
     echo "        Optional if set at the top of this script or elsewhere via variable OGREDIR."
@@ -81,10 +69,12 @@ helpmsg(){
     echo "    -r  --hires"
     echo "        Resolution. Should match that for the sturctural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
 
-    #START240221
+    #START240301
     echo "    -b --batchscript -batchscript"
-    echo "        Flag. *_fileout.sh scripts are collected in an executable batchscript."
+    echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
+    echo "        If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename."
+    echo "        This permits multiple subjects to be run sequentially and seamlessly."
 
     echo "    -h --help -help"
     echo "        Echo this help message."
@@ -96,9 +86,9 @@ if((${#@}<1));then
 fi
 echo $0 $@
 
-#lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
-#START240221
-lcautorun=0;lcbids=0;lchostname=0;lcdate=0;lcbs=0 #do not set dat;unexpected
+#lcautorun=0;lcbids=0;lchostname=0;lcdate=0;lcbs=0 #do not set dat;unexpected
+#START240301
+lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
 
 unset bs pipedir name
 
@@ -122,13 +112,6 @@ for((i=0;i<${#@};++i));do
             lcbids=1
             echo "lcbids=$lcbids"
             ;;
-
-        #START240221
-        #--bs | -bs | --batchscript | -batchscript)
-        #    bs=${arg[((++i))]}
-        #    echo "bs=$bs"
-        #    ;;
-
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
             echo "OGREDIR=$OGREDIR"
@@ -171,10 +154,12 @@ for((i=0;i<${#@};++i));do
             echo "Hires=$Hires"
             ;;
 
-        #START240221
-        -b |  --batchscript | -batchscript)
-            lcbs=1
-            echo "lcbs=$lcbs"
+        #START240301
+        -b | --batchscript | -batchscript)
+            #lcbs=1
+            #[[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]}
+            [[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]} || bs=True
+            #echo "bs=$bs"
             ;;
 
         -h | --help | -help)
@@ -230,7 +215,18 @@ fi
 #    echo -e "$shebang\n" > $bs
 #fi
 
-
+#START240301
+if [ -n "${bs}" ];then
+    if [[ "${bs}" != True ]];then
+        [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
+        #https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
+        bs=$(realpath ${bs})
+        bs_fileout=${bs%.sh*}_fileout.sh  #everything before .sh
+        echo bs_fileout=${bs_fileout}
+        [[ ! -f ${bs} ]] && echo -e "$shebang\n" > $bs
+        [[ ! -f ${bs_fileout} ]] && echo -e "$shebang\n" > $bs_fileout
+    fi
+fi
 
 wd0=$(pwd) 
 
@@ -277,7 +273,8 @@ for((i=0;i<${#dat[@]};++i));do
     #[ -n "${T2f}" ] && echo "T2f = ${T2f}"
 
     if [ -z "$pipedir" ];then
-        datf=$(readlink -f ${dat[i]})
+        #datf=$(readlink -f ${dat[i]})
+        datf=$(realpath ${dat[i]})
         dir0=${datf%/*}
         IFS='/' read -ra subj <<< "${dir0}"
         s0=${subj[${#subj[@]}-1]}
@@ -321,8 +318,6 @@ for((i=0;i<${#dat[@]};++i));do
         date0=$(date +%y%m%d%H%M%S)
     fi
 
-    #((lcdate==0)) && F0stem=${dir0}/${s0}_hcp3.27struct || F0stem=${dir0}/${s0}_hcp3.27struct_${date0} 
-    #START240221
     ((lcdate==0)) && F0stem=${dir0}/${s0}_OGREstruct || F0stem=${dir0}/${s0}_OGREstruct_${date0} 
 
     F0=${F0stem}.sh
@@ -330,22 +325,13 @@ for((i=0;i<${#dat[@]};++i));do
     #echo  "F0=${F0}"
     #echo  "F1=${F1}"
 
-    #if [ -n "${bs}" ];then
-    #START240221
-    if((lcbs==1));then
+    if [ -n "${bs}" ];then
 
-        echo "    ${F0}"
+        #echo "    ${F0}"
 
-        #((lcdate==0)) && bs0stem=${dir0}/${s0}_hcp3.27batch || bs0stem=${dir0}/${s0}_hcp3.27batch_${date0} 
-        #START240221
         ((lcdate==0)) && bs0stem=${dir0}/${s0}_OGREbatch || bs0stem=${dir0}/${s0}_OGREbatch_${date0} 
-
         bs0=${bs0stem}.sh
-
-        #echo -e "$shebang\nset -e\nexport OGREDIR=$OGREDIR\n" > ${bs0} 
-        #START240221
         echo -e "$shebang\nset -e\n" > ${bs0} 
-
         bs1=${bs0stem}_fileout.sh
         echo -e "$shebang\nset -e\n" > ${bs1} 
     fi
@@ -401,9 +387,7 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
     echo "fi" >> ${F1}
 
-    #START240127
     echo "cd ${dir0}" >> ${F1} 
-
     echo ${F0}' >> ${out} 2>&1 &' >> ${F1}
 
     chmod +x ${F0}
@@ -411,16 +395,7 @@ for((i=0;i<${#dat[@]};++i));do
     echo "    Output written to ${F0}"
     echo "    Output written to ${F1}"
 
-    #if [ -n "${bs}" ];then
-    #START240221
-    if((lcbs==1));then
-
-        #START240221
-        #echo "cd ${dir0}" >> $bs
-        #echo -e "${bs0} > ${bs0}.txt 2>&1\n" >> $bs
-
-        #echo -e "${F0} > ${F0}.txt 2>&1\n" >> $bs0
-        #START240221
+    if [ -n "${bs}" ];then
         echo -e "${F1}\n" >> $bs0
 
         echo "${bs0} > ${bs0}.txt 2>&1 &" >> ${bs1}
@@ -428,16 +403,14 @@ for((i=0;i<${#dat[@]};++i));do
         chmod +x ${bs1}
         echo "    Output written to ${bs0}"
         echo "    Output written to ${bs1}"
+
+        #START240301
+        [[ ${bs} != True ]] && echo ${bs1} >> ${bs}
+
     fi
     if((lcautorun==1));then
-
-        #cd ${dir0}
-        #echo "    ${F1} has been executed"
-        #cd ${wd0} #"cd -" echoes the path
-        #START240127
         ${F1}
         echo "    ${F1} has been executed"
-
     fi
 done
 
@@ -451,3 +424,12 @@ done
 #    echo "Output written to $bs"
 #    echo "Output written to $bs2"
 #fi
+#START240301
+if [ -n "${bs}" ];then
+    if [[ ${bs} != True ]];then
+        echo "${bs} > ${bs}.txt 2>&1 &" >> ${bs_fileout}
+        chmod +x $bs $bs_fileout
+        echo "Output written to $bs"
+        echo "Output written to $bs_fileout"
+    fi
+fi

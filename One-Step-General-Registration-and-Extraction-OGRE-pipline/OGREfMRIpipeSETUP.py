@@ -406,9 +406,6 @@ if __name__ == "__main__":
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
     parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
 
-    #hbs='*_fileout.sh scripts are collected in the executable batchscript.'
-    #parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
-
     hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
         +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
         +'The path provided by this option will be used instead of any other setting.\n'
@@ -559,6 +556,7 @@ if __name__ == "__main__":
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
+            args.bs = os.path.abspath(args.bs)
             if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
             bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
             #print(f'bs_fileout={bs_fileout}')
