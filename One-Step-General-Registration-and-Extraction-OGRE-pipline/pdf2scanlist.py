@@ -31,7 +31,9 @@ if __name__ == "__main__":
 
     parser=argparse.ArgumentParser(description='Convert pdf(s) to a single scanlist.csv.\nRequired: <pdf(s)> -p <protocol.csv>',formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('dat0',metavar='<pdf(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be pdfs.')
-    parser.add_argument('-pdf','--pdf',dest='dat',metavar='*.pdf',action='append',nargs='+',help='-pdf --pdf')
+
+    #parser.add_argument('-pdf','--pdf',dest='dat',metavar='*.pdf',action='append',nargs='+',help='-pdf --pdf')
+    parser.add_argument('-pdf','--pdf',dest='dat',metavar='*.pdf',action='append',nargs='+',help='One or more pdf files to convert to a single scanlist.csv.')
 
     hprotocol='Comma and/or space and/or tab separated file that specifies the protocol.'
     parser.add_argument('-p','--protocol','-protocol',dest='protocol',metavar='<protocol file>',help=hprotocol)
@@ -105,14 +107,23 @@ if __name__ == "__main__":
                 idx = plain_text[i].find(j)
                 if idx > -1:
                     #print(plain_text[i]) 
-                    scan = re.findall(r'[0-9]+', plain_text[i][0:idx]) 
 
-                    #name = parent0 + '/' + dict0[j][1] + '/' + n0 + '_' + dict0[j][2] 
-                    #START240123
+                    #scan = re.findall(r'[0-9]+', plain_text[i][0:idx]) 
+                    #START240303 3600files33 rather than the intended files33 
+                    scan = re.findall(r'[0-9]+', plain_text[i][idx-2:idx]) 
+
+
                     name0 = parent0 + '/' + dict0[j][1] + '/' + n0 + '_'
-                    #name = name0 + dict0[j][2] 
 
                     if dict0[j][0] == 'overwrite':
+  
+                        
+                        #print(f'j={j}')
+                        #print(f'scan={scan}')
+                        #print(f'plain_text[i]={plain_text[i]}')
+                        #print(f'plain_text[i][0:idx]={plain_text[i][0:idx]}')
+                        #print(f'plain_text[i][idx-2:idx]={plain_text[i][idx-2:idx]}')
+                        
 
                         ##dict1[j] = scan[0] + ',' + name
                         ##START240123
@@ -148,6 +159,7 @@ if __name__ == "__main__":
         cnt = Counter()
         key0=[]
         for key,val in dict1.items():
+            #print(f'key={key} val={val}')
             if val.find('epi') != -1 and val.find('acq-dbsi') == -1:
                 #print(f'here0 = {val}')
                 key0.append(key)
