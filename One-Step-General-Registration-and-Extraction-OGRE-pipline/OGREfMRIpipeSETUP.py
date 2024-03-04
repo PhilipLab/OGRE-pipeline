@@ -454,7 +454,7 @@ if __name__ == "__main__":
 
     hbs = '*_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv.\n' \
         + 'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n' \
-        + 'If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename.\n' \
+        + 'If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename.\n' \
         + 'This permits multiple subjects to be run sequentially and seamlessly.\n'
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
 
@@ -570,12 +570,13 @@ if __name__ == "__main__":
         #print(f'pathlib.Path(i).parent={pathlib.Path(i).parent}')  
         #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
+        print(f'Reading {i}')
         scans = Scans(i)
         idx = i.find('sub-')
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
             #print(f's0={s0}')
-            print(f'{s0}')
+            #print(f'{s0}')
         
 
         idx = i.find('raw_data')
@@ -584,14 +585,8 @@ if __name__ == "__main__":
         else:
             #print(i[:idx])
 
-            #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
-            #START240227
             dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
-
             bids = i[:idx] + 'derivatives/preprocessed/${s0}'
-
-            #dir1 = bids + '/pipeline${FREESURFVER}'
-            #START240227
             dir1 = bids + '/pipeline${FREESURFVER}' + args.append
 
             #print(f'dir0={dir0}\ndir1={dir1}')
@@ -644,13 +639,13 @@ if __name__ == "__main__":
                 bs1f = fs.enter_context(open(bs1, "w"))
 
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
-            F1f.write(f'{SHEBANG}\nset -e\n\n')          
+            #F1f.write(f'{SHEBANG}\nset -e\n\n')          
 
             #START240221
-            if args.bs: 
-                if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
-                #bs1f.write(f'{SHEBANG}\nset -e\n\n')
-                bs1f.write(f'{SHEBANG}\n\n')
+            #if args.bs: 
+            #    #if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
+            #    ##bs1f.write(f'{SHEBANG}\nset -e\n\n')
+            #    #bs1f.write(f'{SHEBANG}\n\n')
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -679,7 +674,7 @@ if __name__ == "__main__":
 
                 F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
-                F1f.write(f's0={s0}\nsf0={dir1}\n\n')
+                #F1f.write(f's0={s0}\nsf0={dir1}\n\n')
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
@@ -779,19 +774,15 @@ if __name__ == "__main__":
 
                 else:
 
-                    #F1f.write(f'F0={F0[0]}\n\n'+'out=${F0}.txt\n')
-                    #START240221
-                    #F1f.write(f'F0={F0str}\n\n'+'out=${F0}.txt\n')
-                    F1f.write('F0=${sf0}/'+f'{F0name}\n\n'+'out=${F0}.txt\n')
-
+                    F1f.write(f'{SHEBANG}\nset -e\n\n')
+                    F1f.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                    F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                     F1f.write('if [ -f "${out}" ];then\n')
                     F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
                     F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
                     F1f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
                     F1f.write('fi\n')
-
                     F1f.write('cd ${sf0}\n')
-
                     F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
                     for j in F0: 
@@ -805,15 +796,32 @@ if __name__ == "__main__":
                         print(f'    Output written to {F2}')
 
                     if args.bs: 
-                        bs0f.write(f'{F1}\n')
+
+                        #bs0f.write(f'{F1}\n')
+                        #START240302
+                        if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n')
+                        bs0f.write(f'\nFREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                        bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
+                        bs0f.write('if [ -f "${out}" ];then\n')
+                        bs0f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
+                        bs0f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
+                        bs0f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
+                        bs0f.write('fi\n')
+                        bs0f.write('cd ${sf0}\n')
+                        bs0f.write('${F0} >> ${out} 2>&1\n') #no ampersand at end
+
+
+
                         _=run_cmd(f'chmod +x {bs0}')
                         print(f'    Output written to {bs0}')
 
+                        bs1f.write(f'{SHEBANG}\n\n')
                         bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
                         _=run_cmd(f'chmod +x {bs1}')
                         print(f'    Output written to {bs1}')
 
-                        if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
+                        #if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
+                        if 'batchscriptf' in locals(): batchscriptf[0].write(bs0)
 
 
     if 'batchscriptf' in locals(): 
