@@ -102,7 +102,9 @@ for((i=0;i<${#dat[@]};++i));do
     #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
     #START240123
     #https://stackoverflow.com/questions/17577093/how-do-i-get-the-absolute-directory-of-a-file-in-bash
-    datf=$(readlink -f ${dat[i]})
+    #https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
+    #datf=$(readlink -f ${dat[i]})
+    datf=$(realpath ${dat[i]})
     #echo "datf=$datf"
     dir0=${datf%/*}
     #echo "dir0=${dir0}"

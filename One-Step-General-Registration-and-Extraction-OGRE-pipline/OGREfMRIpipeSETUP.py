@@ -406,9 +406,6 @@ if __name__ == "__main__":
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
     parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
 
-    #hbs='*_fileout.sh scripts are collected in the executable batchscript.'
-    #parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',help=hbs)
-
     hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
         +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
         +'The path provided by this option will be used instead of any other setting.\n'
@@ -457,7 +454,11 @@ if __name__ == "__main__":
 
     hbs = '*_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv.\n' \
         + 'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n' \
+<<<<<<< HEAD
         + 'If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename.\n' \
+=======
+        + 'If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename.\n' \
+>>>>>>> batchscript
         + 'This permits multiple subjects to be run sequentially and seamlessly.\n'
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
 
@@ -559,6 +560,10 @@ if __name__ == "__main__":
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
+<<<<<<< HEAD
+=======
+            args.bs = os.path.abspath(args.bs)
+>>>>>>> batchscript
             if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
             bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
             #print(f'bs_fileout={bs_fileout}')
@@ -572,12 +577,16 @@ if __name__ == "__main__":
         #print(f'pathlib.Path(i).parent={pathlib.Path(i).parent}')  
         #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
+<<<<<<< HEAD
+=======
+        print(f'Reading {i}')
+>>>>>>> batchscript
         scans = Scans(i)
         idx = i.find('sub-')
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
             #print(f's0={s0}')
-            print(f'{s0}')
+            #print(f'{s0}')
         
 
         idx = i.find('raw_data')
@@ -585,6 +594,7 @@ if __name__ == "__main__":
             pass
         else:
             #print(i[:idx])
+<<<<<<< HEAD
 
             #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
             #START240227
@@ -594,6 +604,11 @@ if __name__ == "__main__":
 
             #dir1 = bids + '/pipeline${FREESURFVER}'
             #START240227
+=======
+
+            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
+            bids = i[:idx] + 'derivatives/preprocessed/${s0}'
+>>>>>>> batchscript
             dir1 = bids + '/pipeline${FREESURFVER}' + args.append
 
             #print(f'dir0={dir0}\ndir1={dir1}')
@@ -646,13 +661,20 @@ if __name__ == "__main__":
                 bs1f = fs.enter_context(open(bs1, "w"))
 
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
-            F1f.write(f'{SHEBANG}\nset -e\n\n')          
+            #F1f.write(f'{SHEBANG}\nset -e\n\n')          
 
             #START240221
+<<<<<<< HEAD
             if args.bs: 
                 if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
                 #bs1f.write(f'{SHEBANG}\nset -e\n\n')
                 bs1f.write(f'{SHEBANG}\n\n')
+=======
+            #if args.bs: 
+            #    #if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
+            #    ##bs1f.write(f'{SHEBANG}\nset -e\n\n')
+            #    #bs1f.write(f'{SHEBANG}\n\n')
+>>>>>>> batchscript
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -681,7 +703,11 @@ if __name__ == "__main__":
 
                 F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
+<<<<<<< HEAD
                 F1f.write(f's0={s0}\nsf0={dir1}\n\n')
+=======
+                #F1f.write(f's0={s0}\nsf0={dir1}\n\n')
+>>>>>>> batchscript
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
@@ -781,19 +807,15 @@ if __name__ == "__main__":
 
                 else:
 
-                    #F1f.write(f'F0={F0[0]}\n\n'+'out=${F0}.txt\n')
-                    #START240221
-                    #F1f.write(f'F0={F0str}\n\n'+'out=${F0}.txt\n')
-                    F1f.write('F0=${sf0}/'+f'{F0name}\n\n'+'out=${F0}.txt\n')
-
+                    F1f.write(f'{SHEBANG}\nset -e\n\n')
+                    F1f.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                    F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                     F1f.write('if [ -f "${out}" ];then\n')
                     F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
                     F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
                     F1f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
                     F1f.write('fi\n')
-
                     F1f.write('cd ${sf0}\n')
-
                     F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
                     for j in F0: 
@@ -807,15 +829,36 @@ if __name__ == "__main__":
                         print(f'    Output written to {F2}')
 
                     if args.bs: 
-                        bs0f.write(f'{F1}\n')
+
+                        #bs0f.write(f'{F1}\n')
+                        #START240302
+                        if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n')
+                        bs0f.write(f'\nFREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                        bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
+                        bs0f.write('if [ -f "${out}" ];then\n')
+                        bs0f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
+                        bs0f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
+                        bs0f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
+                        bs0f.write('fi\n')
+                        bs0f.write('cd ${sf0}\n')
+                        bs0f.write('${F0} >> ${out} 2>&1\n') #no ampersand at end
+
+
+
                         _=run_cmd(f'chmod +x {bs0}')
                         print(f'    Output written to {bs0}')
 
+                        bs1f.write(f'{SHEBANG}\n\n')
                         bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
                         _=run_cmd(f'chmod +x {bs1}')
                         print(f'    Output written to {bs1}')
 
+<<<<<<< HEAD
                         if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
+=======
+                        #if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
+                        if 'batchscriptf' in locals(): batchscriptf[0].write(bs0)
+>>>>>>> batchscript
 
 
     if 'batchscriptf' in locals(): 

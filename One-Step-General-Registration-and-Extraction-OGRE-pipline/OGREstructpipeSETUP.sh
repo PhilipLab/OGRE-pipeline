@@ -46,11 +46,6 @@ helpmsg(){
     echo "        Flag. Automatically execute *_fileout.sh script. Default is to not execute."
     echo "    -B --bids -bids --BIDS -BIDS"
     echo "        Flag. OGRE output is copied to BIDS directories."
-
-    #START240221
-    #echo "    --bs -bs --batchscript -batchscript"
-    #echo "        *_fileout.sh scripts are collected in the executable batchscript."
-
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE scripts."
     echo "        Optional if set at the top of this script or elsewhere via variable OGREDIR."
@@ -74,10 +69,15 @@ helpmsg(){
     echo "    -r  --hires"
     echo "        Resolution. Should match that for the sturctural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
 
-    #START240221
+    #START240301
     echo "    -b --batchscript -batchscript"
-    echo "        Flag. *_fileout.sh scripts are collected in an executable batchscript."
+    echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
+    echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename."
+    echo "        This permits multiple subjects to be run sequentially and seamlessly."
+    #START240302
+    echo "    --append -append"
+    echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.0debug"
 
     echo "    -h --help -help"
     echo "        Echo this help message."
@@ -90,8 +90,8 @@ fi
 echo $0 $@
 
 #lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
-#START240221
-lcautorun=0;lcbids=0;lchostname=0;lcdate=0;lcbs=0 #do not set dat;unexpected
+#START240301
+lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append= #do not set dat;unexpected
 
 unset bs pipedir name
 
@@ -115,13 +115,6 @@ for((i=0;i<${#@};++i));do
             lcbids=1
             echo "lcbids=$lcbids"
             ;;
-
-        #START240221
-        #--bs | -bs | --batchscript | -batchscript)
-        #    bs=${arg[((++i))]}
-        #    echo "bs=$bs"
-        #    ;;
-
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
             echo "OGREDIR=$OGREDIR"
@@ -164,10 +157,17 @@ for((i=0;i<${#@};++i));do
             echo "Hires=$Hires"
             ;;
 
-        #START240221
-        -b |  --batchscript | -batchscript)
-            lcbs=1
-            echo "lcbs=$lcbs"
+        #START240301
+        -b | --batchscript | -batchscript)
+            #lcbs=1
+            #[[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]}
+            [[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]} || bs=True
+            #echo "bs=$bs"
+            ;;
+        #START240302
+        --append | -append)
+            append=${arg[((++i))]}
+            echo "append=$append"
             ;;
 
         -h | --help | -help)
@@ -217,13 +217,18 @@ if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREES
 fi
 [[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" ]] && lctworeconall=1
 
-#START240221
-#if [ -n "${bs}" ];then
-#    [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
-#    echo -e "$shebang\n" > $bs
-#fi
-
-
+#START240301
+if [ -n "${bs}" ];then
+    if [[ "${bs}" != True ]];then
+        [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
+        #https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
+        bs=$(realpath ${bs})
+        bs_fileout=${bs%.sh*}_fileout.sh  #everything before .sh
+        echo bs_fileout=${bs_fileout}
+        [[ ! -f ${bs} ]] && echo -e "$shebang\n" > $bs
+        [[ ! -f ${bs_fileout} ]] && echo -e "$shebang\n" > $bs_fileout
+    fi
+fi
 
 wd0=$(pwd) 
 
@@ -270,7 +275,8 @@ for((i=0;i<${#dat[@]};++i));do
     #[ -n "${T2f}" ] && echo "T2f = ${T2f}"
 
     if [ -z "$pipedir" ];then
-        datf=$(readlink -f ${dat[i]})
+        #datf=$(readlink -f ${dat[i]})
+        datf=$(realpath ${dat[i]})
         dir0=${datf%/*}
         IFS='/' read -ra subj <<< "${dir0}"
         s0=${subj[${#subj[@]}-1]}
@@ -278,18 +284,32 @@ for((i=0;i<${#dat[@]};++i));do
         T2f=${T2f//${s0}/'${s0}'}
 
 
+        #if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
+        #    dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
+        #    dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+        #else
+        #    for j in "${!subj[@]}";do
+        #        if [[ "${subj[j]}" = "raw_data" ]];then
+        #            dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}
+        #            dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'
+        #            break
+        #        fi
+        #    done
+        #fi
+        #START240302
         if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
-            dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
-            dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
+            dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
+            dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append
         else
             for j in "${!subj[@]}";do
                 if [[ "${subj[j]}" = "raw_data" ]];then
-                    dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}
-                    dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'
+                    dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}$append
+                    dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'$append
                     break
                 fi
             done
         fi
+
 
     else
         dir0=${pipedir}/pipeline${FREESURFVER}
@@ -308,43 +328,47 @@ for((i=0;i<${#dat[@]};++i));do
 
     mkdir -p ${dir0}
 
-    if((lcdate==1));then
-        date0=$(date +%y%m%d)
-    elif((lcdate==2));then
-        date0=$(date +%y%m%d%H%M%S)
-    fi
 
-    #((lcdate==0)) && F0stem=${dir0}/${s0}_hcp3.27struct || F0stem=${dir0}/${s0}_hcp3.27struct_${date0} 
-    #START240221
-    ((lcdate==0)) && F0stem=${dir0}/${s0}_OGREstruct || F0stem=${dir0}/${s0}_OGREstruct_${date0} 
+    #if((lcdate==1));then
+    #    date0=$(date +%y%m%d)
+    #elif((lcdate==2));then
+    #    date0=$(date +%y%m%d%H%M%S)
+    #fi
+    #((lcdate==0)) && F0stem=${dir0}/${s0}_OGREstruct || F0stem=${dir0}/${s0}_OGREstruct_${date0} 
+    #START240302
+    datestr=''
+    if((lcdate==1));then
+        datestr=_$(date +%y%m%d)
+    elif((lcdate==2));then
+        datestr=_$(date +%y%m%d%H%M%S)
+    fi
+    F0stem=${dir0}/${s0}_OGREstruct${datestr} 
+
 
     F0=${F0stem}.sh
     F1=${F0stem}_fileout.sh
     #echo  "F0=${F0}"
     #echo  "F1=${F1}"
 
-    #if [ -n "${bs}" ];then
-    #START240221
-    if((lcbs==1));then
+    #START240302
+    F0name='${s0}'_OGREstruct${datestr}.sh
+    
 
-        echo "    ${F0}"
+    if [ -n "${bs}" ];then
 
-        #((lcdate==0)) && bs0stem=${dir0}/${s0}_hcp3.27batch || bs0stem=${dir0}/${s0}_hcp3.27batch_${date0} 
-        #START240221
-        ((lcdate==0)) && bs0stem=${dir0}/${s0}_OGREbatch || bs0stem=${dir0}/${s0}_OGREbatch_${date0} 
+        #((lcdate==0)) && bs0stem=${dir0}/${s0}_OGREbatch || bs0stem=${dir0}/${s0}_OGREbatch_${date0} 
+        #START240302
+        bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
 
         bs0=${bs0stem}.sh
 
-        #echo -e "$shebang\nset -e\nexport OGREDIR=$OGREDIR\n" > ${bs0} 
-        #START240221
         echo -e "$shebang\nset -e\n" > ${bs0} 
-
         bs1=${bs0stem}_fileout.sh
         echo -e "$shebang\nset -e\n" > ${bs1} 
     fi
 
     echo -e "$shebang\nset -e\n" > ${F0} 
-    echo -e "$shebang\nset -e\n" > ${F1} 
+    #echo -e "$shebang\nset -e\n" > ${F1} 
 
     echo -e "#$0 $@\n" >> ${F0}
     echo "FREESURFVER=${FREESURFVER}" >> ${F0}
@@ -387,50 +411,61 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    --Subject=${s0} \' >> ${F0}
     echo '    --runlocal \' >> ${F0}
     echo '    --EnvironmentScript=${SETUP}' >> ${F0}
-    echo "out=${F0}.txt" >> ${F1}
+
+
+    #echo "out=${F0}.txt" >> ${F1}
+    #echo 'if [ -f "${out}" ];then' >> ${F1}
+    #echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
+    #echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
+    #echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
+    #echo "fi" >> ${F1}
+    #echo "cd ${dir0}" >> ${F1} 
+    #echo ${F0}' >> ${out} 2>&1 &' >> ${F1}
+    #START240302
+    echo -e "$shebang\nset -e\n" > ${F1} 
+    echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
     echo 'if [ -f "${out}" ];then' >> ${F1}
     echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
     echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
     echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
     echo "fi" >> ${F1}
+    echo 'cd ${sf0}' >> ${F1}
+    echo '${F0} >> ${out} 2>&1 &' >> ${F1}
 
-    #START240127
-    echo "cd ${dir0}" >> ${F1} 
-
-    echo ${F0}' >> ${out} 2>&1 &' >> ${F1}
 
     chmod +x ${F0}
     chmod +x ${F1}
     echo "    Output written to ${F0}"
     echo "    Output written to ${F1}"
 
-    #if [ -n "${bs}" ];then
-    #START240221
-    if((lcbs==1));then
+    if [ -n "${bs}" ];then
 
-        #START240221
-        #echo "cd ${dir0}" >> $bs
-        #echo -e "${bs0} > ${bs0}.txt 2>&1\n" >> $bs
+        #echo -e "${F1}\n" >> $bs0
+        #START240302
+        echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${bs0}
+        echo 'if [ -f "${out}" ];then' >> ${bs0}
+        echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${bs0}
+        echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${bs0}
+        echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${bs0}
+        echo "fi" >> ${bs0}
+        echo 'cd ${sf0}' >> ${bs0}
+        echo '${F0} >> ${out} 2>&1' >> ${bs0} #no ampersand at end
 
-        #echo -e "${F0} > ${F0}.txt 2>&1\n" >> $bs0
-        #START240221
-        echo -e "${F1}\n" >> $bs0
 
         echo "${bs0} > ${bs0}.txt 2>&1 &" >> ${bs1}
         chmod +x ${bs0}
         chmod +x ${bs1}
         echo "    Output written to ${bs0}"
         echo "    Output written to ${bs1}"
+
+        #START240301
+        #[[ ${bs} != True ]] && echo ${bs1} >> ${bs}
+        [[ ${bs} != True ]] && echo ${bs0} >> ${bs}
+
     fi
     if((lcautorun==1));then
-
-        #cd ${dir0}
-        #echo "    ${F1} has been executed"
-        #cd ${wd0} #"cd -" echoes the path
-        #START240127
         ${F1}
         echo "    ${F1} has been executed"
-
     fi
 done
 
@@ -444,3 +479,12 @@ done
 #    echo "Output written to $bs"
 #    echo "Output written to $bs2"
 #fi
+#START240301
+if [ -n "${bs}" ];then
+    if [[ ${bs} != True ]];then
+        echo "${bs} > ${bs}.txt 2>&1 &" >> ${bs_fileout}
+        chmod +x $bs $bs_fileout
+        echo "Output written to $bs"
+        echo "Output written to $bs_fileout"
+    fi
+fi
