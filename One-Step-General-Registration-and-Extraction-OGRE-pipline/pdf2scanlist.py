@@ -3,12 +3,11 @@
 #https://pdfreader.readthedocs.io/en/latest/examples/extract_page_text.html
 #https://note.nkmk.me/en/python-re-match-object-span-group/#:~:text=In%20Python's%20re%20module%2C%20match,provided%20by%20the%20match%20object.
 
-##START240124
-#appendstr = ['acq-task','acq-rest']
-#START240126
 fmdict = {'task':'acq-task','rest':'acq-rest'}
 
 import re
+from operator import itemgetter
+
 #Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
 def get_protocol(file):
     with open(file,encoding="utf8",errors='ignore') as f0:
@@ -71,8 +70,6 @@ if __name__ == "__main__":
     if m is not None: n0=m.group()
     #print(f'n0={n0}')
 
-    #if not args.out: args.out = parent0 + '/' + n0 + '_scanlist.csv' 
-    #START240104
     if args.out:
         ext = pathlib.Path(args.out).suffix 
         if ext == '': args.out += '.csv'
@@ -92,7 +89,6 @@ if __name__ == "__main__":
     from collections import Counter
     cnt = Counter()
 
-    #START240126
     fmstr = fmdict['task']
 
     with open(args.out,'w',encoding="utf8",errors='ignore') as f0:
@@ -115,39 +111,17 @@ if __name__ == "__main__":
 
                     name0 = parent0 + '/' + dict0[j][1] + '/' + n0 + '_'
 
+                    #First value (scan number) will be used to sort the second value (bids name), so the output is in the proper order.
                     if dict0[j][0] == 'overwrite':
   
-                        
-                        #print(f'j={j}')
-                        #print(f'scan={scan}')
-                        #print(f'plain_text[i]={plain_text[i]}')
-                        #print(f'plain_text[i][0:idx]={plain_text[i][0:idx]}')
-                        #print(f'plain_text[i][idx-2:idx]={plain_text[i][idx-2:idx]}')
-                        
-
-                        ##dict1[j] = scan[0] + ',' + name
-                        ##START240123
-                        dict1[j] = scan[0] + ',' + name0 + dict0[j][2]
+                        dict1[j] = (int(scan[0]), scan[0] + ',' + name0 + dict0[j][2])
 
                     elif dict0[j][0] == 'append':
                         cnt[j] += 1
                          
-                        ###a0 = '-' + str(cnt[j])
-                        ###dict1[j+a0] = scan[0] + ',' + name + a0
-                        ###START240123
-                        #a0 = '_run-' + str(cnt[j]) + '_epi'
-                        #dict1[j+a0] = scan[0] + ',' + name0 + dict0[j][2] + a0
-
-                        ###START240124
-                        ##a0 = appendstr[cnt[j]]
-                        ##dict1[j+a0] = scan[0] + ',' + name0 + a0 + '_' + dict0[j][2]
-                        ##cnt[j] += 1
-
-                        dict1[j+'-'+str(cnt[j])] = scan[0] + ',' + name0 + dict0[j][2]
+                        dict1[j+'-'+str(cnt[j])] = (int(scan[0]), scan[0] + ',' + name0 + dict0[j][2])
 
                     #print(f'    {scan} {name}') 
-
-                    #dict1[j] = scan[0] + ',' + name0 + dict0[j][2]
 
                     break
 
@@ -155,16 +129,22 @@ if __name__ == "__main__":
         #[print(value) for value in dict1.values()]
         #print(json.dumps(dict1,indent=4))
         #print(f'cnt={cnt}')
+        #[print(f'{key}, {val}') for key,val in dict1.items()]
 
+        #edit fieldmap names
         cnt = Counter()
         key0=[]
         for key,val in dict1.items():
             #print(f'key={key} val={val}')
-            if val.find('epi') != -1 and val.find('acq-dbsi') == -1:
+
+            if val[1].find('epi') != -1 and val[1].find('acq-dbsi') == -1:
+
                 #print(f'here0 = {val}')
                 key0.append(key)
                 continue
-            if val.find('task-rest') != -1:
+
+            if val[1].find('task-rest') != -1:
+
                 str_acq='acq-rest'
             else:
                 str_acq='acq-task'
@@ -172,16 +152,20 @@ if __name__ == "__main__":
             #print(f'key0={key0}')
             str_cnt = ''
             if cnt[str_acq] > 0: str_cnt = str(cnt[str_acq]+2)
+
             for k in key0:
-                str0 = dict1[k]
-                #print(f'    str0={str0}')
-                str1=str0.split('dir') 
-                #print(f'    str1={str1}')
-                #print(f'    str1[0]={str1[0]}')
-                dict1[k] = str1[0] + str_acq + str_cnt + '_dir' + str1[1]
+                str1=dict1[k][1].split('dir') 
+                dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_cnt + '_dir' + str1[1])
+
             if key0: cnt[str_acq]+=1
             key0.clear()
 
 
-        f0.write('\n'.join(i for i in dict1.values()))
+        #[print(value) for value in dict1.values()]
+        #[print(f'{key}, {val}') for key,val in dict1.items()]
+
+        #output the second value of the tuple (bids name), sorted by the first value (scan number)
+        #itemgetter is purported to be significantly faster than a lambda function
+        f0.write('\n'.join(i for i in list(zip(*sorted(dict1.values(),key=itemgetter(0))))[1]))
+
     if args.verbose: print(f'Output written to {args.out}')

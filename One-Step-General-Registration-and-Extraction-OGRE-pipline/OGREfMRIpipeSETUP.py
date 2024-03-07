@@ -454,11 +454,7 @@ if __name__ == "__main__":
 
     hbs = '*_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv.\n' \
         + 'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n' \
-<<<<<<< HEAD
-        + 'If a filename is provided, then in addition, the *OGREbatch_fileout.sh scripts are written to the provided filename.\n' \
-=======
         + 'If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename.\n' \
->>>>>>> batchscript
         + 'This permits multiple subjects to be run sequentially and seamlessly.\n'
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
 
@@ -560,10 +556,7 @@ if __name__ == "__main__":
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
-<<<<<<< HEAD
-=======
             args.bs = os.path.abspath(args.bs)
->>>>>>> batchscript
             if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
             bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
             #print(f'bs_fileout={bs_fileout}')
@@ -577,10 +570,7 @@ if __name__ == "__main__":
         #print(f'pathlib.Path(i).parent={pathlib.Path(i).parent}')  
         #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
-<<<<<<< HEAD
-=======
         print(f'Reading {i}')
->>>>>>> batchscript
         scans = Scans(i)
         idx = i.find('sub-')
         if idx != -1:
@@ -594,21 +584,9 @@ if __name__ == "__main__":
             pass
         else:
             #print(i[:idx])
-<<<<<<< HEAD
-
-            #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER
-            #START240227
-            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
-
-            bids = i[:idx] + 'derivatives/preprocessed/${s0}'
-
-            #dir1 = bids + '/pipeline${FREESURFVER}'
-            #START240227
-=======
 
             dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
             bids = i[:idx] + 'derivatives/preprocessed/${s0}'
->>>>>>> batchscript
             dir1 = bids + '/pipeline${FREESURFVER}' + args.append
 
             #print(f'dir0={dir0}\ndir1={dir1}')
@@ -664,17 +642,10 @@ if __name__ == "__main__":
             #F1f.write(f'{SHEBANG}\nset -e\n\n')          
 
             #START240221
-<<<<<<< HEAD
-            if args.bs: 
-                if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
-                #bs1f.write(f'{SHEBANG}\nset -e\n\n')
-                bs1f.write(f'{SHEBANG}\n\n')
-=======
             #if args.bs: 
             #    #if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
             #    ##bs1f.write(f'{SHEBANG}\nset -e\n\n')
             #    #bs1f.write(f'{SHEBANG}\n\n')
->>>>>>> batchscript
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -703,11 +674,7 @@ if __name__ == "__main__":
 
                 F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
-<<<<<<< HEAD
-                F1f.write(f's0={s0}\nsf0={dir1}\n\n')
-=======
                 #F1f.write(f's0={s0}\nsf0={dir1}\n\n')
->>>>>>> batchscript
 
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
@@ -853,12 +820,8 @@ if __name__ == "__main__":
                         _=run_cmd(f'chmod +x {bs1}')
                         print(f'    Output written to {bs1}')
 
-<<<<<<< HEAD
-                        if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
-=======
                         #if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
                         if 'batchscriptf' in locals(): batchscriptf[0].write(bs0)
->>>>>>> batchscript
 
 
     if 'batchscriptf' in locals(): 
