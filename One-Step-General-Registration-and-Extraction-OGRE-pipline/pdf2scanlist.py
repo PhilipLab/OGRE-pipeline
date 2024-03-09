@@ -6,6 +6,7 @@
 fmdict = {'task':'acq-task','rest':'acq-rest'}
 
 import re
+from pdfreader import SimplePDFViewer
 from operator import itemgetter
 
 #Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
@@ -21,6 +22,18 @@ def get_protocol(file):
             dict0[line1[0]] = (line1[1],line1[2],line1[3])
         #print(f'dict0={dict0}')
     return dict0
+
+def pdf2txt(pdfs):
+    plain_text = []
+    for i in pdfs:
+        with open(i,"rb") as fd:
+            viewer = SimplePDFViewer(fd)
+            for canvas in viewer:
+                plain_text += "".join(canvas.strings).split()
+    #print(f'plain_text={plain_text}')
+    #[print(f'{txt}') for txt in plain_text]
+    return plain_text
+
                  
 
 if __name__ == "__main__":
@@ -76,15 +89,7 @@ if __name__ == "__main__":
     else:
         args.out: args.out = parent0 + '/' + n0 + '_scanlist.csv' 
 
-        
-    from pdfreader import SimplePDFViewer
-    plain_text = []
-    for i in args.dat:
-        with open(i,"rb") as fd:
-            viewer = SimplePDFViewer(fd)
-            for canvas in viewer:
-                plain_text += "".join(canvas.strings).split()
-    #print(f'plain_text={plain_text}')
+    plain_text = pdf2txt(args.dat)
 
     from collections import Counter
     cnt = Counter()
@@ -137,25 +142,50 @@ if __name__ == "__main__":
         for key,val in dict1.items():
             #print(f'key={key} val={val}')
 
-            if val[1].find('epi') != -1 and val[1].find('acq-dbsi') == -1:
 
-                #print(f'here0 = {val}')
+            #if val[1].find('epi') != -1 and val[1].find('acq-dbsi') == -1:
+            #    print(f'here0 val[1] = {val[1]}')
+            #    key0.append(key)
+            #    continue
+            if val[1].find('acq-dbsi') != -1:
+                continue
+            if val[1].find('epi') != -1:
+                #print(f'here0 val[1] = {val[1]}')
+
+                #"2-back delete code" goes here
+
                 key0.append(key)
                 continue
 
+            str_run=''
             if val[1].find('task-rest') != -1:
-
                 str_acq='acq-rest'
             else:
                 str_acq='acq-task'
+
+                if cnt[str_acq] > 0:
+                    idx=val[1].find('run-')
+                    if idx != -1:
+                        str_run = val[1][idx-1:idx+5]
+                        #print(f'idx={idx}')
+                        #print(f'val[1]={val[1]}')
+                        #print(f'str_run={str_run}')
+                    else:
+                        str_acq='acq-rest'
+                
+
+
+
             #print(f'val={val} str_acq={str_acq}')
             #print(f'key0={key0}')
-            str_cnt = ''
-            if cnt[str_acq] > 0: str_cnt = str(cnt[str_acq]+2)
+
+            #str_cnt = ''
+            #if cnt[str_acq] > 0: str_cnt = str(cnt[str_acq]+2)
 
             for k in key0:
                 str1=dict1[k][1].split('dir') 
-                dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_cnt + '_dir' + str1[1])
+                #dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_cnt + '_dir' + str1[1])
+                dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_run + '_dir' + str1[1])
 
             if key0: cnt[str_acq]+=1
             key0.clear()
