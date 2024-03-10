@@ -3,10 +3,11 @@
 #https://pdfreader.readthedocs.io/en/latest/examples/extract_page_text.html
 #https://note.nkmk.me/en/python-re-match-object-span-group/#:~:text=In%20Python's%20re%20module%2C%20match,provided%20by%20the%20match%20object.
 
-fmdict = {'task':'acq-task','rest':'acq-rest'}
+#fmdict = {'task':'acq-task','rest':'acq-rest'}
 
 import re
 from pdfreader import SimplePDFViewer
+from collections import Counter
 from operator import itemgetter
 
 #Dictionary: Key = SeriesDesc Value = ('overwrite' or 'append', 'anat' or 'fmap' or 'func', output root)
@@ -33,6 +34,42 @@ def pdf2txt(pdfs):
     #print(f'plain_text={plain_text}')
     #[print(f'{txt}') for txt in plain_text]
     return plain_text
+
+def txt2dict(plain_text):
+    dict1={}
+    cnt = Counter()
+    for i in range(len(plain_text)):
+        if plain_text[i].find('PhysioLog') > -1:
+            continue
+        for j in dict0:
+
+            #print(f'j={j}')
+
+            idx = plain_text[i].find(j)
+            if idx > -1:
+                #print(plain_text[i])
+
+                #scan = re.findall(r'[0-9]+', plain_text[i][0:idx])
+                #START240303 3600files33 rather than the intended files33
+                scan = re.findall(r'[0-9]+', plain_text[i][idx-2:idx])
+
+
+                name0 = parent0 + '/' + dict0[j][1] + '/' + n0 + '_'
+
+                #First value (scan number) will be used to sort the second value (bids name), so the output is in the proper order.
+                if dict0[j][0] == 'overwrite':
+
+                    dict1[j] = (int(scan[0]), scan[0] + ',' + name0 + dict0[j][2])
+
+                elif dict0[j][0] == 'append':
+                    cnt[j] += 1
+
+                    dict1[j+'-'+str(cnt[j])] = (int(scan[0]), scan[0] + ',' + name0 + dict0[j][2])
+
+                #print(f'    {scan} {name}')
+
+                break
+    return dict1
 
                  
 
@@ -91,44 +128,13 @@ if __name__ == "__main__":
 
     plain_text = pdf2txt(args.dat)
 
-    from collections import Counter
-    cnt = Counter()
+    #cnt = Counter()
 
-    fmstr = fmdict['task']
+    #fmstr = fmdict['task']
 
     with open(args.out,'w',encoding="utf8",errors='ignore') as f0:
-        dict1={}
-        for i in range(len(plain_text)):
-            if plain_text[i].find('PhysioLog') > -1:
-                continue
-            for j in dict0: 
 
-                #print(f'j={j}')
-
-                idx = plain_text[i].find(j)
-                if idx > -1:
-                    #print(plain_text[i]) 
-
-                    #scan = re.findall(r'[0-9]+', plain_text[i][0:idx]) 
-                    #START240303 3600files33 rather than the intended files33 
-                    scan = re.findall(r'[0-9]+', plain_text[i][idx-2:idx]) 
-
-
-                    name0 = parent0 + '/' + dict0[j][1] + '/' + n0 + '_'
-
-                    #First value (scan number) will be used to sort the second value (bids name), so the output is in the proper order.
-                    if dict0[j][0] == 'overwrite':
-  
-                        dict1[j] = (int(scan[0]), scan[0] + ',' + name0 + dict0[j][2])
-
-                    elif dict0[j][0] == 'append':
-                        cnt[j] += 1
-                         
-                        dict1[j+'-'+str(cnt[j])] = (int(scan[0]), scan[0] + ',' + name0 + dict0[j][2])
-
-                    #print(f'    {scan} {name}') 
-
-                    break
+        dict1 = txt2dict(plain_text) 
 
         #print(f'dict1.values()={dict1.values()}')
         #[print(value) for value in dict1.values()]
@@ -143,13 +149,10 @@ if __name__ == "__main__":
             #print(f'key={key} val={val}')
 
 
-            #if val[1].find('epi') != -1 and val[1].find('acq-dbsi') == -1:
-            #    print(f'here0 val[1] = {val[1]}')
-            #    key0.append(key)
-            #    continue
             if val[1].find('acq-dbsi') != -1:
                 continue
             if val[1].find('epi') != -1:
+                #print(f'here0 key={key} val={val}')
                 #print(f'here0 val[1] = {val[1]}')
 
                 #"2-back delete code" goes here
@@ -196,6 +199,24 @@ if __name__ == "__main__":
 
         #output the second value of the tuple (bids name), sorted by the first value (scan number)
         #itemgetter is purported to be significantly faster than a lambda function
-        f0.write('\n'.join(i for i in list(zip(*sorted(dict1.values(),key=itemgetter(0))))[1]))
+        #f0.write('\n'.join(i for i in list(zip(*sorted(dict1.values(),key=itemgetter(0))))[1]))
+        #l0 = str(list(zip(*sorted(dict1.values(),key=itemgetter(0))))[1]).split(',')
+        #l0 = list(zip(*sorted(dict1.values(),key=itemgetter(0))))[1]
+        l0 = list(list(zip(*sorted(dict1.values(),key=itemgetter(0))))[1])
+        #[print(l) for l in l0]
+        #for i in range(len(l0)-2):
+      
+        i=0
+        while i < len(l0)-2:
+            #print(l0[i])
+            str0 = l0[i].split(',')
+            #print(str0)
+            if str0[1].find('epi') != -1 and str0[1].find('acq-dbsi') == -1:
+                if str0[1] == l0[i+2].split(',')[1]:
+                    l0.pop(i)
+                    continue
+            i+=1
+
+        f0.write('\n'.join(i for i in l0))
 
     if args.verbose: print(f'Output written to {args.out}')
