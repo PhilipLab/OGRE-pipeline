@@ -660,8 +660,11 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/HCP/scripts/'+P1+'\n')
 
-                if not args.lct1copymaskonly:
+                #if not args.lct1copymaskonly:
+                #START240314
+                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
+
 
             if args.fsf1:
                 F0f[1].write(f'OGREDIR={OGREDIR}\n')
@@ -736,7 +739,9 @@ if __name__ == "__main__":
                     F0f[0].write('    --outpath=${sf0}/MNINonLinear/Results \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                if scans.taskidx and not args.lct1copymaskonly: 
+                #if scans.taskidx and not args.lct1copymaskonly: 
+                #START240314
+                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
 
                     F0f[0].write('${SMOOTH} \\\n')
                     F0f[0].write('    --fMRITimeSeriesResults="\\\n')
@@ -820,8 +825,9 @@ if __name__ == "__main__":
                         _=run_cmd(f'chmod +x {bs1}')
                         print(f'    Output written to {bs1}')
 
-                        #if 'batchscriptf' in locals(): batchscriptf[0].write(bs1)
-                        if 'batchscriptf' in locals(): batchscriptf[0].write(bs0)
+                        #if 'batchscriptf' in locals(): batchscriptf[0].write(bs0)
+                        #START240314
+                        if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
 
 
     if 'batchscriptf' in locals(): 
