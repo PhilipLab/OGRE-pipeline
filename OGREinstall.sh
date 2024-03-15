@@ -62,13 +62,20 @@ fi
 
 mkdir -p $id
 
+#files=(OGREcleanSETUP.sh \
+#       OGREfMRIpipeSETUP.sh \
+#       OGREmakeregdir.sh \
+#       OGREstructpipeSETUP.sh \
+#       dbsipdf2scanlist.py \
+#       dcm2niix.sh \
+#       pdf2scanlist.py)
 files=(OGREcleanSETUP.sh \
-       OGREfMRIpipeSETUP.sh \
+       OGREfMRIpipeSETUP.py \
        OGREmakeregdir.sh \
        OGREstructpipeSETUP.sh \
-       dbsipdf2scanlist.py \
-       dcm2niix.sh \
+       OGREdcm2niix.sh \
        pdf2scanlist.py)
+
 for i in ${files[@]};do
     cp -p $REPO/$i $id
 done
