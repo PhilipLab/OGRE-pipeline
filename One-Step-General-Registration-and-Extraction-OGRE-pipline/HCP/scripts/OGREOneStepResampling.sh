@@ -233,6 +233,10 @@ for ((k=0; k < $NumFrames; k++)); do
   #START231022 commented out to look at warps debugging 1018_run3_LH
   rm ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum}_gdc_warp.nii.gz
   rm ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz
+  #START240318
+  #echo "*** debug Not removing ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum}_gdc_warp.nii.gz ***"
+  #echo "*** debug Not removing ${MotionMatrixFolder}/${MotionMatrixPrefix}${vnum}_all_warp.nii.gz ***"
+  #echo "*** debug Also check ${OutputTransform} ***"
 done
 
 
