@@ -188,7 +188,9 @@ if __name__ == "__main__":
             for k in key0:
                 str1=dict1[k][1].split('dir') 
                 #dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_cnt + '_dir' + str1[1])
-                dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_run + '_dir' + str1[1])
+                #dict1[k] = (int(dict1[k][0]), str1[0] + str_acq + str_run + '_dir' + str1[1])
+                #START240326
+                dict1[k] = (int(dict1[k][0]), str1[0] + str_acq +  '_dir' + str1[1] + str_run)
 
             if key0: cnt[str_acq]+=1
             key0.clear()
