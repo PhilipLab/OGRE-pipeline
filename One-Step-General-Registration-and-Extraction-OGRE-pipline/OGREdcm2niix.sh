@@ -104,15 +104,12 @@ fi
 
 for((i=0;i<${#dat[@]};++i));do
 
-    #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
-    #START240123
     #https://stackoverflow.com/questions/17577093/how-do-i-get-the-absolute-directory-of-a-file-in-bash
     #https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
-    #datf=$(readlink -f ${dat[i]})
     datf=$(realpath ${dat[i]})
-    #echo "datf=$datf"
     dir0=${datf%/*}
-    #echo "dir0=${dir0}"
+    IFS='/' read -ra subj <<< "${dir0}"
+    subj=${subj[${#subj[@]}-1]}
 
     [ -z "${id0}" ] && id=${dir0}/dicom 
     if [ ! -d "$id" ];then
@@ -120,12 +117,11 @@ for((i=0;i<${#dat[@]};++i));do
         exit
     fi
 
+
     if [ "${wkdir}" -eq 1 ];then # added 240325 by BP
         bs=$(pwd)/${subj}_dcm2niix.sh
         F1=$(pwd)/${subj}_dcm2niix_fileout.sh
     elif [ -z "${bs0}" ];then
-        IFS='/' read -ra subj <<< "${dir0}"
-        subj=${subj[${#subj[@]}-1]}
 
         #START240325
         bs=${dir0}/${subj}_dcm2niix.sh
