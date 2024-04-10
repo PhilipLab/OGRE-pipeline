@@ -81,8 +81,13 @@ Hires=`opts_GetOpt1 "--Hires" $@`
 
 
 echo "    freesurferVersion=$freesurferVersion"
-if [[ "${freesurferVersion}" != "5.3.0-HCP" && "${freesurferVersion}" != "7.2.0" && "${freesurferVersion}" != "7.3.2" && "${freesurferVersion}" != "7.4.0" ]];then
-    echo "    Unknown version of freesurfer. Abort!"
+
+#if [[ "${freesurferVersion}" != "5.3.0-HCP" && "${freesurferVersion}" != "7.2.0" && "${freesurferVersion}" != "7.3.2" && "${freesurferVersion}" != "7.4.0" ]];then
+#    echo "    Unknown version of freesurfer. Abort!"
+#START240330
+if [[ "${freesurferVersion}" != "5.3.0-HCP" && "${freesurferVersion}" != "7.2.0" && "${freesurferVersion}" != "7.3.2" && "${freesurferVersion}" != "7.4.0" && "${freesurferVersion}" != "7.4.1" ]];then
+    echo "    Unknown version of freesurfer ${freesurferVersion}. Abort!"
+
     exit 111
 fi
 
@@ -379,9 +384,9 @@ if [ "${editFS}" != "TRUE" ];then
             if [ "${freesurferVersion}" = "5.3.0-HCP" ];then
                 recon-all -all -i "$T1wImage"_1mm.nii.gz -subjid $SubjectID -sd $SubjectDIR -openmp ${num_cores} ${seed_cmd_appendix}
 
-            #elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" ]];then
-            #START230609
-            elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" || "${freesurferVersion}" = "7.4.0" ]];then
+            #elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" || "${freesurferVersion}" = "7.4.0" ]];then
+            #START240330
+            elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" || "${freesurferVersion}" = "7.4.0" || "${freesurferVersion}" = "7.4.1" ]];then
 
                 recon-all -all -i "$T1wImage"_1mm.nii.gz -subjid $SubjectID -sd $SubjectDIR -T2 "$T2wImage" -T2pial -openmp ${num_cores} ${seed_cmd_appendix}
             fi
@@ -407,9 +412,9 @@ if [ "${editFS}" != "TRUE" ];then
                     dangerous0="$FREESURFER_HOME/average/RB_all_2008-03-26.gca"
                     dangerous1="$FREESURFER_HOME/average/RB_all_withskull_2008-03-26.gca"
 
-                #elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" ]];then
-                #START230609
-                elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" || "${freesurferVersion}" = "7.4.0" ]];then
+                #elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" || "${freesurferVersion}" = "7.4.0" ]];then
+                #START240330
+                elif [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.3.2" || "${freesurferVersion}" = "7.4.0" || "${freesurferVersion}" = "7.4.1" ]];then
 
                     dangerous0="$FREESURFER_HOME/average/RB_all_2020-01-02.gca"
                     dangerous1="$FREESURFER_HOME/average/RB_all_withskull_2020_01_02.gca"
@@ -421,22 +426,12 @@ if [ "${editFS}" != "TRUE" ];then
 
 
 
-            #if [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.4.0" ]];then
-            #    if [ -n "$T2wImage" ];then #220806FreeSurferHiresWhite.sh
-            #        recon-all -subjid $SubjectID -sd $SubjectDIR -autorecon2 -autorecon3 -T2 "$T2wImage" -T2pial -openmp ${num_cores} ${seed_cmd_appendix}
-            #    else
-            #        recon-all -subjid $SubjectID -sd $SubjectDIR -autorecon2 -autorecon3 -openmp ${num_cores} ${seed_cmd_appendix}
-            #    fi
-            #elif [[ "${freesurferVersion}" = "7.3.2" ]];then #-careg needed as it is not run automatically. I think this is a bug.
-            #    if [ -n "$T2wImage" ];then #220806FreeSurferHiresWhite.sh
-            #        recon-all -subjid $SubjectID -sd $SubjectDIR -careg -autorecon2 -autorecon3 -T2 "$T2wImage" -T2pial -openmp ${num_cores} ${seed_cmd_appendix}
-            #    else
-            #        recon-all -subjid $SubjectID -sd $SubjectDIR -careg -autorecon2 -autorecon3 -openmp ${num_cores} ${seed_cmd_appendix}
-            #    fi
-            #fi
-            #START230617
             if [[ "${startbbregister}" != "TRUE" ]];then
-                if [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.4.0" ]];then
+
+                #if [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.4.0" ]];then
+                #START240330
+                if [[ "${freesurferVersion}" = "7.2.0" || "${freesurferVersion}" = "7.4.0" || "${freesurferVersion}" = "7.4.1" ]];then
+
                     if [ -n "$T2wImage" ];then #220806FreeSurferHiresWhite.sh
                         recon-all -subjid $SubjectID -sd $SubjectDIR -autorecon2 -autorecon3 -T2 "$T2wImage" -T2pial -openmp ${num_cores} ${seed_cmd_appendix}
                     else

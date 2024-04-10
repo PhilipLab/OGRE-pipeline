@@ -24,6 +24,8 @@ helpmsg(){
     echo "        Input directory. Default is /<scans.csv path>/dicom."
     echo "    -b --batchscript -batchscript"
     echo "        Name of output script. Default is /<scans.csv path>/<subject directory>_dcm2niix.sh."
+    echo "    -w --w"
+    echo "        Flag. Puts output script in working directory; overrides -b"
     echo "    --Aoff -Aoff --autorunoff -autorunoff --AUTORUNOFF -AUTORUNOFF"
     echo "        Flag. Do not automatically execute script. Default is to execute. When not executed, *_fileout.sh is created with output redirect."
 
@@ -44,7 +46,7 @@ fi
 #echo $0 $@
 
 #do not set dat;unexpected
-lcautorun=1;lcverbose=1
+lcautorun=1;lcverbose=1;wkdir=0
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -65,6 +67,9 @@ for((i=0;i<${#@};++i));do
         -b | --batchscript | -batchscript)
             bs=${arg[((++i))]}
             bs0=$bs
+            ;;
+        -w | --w )
+            wkdir=1
             ;;
         --Aoff | -Aoff | --autorunoff | -autorunoff | --AUTORUNOFF | -AUTORUNOFF)
             lcautorun=0
@@ -99,15 +104,12 @@ fi
 
 for((i=0;i<${#dat[@]};++i));do
 
-    #[[ "${dat[i]}" == *"/"* ]] && dir0=${dat[i]%/*} || dir0=$(pwd)
-    #START240123
     #https://stackoverflow.com/questions/17577093/how-do-i-get-the-absolute-directory-of-a-file-in-bash
     #https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
-    #datf=$(readlink -f ${dat[i]})
     datf=$(realpath ${dat[i]})
-    #echo "datf=$datf"
     dir0=${datf%/*}
-    #echo "dir0=${dir0}"
+    IFS='/' read -ra subj <<< "${dir0}"
+    subj=${subj[${#subj[@]}-1]}
 
     [ -z "${id0}" ] && id=${dir0}/dicom 
     if [ ! -d "$id" ];then
@@ -115,16 +117,18 @@ for((i=0;i<${#dat[@]};++i));do
         exit
     fi
 
-    if [ -z "${bs0}" ];then
-        IFS='/' read -ra subj <<< "${dir0}"
-        subj=${subj[${#subj[@]}-1]}
 
-        #bs=${dir0}/${subj}_dcm2niix.sh
-        #F1=${dir0}/${subj}_dcm2niix_fileout.sh
-        #START240123
+    if [ "${wkdir}" -eq 1 ];then # added 240325 by BP
         bs=$(pwd)/${subj}_dcm2niix.sh
         F1=$(pwd)/${subj}_dcm2niix_fileout.sh
+    elif [ -z "${bs0}" ];then
 
+        #START240325
+        bs=${dir0}/${subj}_dcm2niix.sh
+        F1=${dir0}/${subj}_dcm2niix_fileout.sh
+        #START240123
+        #bs=$(pwd)/${subj}_dcm2niix.sh
+        #F1=$(pwd)/${subj}_dcm2niix_fileout.sh
     fi
 
     if [[ "${bs}" == *"/"* ]];then

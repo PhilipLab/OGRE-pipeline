@@ -8,7 +8,7 @@ shebang="#!/usr/bin/env bash"
 #Hard coded location of freesurfer installations
 [ -z ${FREESURFDIR+x} ] && FREESURFDIR=/Applications/freesurfer
 
-#Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2 7.4.0
+#Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2 7.4.0 7.4.1
 [ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.0
 
 #Hard coded HCP batch scripts
@@ -53,7 +53,7 @@ helpmsg(){
     echo "    -H --HCPDIR -HCPDIR --hcpdir -hcpdir"
     echo "        HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR."
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
-    echo "        5.3.0-HCP, 7.2.0, 7.3.2, or 7.4.0. Default is 7.3.2 unless set elsewhere via variable FREESURFVER."
+    echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.0 unless set elsewhere via variable FREESURFVER."
     echo "    -p --pipedir -pipedir"
     echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
     echo "        Optional. Default is <scanlist.csv path>."
@@ -68,17 +68,13 @@ helpmsg(){
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
     echo "    -r  --hires"
     echo "        Resolution. Should match that for the sturctural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
-
-    #START240301
     echo "    -b --batchscript -batchscript"
     echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
     echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename."
     echo "        This permits multiple subjects to be run sequentially and seamlessly."
-    #START240302
     echo "    --append -append"
     echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.0debug"
-
     echo "    -h --help -help"
     echo "        Echo this help message."
     exit
@@ -211,11 +207,18 @@ fi
 #fi    
 
 lcsinglereconall=0;lctworeconall=0
-if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" ]];then
+
+#if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" ]];then
+#START240329
+if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" && "${FREESURFVER}" != "7.4.1" ]];then
+
     echo "Unknown version of freesurfer. FREESURFVER=${FREESURFVER}"
     exit
 fi
-[[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" ]] && lctworeconall=1
+
+#[[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" ]] && lctworeconall=1
+#START240329
+[[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" || "${FREESURFVER}" = "7.4.1" ]] && lctworeconall=1
 
 #START240301
 if [ -n "${bs}" ];then

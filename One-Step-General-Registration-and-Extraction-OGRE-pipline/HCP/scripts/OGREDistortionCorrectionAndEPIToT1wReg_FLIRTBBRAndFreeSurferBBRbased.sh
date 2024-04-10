@@ -424,7 +424,6 @@ case $DistortionCorrection in
         #START200917
         superbird=${SubjectFolder}/T1w/T2w_acpc_dc.nii.gz
         [ ! -f "$superbird" ] && superbird=${SubjectFolder}/T1w/T1w_acpc_dc.nii.gz
-        echo "    hereA superbird = $superbird"
         for File in ${Files};do
             #NOTE: this relies on TopupPreprocessingAll generating _jac versions of the files
             if [[ $UseJacobian == "true" ]];then
@@ -607,33 +606,47 @@ else
 
 fi
 
-    #echo ''
-    #echo "**************** here2 ***************************"
-    #echo ''
 
+
+#${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
+#
+##START240326
+#fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
+#fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
+#fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
+#if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
+#    echo "ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+#    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+#fi
+#
+##create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
+##overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
+##${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
+#${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
+#START240408
 ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
-
-
-#START240326
 fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
 fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
 fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
-if((fMRI2str_vol1_M_int>0));then
-    echo "ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
+    msg0="ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+    msg=$(date)"\n$0\n${WD}/fMRI2str_vol1.nii.gz\n$msg\n"
+    echo -e $msg
+    echo -e $msg >> OGREpipeline.log
     ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+else
+    #create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
+    #overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
+    #${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
+    ${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
 fi
 
 
-#create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
-#overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
-#${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
-${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
 
 
 
-    #echo ''
-    #echo "**************** here4 ***************************"
-    #echo ''
+
+
 
 if [[ $DistortionCorrection == $SPIN_ECHO_METHOD_OPT ]];then
     #resample SE field maps, so we can copy to results directories
@@ -653,7 +666,7 @@ if [[ $DistortionCorrection == $SPIN_ECHO_METHOD_OPT ]];then
     #START200917
     superbird=${SubjectFolder}/T1w/T2w_acpc_dc.nii.gz
     [ ! -f "$superbird" ] && superbird=${SubjectFolder}/T1w/T1w_acpc_dc.nii.gz
-    echo "    hereB superbird = $superbird"
+    #echo "    hereB superbird = $superbird"
     for File in ${Files};do
         if [[ $UseJacobian == "true" ]];then
             ${FSLDIR}/bin/applywarp --interp=spline -i "${WD}/FieldMap/${File}_jac" -r ${superbird} --premat=${WD}/fMRI2str.mat -o ${WD}/${File}
