@@ -624,22 +624,28 @@ fi
 ##${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
 #${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
 #START240408
-${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
-fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
-fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
-fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
-if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
-    msg0="ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
-    msg=$(date)"\n$0\n${WD}/fMRI2str_vol1.nii.gz\n$msg\n"
-    echo -e $msg
-    echo -e $msg >> OGREpipeline.log
-    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
-else
-    #create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
-    #overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
-    #${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
-    ${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
-fi
+#${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
+#fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
+#fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
+#fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
+#if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
+#    msg0="ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+#    msg=$(date)"\n$0\n${WD}/fMRI2str_vol1.nii.gz\n$msg0\n"
+#    echo -e $msg
+#    echo -e $msg >> OGREpipeline.log
+#    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+#else
+#    #create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
+#    #overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
+#    #${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
+#    ${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
+#fi
+#START240409
+msg0="INFORMATION: NO REFINEMENT"
+msg=$(date)"\n$0\n$msg0\n"
+echo -e $msg
+echo -e $msg >> OGREpipeline.log
+${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
 
 
 
