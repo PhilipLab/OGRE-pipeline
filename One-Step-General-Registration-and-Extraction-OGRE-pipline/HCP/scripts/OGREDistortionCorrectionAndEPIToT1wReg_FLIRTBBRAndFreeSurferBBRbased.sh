@@ -1,9 +1,11 @@
 #!/usr/bin/env bash 
 set -e
 
+echo -e "\n***** START $0 *****"
+
 # Requirements for this script
 #  installed versions of: FSL (version 5.0.6) and FreeSurfer (version 5.3.0-HCP)
-#  environment: FSLDIR, FREESURFER_HOME + others
+#  environment: FSLDIR, FeEESURFER_HOME + others
 
 # ---------------------------------------------------------------------
 #  Constants for specification of Readout Distortion Correction Method
@@ -79,6 +81,9 @@ Usage() {
   echo "                 don't do bias correction"
   echo ""
   echo "             --usejacobian=<\"true\" or \"false\">"
+
+  #START240415
+  echo "             --userefinement=<\"true\" or \"false\">"
 }
 
 # function for parsing options
@@ -167,6 +172,9 @@ UseJacobian=`getopt1 "--usejacobian" $@`
 #START221103
 freesurferVersion=`getopt1 "--freesurferVersion" $@`
 
+#START240415
+UseRefinement=`getopt1 "--userefinement" $@`
+
 if [[ -n $HCPPIPEDEBUG ]]
 then
     set -x
@@ -226,6 +234,13 @@ echo ''
 #sanity check the jacobian option
 if [[ "$UseJacobian" != "true" && "$UseJacobian" != "false" ]];then
     log_Msg "the --usejacobian option must be 'true' or 'false'"
+    exit 1
+fi
+
+#START240415
+#sanity check the refinement option
+if [[ "$UseRefinement" != "true" && "$UseRefinement" != "false" ]];then
+    log_Msg "the --userefinement option must be 'true' or 'false'"
     exit 1
 fi
 
@@ -422,7 +437,6 @@ case $DistortionCorrection in
         #START200917
         superbird=${SubjectFolder}/T1w/T2w_acpc_dc.nii.gz
         [ ! -f "$superbird" ] && superbird=${SubjectFolder}/T1w/T1w_acpc_dc.nii.gz
-        echo "    hereA superbird = $superbird"
         for File in ${Files};do
             #NOTE: this relies on TopupPreprocessingAll generating _jac versions of the files
             if [[ $UseJacobian == "true" ]];then
@@ -574,10 +588,6 @@ else
     # Use "hidden" bbregister DOF options
     log_Msg "Use \"hidden\" bbregister DOF options"
 
-    echo ''
-    echo "**************** here0 ***************************"
-    echo ''
-
     #${FREESURFER_HOME}/bin/bbregister --s ${FreeSurferSubjectID} --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --surf white.deformed --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w.nii.gz
     #START221103
     if [[ "$freesurferVersion" = "5.3.0-HCP" ]];then 
@@ -591,9 +601,9 @@ else
     #c0="cp ${WD}/${ScoutInputFile}_undistorted2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w_superbird.nii.gz";echo $c0
     #$c0
 
-    echo ''
-    echo "**************** here1 ***************************"
-    echo ''
+    #echo ''
+    #echo "**************** here1 ***************************"
+    #echo ''
 
 
   # Create FSL-style matrix and then combine with existing warp fields
@@ -605,29 +615,75 @@ else
 
 fi
 
-    echo ''
-    echo "**************** here2 ***************************"
-    echo ''
 
-${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
-#START191120
-#if [[ $DistortionCorrection != "NONE" ]]; then
-#    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
-##START191122
-#else
-#   ${FSLDIR}/bin/convertwarp --relout --rel --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
+
+#${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
+#
+##START240326
+#fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
+#fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
+#fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
+#if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
+#    echo "ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+#    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
 #fi
+#
+##create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
+##overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
+##${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
+#${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
+#START240408
+#${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
+#fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
+#fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
+#fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
+#if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
+#    msg0="ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+#    msg=$(date)"\n$0\n${WD}/fMRI2str_vol1.nii.gz\n$msg0\n"
+#    echo -e $msg
+#    echo -e $msg >> OGREpipeline.log
+#    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+#else
+#    #create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
+#    #overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
+#    #${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
+#    ${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
+#fi
+#START240409
+#msg0="INFORMATION: NO REFINEMENT"
+#msg=$(date)"\n$0\n$msg0\n"
+#echo -e $msg
+#echo -e $msg >> OGREpipeline.log
+#${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+#START240415
+if [[ $UseRefinement == "true" ]];then
+    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
+    fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
+    fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
+    fMRI2str_vol1_M_int=${fMRI2str_vol1_M%.*}
+    if((fMRI2str_vol1_M_int>0));then #HERE IT IS. We found that this volume should be negative values.
+        msg0="ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
+        msg=$(date)"\n$0\n${WD}/fMRI2str_vol1.nii.gz\n$msg0\n"
+        echo -e $msg
+        echo -e $msg >> OGREpipeline.log
+        ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+    else
+        #create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
+        #overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
+        #${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
+        ${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
+    fi
+else
+    msg0="INFORMATION: NO REFINEMENT"
+    msg=$(date)"\n$0\n${WD}\n$msg0\n"
+    echo -e $msg
+    echo -e $msg >> OGREpipeline.log
+    ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
+fi
 
-#create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
-#overwrite old version of ${WD}/fMRI2str.mat, as it was just the initial registration
-#${WD}/${ScoutInputFile}_undistorted_initT1wReg.mat is from the above epi_reg_dof, initial registration from fMRI space to T1 space
-${FSLDIR}/bin/convert_xfm -omat ${WD}/fMRI2str.mat -concat ${WD}/fMRI2str_refinement.mat ${WD}/${ScoutInputFile}_undistorted2T1w_init.mat
 
 
 
-    echo ''
-    echo "**************** here4 ***************************"
-    echo ''
 
 if [[ $DistortionCorrection == $SPIN_ECHO_METHOD_OPT ]];then
     #resample SE field maps, so we can copy to results directories
@@ -647,7 +703,7 @@ if [[ $DistortionCorrection == $SPIN_ECHO_METHOD_OPT ]];then
     #START200917
     superbird=${SubjectFolder}/T1w/T2w_acpc_dc.nii.gz
     [ ! -f "$superbird" ] && superbird=${SubjectFolder}/T1w/T1w_acpc_dc.nii.gz
-    echo "    hereB superbird = $superbird"
+    #echo "    hereB superbird = $superbird"
     for File in ${Files};do
         if [[ $UseJacobian == "true" ]];then
             ${FSLDIR}/bin/applywarp --interp=spline -i "${WD}/FieldMap/${File}_jac" -r ${superbird} --premat=${WD}/fMRI2str.mat -o ${WD}/${File}
@@ -796,4 +852,4 @@ echo "# Check undistortion of the scout image" >> $WD/qa.txt
 echo "fslview `dirname ${ScoutInputName}`/GradientDistortionUnwarp/Scout ${WD}/${ScoutInputFile}_undistorted" >> $WD/qa.txt
 
 ##############################################################################################
-
+echo "***** END: $0 *****"

@@ -143,12 +143,20 @@ MotionCorrectionType=`opts_DefaultOpt $MotionCorrectionType MCFLIRT` #use mcflir
 
 Analysis=`opts_GetOpt1 "--analysis" $@`  
 log_Msg "Analysis: ${Analysis}"
+
+freesurferVersion=`opts_GetOpt1 "--freesurferVersion" $@`
+log_Msg "freesurferVersion: ${freesurferVersion}"
+
+#START240415
+UseRefinement=`opts_GetOpt1 "--userefinement" $@`
+# Convert UseRefinement value to all lowercase (to allow the user the flexibility to use True, true, TRUE, False, False, false, etc.)
+UseRefinement="$(echo ${UseRefinement} | tr '[:upper:]' '[:lower:]')"
+log_Msg "UseRefinement: ${UseRefinement}"
+
 startOneStepResampling=`opts_GetOpt1 "--startOneStepResampling" $@`
 log_Msg "startOneStepResampling: ${startOneStepResampling}"
 startIntensityNormalization=`opts_GetOpt1 "--startIntensityNormalization" $@`
 log_Msg "startIntensityNormalization: ${startIntensityNormalization}"
-freesurferVersion=`opts_GetOpt1 "--freesurferVersion" $@`
-log_Msg "freesurferVersion: ${freesurferVersion}"
 
 echo "startOneStepResampling = $startOneStepResampling"
 echo "startIntensityNormalization = $startIntensityNormalization"
@@ -189,13 +197,11 @@ case "$MotionCorrectionType" in
 esac
 
 JacobianDefault="true"
-if [[ $DistortionCorrection != "TOPUP" ]]
-then
+if [[ $DistortionCorrection != "TOPUP" ]]; then
     #because the measured fieldmap can cause the warpfield to fold over, default to doing nothing about any jacobians
     JacobianDefault="false"
     #warn if the user specified it
-    if [[ $UseJacobian == "true" ]]
-    then
+    if [[ $UseJacobian == "true" ]];then
         log_Msg "WARNING: using --jacobian=true with --dcmethod other than TOPUP is not recommended, as the distortion warpfield is less stable than TOPUP"
     fi
 fi
@@ -204,14 +210,12 @@ log_Msg "JacobianDefault: ${JacobianDefault}"
 UseJacobian=`opts_DefaultOpt $UseJacobian $JacobianDefault`
 log_Msg "After taking default value if necessary, UseJacobian: ${UseJacobian}"
 
-if [[ -n $HCPPIPEDEBUG ]]
-then
+if [[ -n $HCPPIPEDEBUG ]];then
     set -x
 fi
 
 #sanity check the jacobian option
-if [[ "$UseJacobian" != "true" && "$UseJacobian" != "false" ]]
-then
+if [[ "$UseJacobian" != "true" && "$UseJacobian" != "false" ]];then
 	log_Err_Abort "the --usejacobian option must be 'true' or 'false'"
 fi
 
@@ -536,7 +540,8 @@ if [ "$do_P0" -eq "1" ];then
            --subjectfolder=${SubjectFolder} \
            --biascorrection=${BiasCorrection} \
            --usejacobian=${UseJacobian} \
-           --freesurferVersion=$freesurferVersion
+           --freesurferVersion=$freesurferVersion \
+           --userefinement=${UseRefinement}
 fi
 
 

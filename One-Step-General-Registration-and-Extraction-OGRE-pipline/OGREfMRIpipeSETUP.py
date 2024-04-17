@@ -23,7 +23,7 @@ WBDIR='/Users/Shared/pipeline/HCP/workbench-mac/bin_macosx64'
 HCPDIR='/Users/Shared/pipeline/HCP'
 FSLDIR='/usr/local/fsl'
 FREESURFDIR='/Applications/freesurfer'
-FREESURFVER='7.4.0'
+FREESURFVER='7.4.1'
 
 #**** These overwrite the default global variables and are overwritten in options ****
 def get_env_vars():
@@ -59,7 +59,6 @@ def get_env_vars():
         pass 
 
 
-
 from contextlib import ExitStack
 def open_files(filenames,mode):
     #https://www.rath.org/on-the-beauty-of-pythons-exitstack.html
@@ -68,7 +67,6 @@ def open_files(filenames,mode):
         files = [stack.enter_context(open(fname,mode)) for fname in filenames]
         stack.pop_all()
         return files
-
 
 
 class Scans:
@@ -303,8 +301,6 @@ class Par:
         #print(f'bbold_fmap={self.bbold_fmap}')
 
 
-
-
 def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
 
@@ -414,9 +410,9 @@ if __name__ == "__main__":
     hHCPDIR='HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR.'
     parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
 
-    hFREESURFVER='5.3.0-HCP, 7.2.0, 7.3.2, or 7.4.0. Default is 7.4.0 unless set elsewhere via variable FREESURFVER.'
+    hFREESURFVER='5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER.'
     parser.add_argument('-V','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER','--freesurferVersion','-freesurferVersion',dest='FREESURFVER',metavar='FreeSurferVersion', \
-        help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0'])
+        help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0', '7.4.1'])
 
     hbhostname='Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003'
     parser.add_argument('-m','--HOSTNAME',dest='bhostname',action='store_true',help=hbhostname)
@@ -463,6 +459,10 @@ if __name__ == "__main__":
 
     hnobidscopy='Flag. Do not copy output files from OGRE pipeline directory to bids directories.'
     parser.add_argument('-nobidscopy','--nobidscopy','-nobidscp','--nobidscp',dest='lcnobidscopy',action='store_true',help=hnobidscopy)
+
+    huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
+        + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
+    parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     import sys
@@ -551,8 +551,6 @@ if __name__ == "__main__":
             l0 = 'smooth'
     else:
         l0 = 'FEATADAPTER'
-
-
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
@@ -729,6 +727,10 @@ if __name__ == "__main__":
                                     F0f[0].write('        NONE"\n')
 
                     F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
+              
+                    if args.userefinement:
+                        F0f[0].write('    --userefinement \\\n')
+
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
                 if not args.lcsmoothonly: 
