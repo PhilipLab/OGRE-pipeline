@@ -9,7 +9,7 @@ shebang="#!/usr/bin/env bash"
 [ -z ${FREESURFDIR+x} ] && FREESURFDIR=/Applications/freesurfer
 
 #Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2 7.4.0 7.4.1
-[ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.0
+[ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.1
 
 #Hard coded HCP batch scripts
 PRE=OGREPreFreeSurferPipelineBatch.sh
@@ -53,7 +53,7 @@ helpmsg(){
     echo "    -H --HCPDIR -HCPDIR --hcpdir -hcpdir"
     echo "        HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR."
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
-    echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.0 unless set elsewhere via variable FREESURFVER."
+    echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
     echo "    -p --pipedir -pipedir"
     echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
     echo "        Optional. Default is <scanlist.csv path>."

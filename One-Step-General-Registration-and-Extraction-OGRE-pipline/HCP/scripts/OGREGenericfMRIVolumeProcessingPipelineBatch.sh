@@ -26,10 +26,12 @@ get_batch_options() {
     unset command_line_specified_UnwarpDirection
     unset command_line_specified_json
     unset command_line_specified_EnvironmentScript
-
+    unset cls_freesurferVersion
+    cls_userefinement="false"
     cls_startOneStepResampling="FALSE"
     cls_startIntensityNormalization="FALSE"
-    unset cls_freesurferVersion
+
+
 
     local index=0
     local numArgs=${#arguments[@]}
@@ -121,6 +123,14 @@ get_batch_options() {
                 command_line_specified_EnvironmentScript=${argument#*=}
                 index=$(( index + 1 ))
                 ;;
+            --freesurferVersion=*)
+                cls_freesurferVersion=${argument#*=}
+                index=$(( index + 1 ))
+                ;;
+            --userefinement)
+                cls_userefinement="true"
+                index=$(( index + 1 ))
+                ;;
 
             --startOneStepResampling)
                 cls_startOneStepResampling="TRUE"
@@ -128,10 +138,6 @@ get_batch_options() {
                 ;;
             --startIntensityNormalization)
                 cls_startIntensityNormalization="TRUE"
-                index=$(( index + 1 ))
-                ;;
-            --freesurferVersion=*)
-                cls_freesurferVersion=${argument#*=}
                 index=$(( index + 1 ))
                 ;;
 	    *)
@@ -761,80 +767,13 @@ for Subject in $Subjlist ; do
       --biascorrection=$BiasCorrection \
       --mctype=${MCType} \
       --analysis=$Analysis \
+      --freesurferVersion=$cls_freesurferVersion \
+      --userefinement=$cls_userefinement \
       --startOneStepResampling=$cls_startOneStepResampling \
-      --startIntensityNormalization=$cls_startIntensityNormalization \
-      --freesurferVersion=$cls_freesurferVersion
+      --startIntensityNormalization=$cls_startIntensityNormalization
 
   # The following lines are used for interactive debugging to set the positional parameters: $1 $2 $3 ...
 
-  #echo "set -- --path=$StudyFolder \
-  #    --subject=$Subject \
-  #    --fmriname=$fMRIName \
-  #    --fmritcs=$fMRITimeSeries \
-  #    --fmriscout=$fMRISBRef \
-  #    --SEPhaseNeg=$SpinEchoPhaseEncodeNegative \
-  #    --SEPhasePos=$SpinEchoPhaseEncodePositive \
-  #    --fmapmag=$MagnitudeInputName \
-  #    --fmapphase=$PhaseInputName \
-  #    --fmapgeneralelectric=$GEB0InputName \
-  #    --echospacing=$EchoSpacing \
-  #    --echodiff=$DeltaTE \
-  #    --unwarpdir=$UnwarpDir \
-  #    --fmrires=$FinalFMRIResolution \
-  #    --dcmethod=$DistortionCorrection \
-  #    --gdcoeffs=$GradientDistortionCoeffs \
-  #    --topupconfig=$TopUpConfig \
-  #    --printcom=$PRINTCOM \
-  #    --biascorrection=$BiasCorrection \
-  #    --mctype=${MCType}"
-  #START190628
-  #echo "set -- --path=$StudyFolder \
-  #    --subject=$Subject \
-  #    --fmriname=$fMRIName \
-  #    --fmritcs=$fMRITimeSeries \
-  #    --fmriscout=$fMRISBRef \
-  #    --SEPhaseNeg=$SpinEchoPhaseEncodeNegative \
-  #    --SEPhasePos=$SpinEchoPhaseEncodePositive \
-  #    --fmapmag=$MagnitudeInputName \
-  #    --fmapphase=$PhaseInputName \
-  #    --fmapgeneralelectric=$GEB0InputName \
-  #    --echospacing=$EchoSpacing \
-  #    --echodiff=$DeltaTE \
-  #    --unwarpdir=$UnwarpDir \
-  #    --fmrires=$FinalFMRIResolution \
-  #    --dcmethod=$DistortionCorrection \
-  #    --gdcoeffs=$GradientDistortionCoeffs \
-  #    --topupconfig=$TopUpConfig \
-  #    --printcom=$PRINTCOM \
-  #    --biascorrection=$BiasCorrection \
-  #    --mctype=${MCType} \
-  #    --analysis=${Analysis}"    
-  #START200205
-  #echo "set -- --path=$StudyFolder \
-  #    --subject=$Subject \
-  #    --fmriname=$fMRIName \
-  #    --fmritcs=$fMRITimeSeries \
-  #    --fmriscout=$fMRISBRef \
-  #    --SEPhaseNeg=$SpinEchoPhaseEncodeNegative \
-  #    --SEPhasePos=$SpinEchoPhaseEncodePositive \
-  #    --fmapmag=$MagnitudeInputName \
-  #    --fmapphase=$PhaseInputName \
-  #    --fmapgeneralelectric=$GEB0InputName \
-  #    --echospacing=$EchoSpacing \
-  #    --echodiff=$DeltaTE \
-  #    --unwarpdir=$UnwarpDir \
-  #    --fmrires=$FinalFMRIResolution \
-  #    --dcmethod=$DistortionCorrection \
-  #    --gdcoeffs=$GradientDistortionCoeffs \
-  #    --topupconfig=$TopUpConfig \
-  #    --printcom=$PRINTCOM \
-  #    --biascorrection=$BiasCorrection \
-  #    --mctype=${MCType} \
-  #    --analysis=$Analysis \
-  #    --startOneStepResampling=$cls_startOneStepResampling \
-  #    --startIntensityNormalization=$cls_startIntensityNormalization \
-  #    --freesurferVersion=$cls_freesurferVersion"
-  #START230826
   echo -e "--path=$StudyFolder\n \
       --subject=$Subject\n \
       --fmriname=$fMRIName\n \
@@ -856,42 +795,12 @@ for Subject in $Subjlist ; do
       --biascorrection=$BiasCorrection\n \
       --mctype=${MCType}\n \
       --analysis=$Analysis\n \
+      --freesurferVersion=$cls_freesurferVersion\n \
+      --userefinement=$cls_userefinement\n \
       --startOneStepResampling=$cls_startOneStepResampling\n \
-      --startIntensityNormalization=$cls_startIntensityNormalization\n \
-      --freesurferVersion=$cls_freesurferVersion\n"
+      --startIntensityNormalization=$cls_startIntensityNormalization\n"
 
-
-
-  #START190724 
-#  echo "${P0}"
-#  echo "    --path=$StudyFolder" 
-#  echo "    --subject=$Subject" 
-#  echo "    --fmriname=$fMRIName" 
-#  echo "    --fmritcs=$fMRITimeSeries"
-#  echo "    --fmriscout=$fMRISBRef"
-#  echo "    --SEPhaseNeg=$SpinEchoPhaseEncodeNegative"
-#  echo "    --SEPhasePos=$SpinEchoPhaseEncodePositive" 
-#  echo "    --fmapmag=$MagnitudeInputName" 
-#  echo "    --fmapphase=$PhaseInputName"
-#  echo "    --fmapgeneralelectric=$GEB0InputName"
-#  echo "    --echospacing=$EchoSpacing"
-#  echo "    --echodiff=$DeltaTE"
-#  echo "    --unwarpdir=$UnwarpDir"
-#  echo "    --fmrires=$FinalFMRIResolution" 
-#  echo "    --dcmethod=$DistortionCorrection"
-#  echo "    --gdcoeffs=$GradientDistortionCoeffs" 
-#  echo "    --topupconfig=$TopUpConfig"
-#  echo "    --printcom=$PRINTCOM" 
-#  echo "    --biascorrection=$BiasCorrection"
-#  echo "    --mctype=${MCType}" 
-#  echo "    --analysis=${Analysis}" 
-
-  #START190724
-  #echo ". ${EnvironmentScript}"
-	
     i=$(($i+1))
   done
 done
-
-#START230610
-echo "Exiting $0 ****"
+echo "**** Exiting $0 ****"
