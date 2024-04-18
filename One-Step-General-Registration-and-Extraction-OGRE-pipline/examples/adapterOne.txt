@@ -1,6 +1,0 @@
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run1_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run1_RH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run2_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run2_RH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run3_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run3_RH_susan6.fsf
