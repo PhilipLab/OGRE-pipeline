@@ -157,7 +157,9 @@ for((i=0;i<${#@};++i));do
         -b | --batchscript | -batchscript)
             #lcbs=1
             #[[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]}
-            [[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]} || bs=True
+            #[[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]} || bs=True
+            bs=True
+            ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
             #echo "bs=$bs"
             ;;
         #START240302
@@ -208,10 +210,7 @@ fi
 
 lcsinglereconall=0;lctworeconall=0
 
-#if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" ]];then
-#START240329
 if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" && "${FREESURFVER}" != "7.4.1" ]];then
-
     echo "Unknown version of freesurfer. FREESURFVER=${FREESURFVER}"
     exit
 fi

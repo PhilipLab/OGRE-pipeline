@@ -1,26 +1,36 @@
 #!/usr/bin/env bash
 
 STUDYPATH=/Users/Shared/10_Connectivity
-PIPE=pipeline7.4.0
 T1=1
 ATLAS=2
 
+#START240417
+#Hard coded freesurfer version options: 5.3.0-HCP 7.2.0 7.3.2 7.4.0 7.4.1
+[ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.1
+
 helpmsg(){
-    echo "    -s --sub -sub           Subject name, e.g. 10_2000." 
-    echo "                            If the option is not used, the first argument is assumed to be the subject name." 
-    echo "    -r --run -run           Run name, e.g. run1_LH." 
-    echo "                            If the option is not used, the second argument is assumed to be the run name." 
-    echo "    -a --analysis -analysis Optional. Analysis name is the suffix on the saved directory, e.g. basic." 
-    echo "                            If the option is not used, the third argument is assumed to be the analysis name." 
-    echo ""
-    echo "    -S --study -study       Optional. STUDYPATH. Default is /Users/Shared/10_Connectivity" 
-    echo "                            Syntax: if full path is "/Users/Shared/10_Connectivity/10_2000/pipeline7.4.0", STUDYPATH is /Users/Shared/10_Connectivity   
-    echo "    -p --pipe -pipe         Optional. PIPELINE_DIRECTORY. Default is pipeline7.4.0." 
-    echo "                            Syntax: if full path is "/Users/Shared/10_Connectivity/10_2000/pipeline7.4.0", PIPELINE_DIRECTORY is 7.4.0
-    echo ""
+    echo "Required: ${root0} <Feat directory>"
+    echo "    -f --feat -feat       Feat directory. If no option provided, then assumed to be the FEAT directory."
+    echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.0/sub-1001_RHflip_susan-6_run-1.feat/"
+    echo "    -s --sub -sub         Subject name, e.g. 2000, is read from the FEAT directory. This option will override that of the FEAT directory." 
+    echo "                          Used to find anatomical and other data in BIDS"
+    echo "    -y -S --study -study  OPTIONAL. Study path. Default is /Users/Shared/10_Connectivity" 
+    echo "                          Syntax: if full path is /Users/Shared/10_Connectivity/10_2000/pipeline7.4.0, STUDYPATH is /Users/Shared/10_Connectivity"  
+    echo " "
+    echo "  Everything below here is OPTIONAL. Defaults to BIDS based on sub/study info"
+
+    #START240417
+    echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
+    echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
+
+
     echo "    -t --t1 -t1             T1 resolution (ie FEAT highres). 1 or 2. Default is 1mm."
     echo "                            If 1mm, then MNINonLinear/T1w_restore and MNINonLinear/T1w_restore_brain are used."
-    echo "                            If 2mm, then MNINonLinear/Results/T1w_restore.2 and MNINonLinear/Results/T1w_restore_brain.2 are used."
+
+    #echo "                            If 2mm, then MNINonLinear/Results/T1w_restore.2 and MNINonLinear/Results/T1w_restore_brain.2 are used."
+    #START240417
+    echo "                            If 2mm, then Results/T1w_restore.2 and Results/T1w_restore_brain.2 are used."
+
     echo "                                NOTE: MNINonLinear/T1w_restore.2 is not the correct image. It is a so-called subcortical T1 for surface analysis."
     echo "    --t1highreshead -t1highreshead --t1hireshead -t1hireshead"
     echo "                            Input your own whole head T1."
@@ -41,131 +51,139 @@ helpmsg(){
     echo "    -h --help -help         Echo this help message."
     exit
     }
-echo $0 $@
-arg=($@)
-narg=${#@}
 
-SUBNAME=;RUNNAME=;ANALYSISNAME=;idx=0;T1HIGHRESHEAD=;T1HIGHRES=;STANDARDHEAD=;STANDARD=
 
-if((${#@}<2));then
+if((${#@}<1));then
     helpmsg
     exit
 fi
+echo $0 $@
+
+#do not set FEATDIR or unexpected
+unset SUBJECT T1HIGHRESHEAD T1HIGHRES STANDARDHEAD STANDARD
+arg=("$@")
+
 for((i=0;i<${#@};++i));do
     case "${arg[i]}" in
         -s | --sub | -sub)
-            SUBNAME=${arg[((++i))]}
-            echo "SUBNAME=$SUBNAME"
-            ((idx+=2))
+            SUBJECT=${arg[((++i))]}
+            #echo "SUBJECT=$SUBJECT"
             ;;
-        -r | --run | -run)
-            RUNNAME=${arg[((++i))]}
-            echo "RUNNAME=$RUNNAME"
-            ((idx+=2))
+        -f | --feat | -feat)
+            FEATDIR=${arg[((++i))]}
+            #echo "FEATDIR=$FEATDIR"
+            #START231219
+            #((idx+=2))
             ;;
-        -a | --analysis | -analysis)
-            ANALYSISNAME=${arg[((++i))]}
-            echo "ANALYSISNAME=$ANALYSISNAME"
-            ;;
-        -S | --study | -study)
+
+        -S | -y | --study | -study)
             STUDYPATH=${arg[((++i))]}
             echo "STUDYPATH=$STUDYPATH"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
-        -p | --pipe | -pipe)
-            PIPE=${arg[((++i))]}
-            echo "PIPE=$PIPE"
-            ((narg-=2))
+
+        #START240417
+        -V | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion)
+            FREESURFVER=${arg[((++i))]}
+            echo "FREESURFVER=$FREESURFVER"
             ;;
+
+
+
+
         -t | --t1 | -t1)
             T1=${arg[((++i))]}
             echo "T1=$T1"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
         --t1highreshead | -t1highreshead | --t1hireshead | -t1hireshead)
             T1HIGHRESHEAD=${arg[((++i))]}
             echo "T1HIGHRESHEAD=$T1HIGHRESHEAD"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
         --t1highres | -t1highres | --t1hires | -t1hires)
             T1HIGHRES=${arg[((++i))]}
             echo "T1HIGHRES=$T1HIGHRES"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
         -u | --atlas | -atlas)
             ATLAS=${arg[((++i))]}
             echo "ATLAS=$ATLAS"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
         --standardhead | -standardhead)
             STANDARDHEAD=${arg[((++i))]}
             echo "STANDARDHEAD=$STANDARDHEAD"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
         --standard | -standard)
             STANDARD=${arg[((++i))]}
             echo "STANDARD=$STANDARD"
-            ((narg-=2))
+            #START231218
+            #((narg-=2))
             ;;
         -h | --help | -help)
             helpmsg
             exit
             ;;
-
-        ##START230314
-        #*) unused[((j++))]]=${arg[((i))]} 
-        #    exit
-        #    ;;
+        #START231218
+        *) unexpected+=(${arg[i]})
+            ;;
 
     esac
 done
 
-if [ -z "${SUBNAME}" ];then
-    SUBNAME=$1
-    ((++idx))
-    echo "SUBNAME=${SUBNAME}"
-fi
-if [ -z "${RUNNAME}" ];then
-    if((${#@}>=((idx+1))));then
-        RUNNAME=${arg[idx]}
-        ((++idx))
-        echo "RUNNAME=${RUNNAME}"
-    else
-        echo "Please specify run name with -r | --run"
-        exit
-    fi
+#START240417
+if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" && "${FREESURFVER}" != "7.4.1" ]];then
+    echo "Unknown version of freesurfer. FREESURFVER=${FREESURFVER}"
+    exit
 fi
 
 
-#if [ -z "${ANALYSISNAME}" ];then
-#    ((${narg}>=((idx+1)))) && ANALYSISNAME=${RUNNAME}_${arg[idx]} || ANALYSISNAME=${RUNNAME}
-#    echo "ANALYSISNAME=$ANALYSISNAME"
-#fi
-#START230510
-if [ -z "${ANALYSISNAME}" ];then
-    ((${narg}>=((idx+1)))) && ANALYSISNAME=${RUNNAME}_${arg[idx]} || ANALYSISNAME=${RUNNAME}
-    runanal=$ANALYSISNAME
-    echo "ANALYSISNAME=$ANALYSISNAME"
-else
-    runanal=${RUNNAME}_${ANALYSISNAME}
+[ -n "${unexpected}" ] && FEATDIR+=(${unexpected[@]})
+if [ -z "${FEATDIR}" ];then
+    echo "Need to provide FEATDIR"
+    exit
 fi
+echo "FEATDIR=$FEATDIR"
 
-SUBJDIR=${STUDYPATH}/${SUBNAME}/${PIPE}
-echo "SUBJDIR=$SUBJDIR"
+if [ -z "${SUBJECT}" ];then
+    SUBJECT=$(awk -F'/sub-' '{print $2}' <<< "$FEATDIR")
+fi
+echo "SUBJECT=$SUBJECT"
 
-#FEATDIR=${SUBJDIR}/model/${ANALYSISNAME}.feat
-#START230510
-FEATDIR=${SUBJDIR}/model/${runanal}.feat
-
-echo "FEATDIR=${FEATDIR}"
 OUTDIR=${FEATDIR}/reg
-echo "OUTDIR=${OUTDIR}"
+ANATDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/anat/
+
+#PIPEDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline7.4.0/MNINonLinear/Results/
+#START240417
+PIPEDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline${FREESURFVER}/Results/
 
 if [ -z "${T1HIGHRESHEAD}" ];then
     if((T1==1));then
-        T1HIGHRESHEAD=${SUBJDIR}/MNINonLinear/T1w_restore.nii.gz
-    elif((T1==2));then
-        T1HIGHRESHEAD=${SUBJDIR}/MNINonLinear/Results/T1w_restore.2.nii.gz
+        if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.nii.gz ]; then
+            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_T1w_restore.nii.gz
+        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.nii.gz ]; then
+            T1HIGHRESHEAD=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.nii.gz
+        else
+            echo "T1 head 1mm not found: ${T1}"
+            exit
+        fi
+    elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
+        if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
+            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz
+        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
+            T1HIGHRESHEAD=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz
+        else
+            echo "T1 head 2mm not found: ${T1}"
+            exit
+        fi
     else
         echo "Unknown value for T1=${T1}"
         exit
@@ -173,9 +191,23 @@ if [ -z "${T1HIGHRESHEAD}" ];then
 fi
 if [ -z "${T1HIGHRES}" ];then
     if((T1==1));then
-        T1HIGHRES=${SUBJDIR}/MNINonLinear/T1w_restore_brain.nii.gz
-    elif((T1==2));then
-        T1HIGHRES=${SUBJDIR}/MNINonLinear/Results/T1w_restore_brain.2.nii.gz
+        if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz ]; then
+            T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz
+        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz ]; then
+            T1HIGHRES=${PIPEDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz
+        else
+            echo "T1 brain 1mm not found: ${T1}"
+            exit
+        fi
+    elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
+        if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
+            T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
+        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
+            T1HIGHRES=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
+        else
+            echo "T1 brain 2mm not found: ${T1}"
+            exit
+        fi
     else
         echo "Unknown value for T1=${T1}"
         exit
@@ -202,52 +234,36 @@ if [ -z "${STANDARD}" ];then
     fi
 fi
 
-
 # First, slide any preexisting reg/reg_standard folder off to to a datestamped backup
 #REGSTD=${SUBJDIR}/model/${ANALYSISNAME}.feat/reg
 THEDATE=`date +%y%m%d_%H%M`
 if [[ -d "$OUTDIR" ]];then
     echo "storing ${OUTDIR} as ${THEDATE}"
     mv ${OUTDIR} ${OUTDIR}_${THEDATE}
+    #mkdir -p ${OUTDIR}_${THEDATE}
+    #mv ${OUTDIR}/ ${OUTDIR}_${THEDATE}/
+    #rm -rf ${OUTDIR}
 fi
-#if [[ -d "$REGSTD" ]];then
-#    echo "storing ${REGSTD} as ${THEDATE}"
-#    mv ${REGSTD} ${REGSTD}_${THEDATE}
-#fi
 
 mkdir -p ${OUTDIR}
 
-#START220510
 if [ ! -f ${FEATDIR}/example_func.nii.gz ];then
     echo "ERROR: ${FEATDIR}/example_func.nii.gz does not exist. Abort!"
     exit
 fi
 cp -p ${FEATDIR}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz
-
 cp $STANDARDHEAD ${OUTDIR}/standard_head.nii.gz
 cp $STANDARD ${OUTDIR}/standard.nii.gz
-cp -p $T1HIGHRESHEAD ${OUTDIR}/highres_head.nii.gz 
+cp -p $T1HIGHRESHEAD ${OUTDIR}/highres_head.nii.gz # this is still broken under BIDS
 cp -p $T1HIGHRES ${OUTDIR}/highres.nii.gz 
 
-##cp -p ${SUBJDIR}/MNINonLinear/Results/${RUNNAME}/example_func2standard_susan4.mat ${OUTDIR}/example_func2standard.mat
-##cp -p ${SUBJDIR}/MNINonLinear/Results/${RUNNAME}/highres2standard.mat ${OUTDIR}/highres2standard.mat
-## cp -p ${SUBJDIR}/MNINonLinear/Results/${RUNNAME}/example_func_susan4.nii.gz ${OUTDIR}/example_func.nii.gz 
-##cp -p ${FEATDIR}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz;
-##cp -p ${SUBJDIR}/MNINonLinear/T1w_restore.nii.gz ${OUTDIR}/highres_head.nii.gz # 1mm
-##cp -p ${SUBJDIR}/MNINonLinear/T1w_restore_brain.nii.gz ${OUTDIR}/highres.nii.gz # Jan 2023: 1mm
-##cp ${FSLDIR}/data/standard/MNI152_T1_2mm.nii.gz ${OUTDIR}/standard_head.nii.gz
-##cp ${FSLDIR}/data/standard/MNI152_T1_2mm_brain.nii.gz ${OUTDIR}/standard.nii.gz
-
 # make HR2STD
-echo "Starting transformations for "${SUBNAME}", "${RUNNAME}", "${ANALYSISNAME}
+echo "Starting transformations for "${FEATDIR}
 
-#${FSLDIR}/bin/flirt -in ${OUTDIR}/highres.nii.gz -ref ${FSLDIR}/data/standard/MNI152_T1_2mm_brain.nii.gz -out ${OUTDIR}/highres2standard.nii.gz -omat ${OUTDIR}/highres2standard.mat -cost corratio -dof 12 -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -interp trilinear
-#START230310
 ${FSLDIR}/bin/flirt -in ${OUTDIR}/highres.nii.gz -ref ${OUTDIR}/standard.nii.gz -out ${OUTDIR}/highres2standard.nii.gz -omat ${OUTDIR}/highres2standard.mat -cost corratio -dof 12 -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -interp trilinear
-
 
 # make EF2HR
 ${FSLDIR}/bin/epi_reg --epi=${OUTDIR}/example_func --t1=${OUTDIR}/highres_head --t1brain=${OUTDIR}/highres --out=${OUTDIR}/example_func2highres
 # make EF2S
 ${FSLDIR}/bin/convert_xfm -omat ${OUTDIR}/example_func2standard.mat -concat ${OUTDIR}/highres2standard.mat ${OUTDIR}/example_func2highres.mat
-echo "Registration complete for "${SUBNAME}", "${RUNNAME}", "${ANALYSISNAME}
+echo "Registration complete for "${FEATDIR}

@@ -654,22 +654,20 @@ if __name__ == "__main__":
             if not args.lcfeatadapter:
                 F0f[0].write(f'export OGREDIR={OGREDIR}\n')
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
-                    F0f[0].write('P0=${OGREDIR}/HCP/scripts/'+P0+'\n')
+                    F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
                 if not args.lcsmoothonly:
-                    F0f[0].write('P1=${OGREDIR}/HCP/scripts/'+P1+'\n')
+                    F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
 
-                #if not args.lct1copymaskonly:
-                #START240314
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
-                    F0f[0].write('SMOOTH=${OGREDIR}/HCP/scripts/'+P2+'\n')
+                    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
 
             if args.fsf1:
                 F0f[1].write(f'OGREDIR={OGREDIR}\n')
-                for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/HCP/scripts/'+P3+'\n')          
+                for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
 
             if not args.lcfeatadapter:
-                F0f[0].write('SETUP=${OGREDIR}/HCP/scripts/'+SETUP+'\n\n')
+                F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
 
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
 
@@ -741,10 +739,17 @@ if __name__ == "__main__":
                     F0f[0].write('    --outpath=${sf0}/MNINonLinear/Results \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                #if scans.taskidx and not args.lct1copymaskonly: 
-                #START240314
-                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
+                    #START240420
+                    F0f[0].write('mv ${sf0}/MNINonLinear/Results ${sf0}\n')
+                    F0f[0].write('mkdir -p ${sf0}/TemporaryFiles\n')
+                    F0f[0].write('mv ${sf0}/T1w ${sf0}/TemporaryFiles\n')
+                    F0f[0].write('[ -d "${sf0}/T2w" ] && mv ${sf0}/T2w ${sf0}/TemporaryFiles\n')
+                    for j in range(len(scans.bold)): 
+                        str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
+                        F0f[0].write('mv ${sf0}/'+f'{str0} '+'${sf0}/TemporaryFiles\n')
+                        
 
+                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
                     F0f[0].write('${SMOOTH} \\\n')
                     F0f[0].write('    --fMRITimeSeriesResults="\\\n')
                     for j in range(len(scans.taskidx)-1): 
@@ -803,9 +808,6 @@ if __name__ == "__main__":
                         print(f'    Output written to {F2}')
 
                     if args.bs: 
-
-                        #bs0f.write(f'{F1}\n')
-                        #START240302
                         if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n')
                         bs0f.write(f'\nFREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
                         bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
@@ -817,8 +819,6 @@ if __name__ == "__main__":
                         bs0f.write('cd ${sf0}\n')
                         bs0f.write('${F0} >> ${out} 2>&1\n') #no ampersand at end
 
-
-
                         _=run_cmd(f'chmod +x {bs0}')
                         print(f'    Output written to {bs0}')
 
@@ -827,8 +827,6 @@ if __name__ == "__main__":
                         _=run_cmd(f'chmod +x {bs1}')
                         print(f'    Output written to {bs1}')
 
-                        #if 'batchscriptf' in locals(): batchscriptf[0].write(bs0)
-                        #START240314
                         if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
 
 
