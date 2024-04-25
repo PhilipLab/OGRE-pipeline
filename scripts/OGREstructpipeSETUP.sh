@@ -67,8 +67,8 @@ helpmsg(){
     echo "    -b --batchscript -batchscript"
     echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
-    echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename."
-    echo "        This permits multiple subjects to be run sequentially and seamlessly."
+    echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename (an across-subjects script)."
+    echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
     echo "    --append -append"
     echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug"
     echo "    -h --help -help"
@@ -223,7 +223,7 @@ if [ -n "${bs}" ];then
     if [[ "${bs}" != True ]];then
         [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
         #https://stackoverflow.com/questions/284662/how-do-you-normalize-a-file-path-in-bash
-        bs=$(realpath ${bs})
+        #bs=$(realpath ${bs}) # cut this 240425 - this required the file to already exist, which it shouldn't b/c this is a new file.
         bs_fileout=${bs%.sh*}_fileout.sh  #everything before .sh
         echo bs_fileout=${bs_fileout}
         [[ ! -f ${bs} ]] && echo -e "$shebang\n" > $bs
