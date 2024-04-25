@@ -32,7 +32,7 @@ source ${FREESURFER_HOME}/SetUpFreeSurfer.sh > /dev/null 2>&1
 # Set up specific environment variables for the HCP Pipeline
 export HCPPIPEDIR=$HCPDIR/HCPpipelines-3.27.0
 
-export CARET7DIR=/Users/Shared/pipeline/HCP/workbench-mac/bin_macosx64
+export CARET7DIR=$HCPDIR/workbench-mac/bin_macosx64
 
 export MSMBINDIR=${HOME}/pipeline_tools/MSM-2015.01.14
 export MSMCONFIGDIR=${HCPPIPEDIR}/MSMConfig
