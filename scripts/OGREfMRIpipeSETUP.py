@@ -19,8 +19,8 @@ P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
 
 #**** These are overwritten by their environment variables in get_env_vars ****
-WBDIR='/Users/Shared/pipeline/HCP/workbench-mac/bin_macosx64'
-HCPDIR='/Users/Shared/pipeline/HCP'
+HCPDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP'
+WBDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP/workbench-mac/bin_macosx64'
 FSLDIR='/usr/local/fsl'
 FREESURFDIR='/Applications/freesurfer'
 FREESURFVER='7.4.1'
