@@ -2,9 +2,6 @@
 
 shebang="#!/usr/bin/env bash"
 
-#Hard coded location of HCP scripts
-[ -z ${HCPDIR+x} ] && HCPDIR=/Users/Shared/pipeline/HCP
-
 #Hard coded location of freesurfer installations
 [ -z ${FREESURFDIR+x} ] && FREESURFDIR=/Applications/freesurfer
 
@@ -47,19 +44,18 @@ helpmsg(){
     echo "    -B --bids -bids --BIDS -BIDS"
     echo "        Flag. OGRE output is copied to BIDS directories."
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
-    echo "        OGRE directory. Location of OGRE scripts."
-    echo "        Optional if set at the top of this script or elsewhere via variable OGREDIR."
-    echo "        The path provided by this option will be used instead of any other setting."
+    echo "        OGRE directory. Location of OGRE software package (e.g. ~/GitHub/OGRE-pipeline)."
+    echo "        Defaults to variable OGREDIR if set elsewhere. If set in both places, this one overrides."
+    echo "        NOTE: you must either set -O or the variable OGREDIR."
     echo "    -H --HCPDIR -HCPDIR --hcpdir -hcpdir"
-    echo "        HCP directory. Optional if set at the top of this script or elsewhere via variable HCPDIR."
+    echo "        HCP directory. Optional; default location is OGREDIR/lib/HCP"
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
     echo "    -p --pipedir -pipedir"
     echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
     echo "        Optional. Default is <scanlist.csv path>."
     echo "    -n --name -name"
-    echo "        Use with -pipedir to provide the subject name."
-    echo "        If not provided, then root of scanlist.csv."
+    echo "        Use with -pipedir to provide the subject name. Default is root of scanlist.csv."
     echo "    -m --HOSTNAME"
     echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003"
     echo "    -D --DATE -DATE --date -date"
@@ -74,7 +70,7 @@ helpmsg(){
     echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename."
     echo "        This permits multiple subjects to be run sequentially and seamlessly."
     echo "    --append -append"
-    echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.0debug"
+    echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug"
     echo "    -h --help -help"
     echo "        Echo this help message."
     exit
@@ -184,6 +180,9 @@ if [ -z "${OGREDIR}" ];then
     exit
 fi
 echo "OGREDIR=$OGREDIR"
+
+#if HCPDIR unset, use default location (this is down here b/c needs $OGREDIR)
+[ -z ${HCPDIR+x} ] && HCPDIR=$OGREDIR/lib/HCP
 
 [ -n "${unexpected}" ] && dat+=(${unexpected[@]})
 if [ -z "${dat}" ];then
@@ -377,10 +376,10 @@ for((i=0;i<${#dat[@]};++i));do
     echo -e export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}'"\n" >> ${F0}
 
     echo export OGREDIR=${OGREDIR} >> ${F0}
-    echo PRE='${OGREDIR}'/HCP/scripts/${PRE} >> ${F0}
-    echo FREE='${OGREDIR}'/HCP/scripts/${FREE} >> ${F0}
-    echo POST='${OGREDIR}'/HCP/scripts/${POST} >> ${F0}
-    echo -e SETUP='${OGREDIR}'/HCP/scripts/${SETUP}"\n" >> ${F0}
+    echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
+    echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
+    echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
+    echo -e SETUP='${OGREDIR}'/lib/${SETUP}"\n" >> ${F0}
 
     echo "s0=${s0}" >> ${F0}
     echo "sf0=${dir1}" >> ${F0}

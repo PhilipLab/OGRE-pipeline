@@ -3,7 +3,7 @@ set -e
 
 #P0=${HCPMOD}/OGREmcflirt.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGREmcflirt.sh
+P0=${OGREDIR}/lib/OGREmcflirt.sh
 
 # --------------------------------------------------------------------------------
 #  Load Function Libraries

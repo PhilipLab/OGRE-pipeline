@@ -1,6 +1,9 @@
 #!/usr/bin/env bash 
 
-[ -z ${HCPDIR+x} ] && export HCPDIR=/Users/Shared/pipeline/HCP
+# updated with new default 240425
+[ -z ${HCPDIR+x} ] && export HCPDIR=~/Documents/GitHub/OGRE-pipeline/lib/HCP
+#[ -z ${HCPDIR+x} ] && export HCPDIR=/Users/Shared/pipeline/HCP
+
 
 [ -z ${FSLDIR+x} ] && export FSLDIR=/usr/local/fsl
 

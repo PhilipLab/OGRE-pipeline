@@ -6,8 +6,8 @@ echo "    **** Running $0 ****"
 #P0=${HCPMOD}/OGREFreeSurferHiresWhite.sh
 #P1=${HCPMOD}/OGREFreeSurferHiresPial.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGREFreeSurferHiresWhite.sh
-P1=${OGREDIR}/HCP/scripts/OGREFreeSurferHiresPial.sh
+P0=${OGREDIR}/lib/OGREFreeSurferHiresWhite.sh
+P1=${OGREDIR}/lib/OGREFreeSurferHiresPial.sh
 
 
 # Requirements for this script

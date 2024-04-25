@@ -2,7 +2,7 @@
 
 #P0=OGREPostFreeSurferPipeline.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGREPostFreeSurferPipeline.sh
+P0=${OGREDIR}/lib/OGREPostFreeSurferPipeline.sh
 
 get_batch_options() {
     local arguments=("$@")
@@ -60,7 +60,8 @@ if [ -n "${command_line_specified_EnvironmentScript}" ]; then
     EnvironmentScript="${command_line_specified_EnvironmentScript}"
 else
     echo "MUST PROVIDE EnvironmentScript"
-    echo "    Ex. --EnvironmentScript=/home/usr/mcavoy/HCP/scripts/SetUpHCPPipeline_mm.sh"
+    #echo "    Ex. --EnvironmentScript=/home/usr/mcavoy/HCP/scripts/SetUpHCPPipeline_mm.sh"
+    echo "    Ex. --EnvironmentScript=OGREDIR/lib/OGRESetUpHCPPipeline.sh" # swap 240425
     exit
 fi
 

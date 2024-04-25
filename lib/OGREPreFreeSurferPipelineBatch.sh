@@ -2,7 +2,7 @@
 
 #P0=OGREPreFreeSurferPipeline.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGREPreFreeSurferPipeline.sh
+P0=${OGREDIR}/lib/OGREPreFreeSurferPipeline.sh
 
 echo "**** Running $0 ****"
 set -e

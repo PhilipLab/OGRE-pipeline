@@ -6,9 +6,9 @@
 #P1=${HCPMOD}/OGREBiasFieldCorrection_sqrtT1wXT1w.sh
 #P2=${HCPMOD}/OGREAtlasRegistrationToMNI152_FLIRTandFNIRT.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGRET2wToT1wReg.sh
-P1=${OGREDIR}/HCP/scripts/OGREBiasFieldCorrection_sqrtT1wXT1w.sh
-P2=${OGREDIR}/HCP/scripts/OGREAtlasRegistrationToMNI152_FLIRTandFNIRT.sh
+P0=${OGREDIR}/lib/OGRET2wToT1wReg.sh
+P1=${OGREDIR}/lib/OGREBiasFieldCorrection_sqrtT1wXT1w.sh
+P2=${OGREDIR}/lib/OGREAtlasRegistrationToMNI152_FLIRTandFNIRT.sh
 
 echo "    **** Running $0 ****"
 

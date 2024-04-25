@@ -4,8 +4,8 @@ set -e
 #P0=${HCPMOD}/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh
 #P1=${HCPMOD}/OGRECreateMyelinMaps.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh
-P1=${OGREDIR}/HCP/scripts/OGRECreateMyelinMaps.sh
+P0=${OGREDIR}/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh
+P1=${OGREDIR}/lib/OGRECreateMyelinMaps.sh
 
 # Requirements for this script
 #  installed versions of: FSL (version 5.0.6), FreeSurfer (version 5.3.0-HCP), gradunwarp (HCP version 1.0.1)

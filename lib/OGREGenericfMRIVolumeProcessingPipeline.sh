@@ -6,10 +6,10 @@ set -e
 #P2=${HCPMOD}/OGREIntensityNormalization.sh
 #P3=${HCPMOD}/OGREMotionCorrection.sh
 #START240111
-P0=${OGREDIR}/HCP/scripts/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
-P1=${OGREDIR}/HCP/scripts/OGREOneStepResampling.sh
-P2=${OGREDIR}/HCP/scripts/OGREIntensityNormalization.sh
-P3=${OGREDIR}/HCP/scripts/OGREMotionCorrection.sh
+P0=${OGREDIR}/lib/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
+P1=${OGREDIR}/lib/OGREOneStepResampling.sh
+P2=${OGREDIR}/lib/OGREIntensityNormalization.sh
+P3=${OGREDIR}/lib/OGREMotionCorrection.sh
 
 echo "******  START $0 ******"
 
