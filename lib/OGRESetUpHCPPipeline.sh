@@ -1,14 +1,15 @@
 #!/usr/bin/env bash 
 
-# updated with new default 240425
-[ -z ${HCPDIR+x} ] && export HCPDIR=~/Documents/GitHub/OGRE-pipeline/lib/HCP
 #[ -z ${HCPDIR+x} ] && export HCPDIR=/Users/Shared/pipeline/HCP
+# updated with new default 240425
+#[ -z ${HCPDIR+x} ] && export HCPDIR=~/Documents/GitHub/OGRE-pipeline/lib/HCP
+[ -z ${HCPDIR+x} ] && export HCPDIR=$OGREDIR/lib/HCP
 
 
 [ -z ${FSLDIR+x} ] && export FSLDIR=/usr/local/fsl
 
 [ -z ${FREESURFDIR+x} ] && export FREESURFDIR=/Applications/freesurfer
-[ -z ${FREESURFVER+x} ] && export FREESURFVER=7.4.0
+[ -z ${FREESURFVER+x} ] && export FREESURFVER=7.4.1
 if [ -z ${FREESURFER_HOME+x} ];then
     echo "FREESURFER_HOME not set. Setting to FREESURFER_HOME=${FREESURFDIR}/${FREESURFVER}"
     export FREESURFER_HOME=${FREESURFDIR}/${FREESURFVER}

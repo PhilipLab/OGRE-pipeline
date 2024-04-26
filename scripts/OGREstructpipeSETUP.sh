@@ -375,6 +375,8 @@ for((i=0;i<${#dat[@]};++i));do
     echo "FREESURFVER=${FREESURFVER}" >> ${F0}
     echo -e export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}'"\n" >> ${F0}
 
+    echo -e "export HCPDIR=${HCPDIR}\n" >> ${F0}
+
     echo export OGREDIR=${OGREDIR} >> ${F0}
     echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
     echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}

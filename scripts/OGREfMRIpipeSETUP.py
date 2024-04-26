@@ -19,8 +19,8 @@ P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
 
 #**** These are overwritten by their environment variables in get_env_vars ****
-HCPDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP'
-WBDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP/workbench-mac/bin_macosx64'
+#HCPDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP'
+#WBDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP/workbench-mac/bin_macosx64'
 FSLDIR='/usr/local/fsl'
 FREESURFDIR='/Applications/freesurfer'
 FREESURFVER='7.4.1'
@@ -504,6 +504,16 @@ if __name__ == "__main__":
         if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
     if args.HCPDIR: HCPDIR = args.HCPDIR 
+    if not 'HCPDIR' in locals():
+        HCPDIR = OGREDIR + '/lib/HCP'
+        print('HCPDIR not set. Setting it to {HCPDIR}')
+        exit()
+
+    global WBDIR
+    WBDIR = HCPDIR + '/workbench-mac/bin_macosx64' 
+
+
+
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
 
     #print(f'HCPDIR={HCPDIR}')
@@ -647,6 +657,7 @@ if __name__ == "__main__":
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
+                F0f[0].write(f'export HCPDIR={HCPDIR}\n\n')
 
             if args.fsf1 or args.fsf2:
                 for fn in F0f: fn.write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
