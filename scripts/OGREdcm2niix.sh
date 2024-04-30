@@ -20,6 +20,7 @@ helpmsg(){
     echo "            9,/Users/Shared/10_Connectivity/raw_data/sub-2035/fmap/sub-2035_SpinEchoFieldMap2_PA-1"
     echo "            10,/Users/Shared/10_Connectivity/raw_data/sub-2035/func/sub-2035_task-drawRH_run-1_SBRef"
     echo "            11,/Users/Shared/10_Connectivity/raw_data/sub-2035/func/sub-2035_task-drawRH_run-1"
+    echo "        Note that output directory is specified in the scanlist paths, not via arguments to OGREdcm2niix.sh."
     echo "    -i --indir -indir"
     echo "        Input directory. Default is /<scans.csv path>/dicom."
     echo "    -b --batchscript -batchscript"
