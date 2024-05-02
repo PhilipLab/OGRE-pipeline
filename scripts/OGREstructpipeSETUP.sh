@@ -109,7 +109,7 @@ for((i=0;i<${#@};++i));do
             ;;
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
-            echo "OGREDIR=$OGREDIR"
+            #echo "OGREDIR=$OGREDIR"
             ;;
         -H | --HCPDIR | -HCPDIR | --hcpdir | -hcpdir)
             HCPDIR=${arg[((++i))]}
@@ -236,6 +236,8 @@ wd0=$(pwd)
 for((i=0;i<${#dat[@]};++i));do
 
     echo "Reading ${dat[i]}"
+
+    sed -i '' $'s/\r$//' ${dat[i]}
 
     unset T1f T2f
     cnt=0
