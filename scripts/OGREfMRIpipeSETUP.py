@@ -395,9 +395,7 @@ if __name__ == "__main__":
          + 'Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n' \
          + 'Ex 6. '+parser.prog+' sub-1001_scanlist.csv -d sub-2000_scanlist.csv\n'
 
-    parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='append',nargs='+',help=hdat)
-    #START240227
-    #parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='extend',nargs='+',help=hdat)
+    parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='extend',nargs='+',help=hdat)
 
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
     parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
@@ -427,6 +425,8 @@ if __name__ == "__main__":
     mfwhm='FWHM'
     #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int)
     parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+    #START240502
+    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='extend',nargs='+',help=hfwhm)
 
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
@@ -440,10 +440,14 @@ if __name__ == "__main__":
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
     hfsf1='fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
-    parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='append',nargs='+',help=hfsf1)
+    #parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='append',nargs='+',help=hfsf1)
+    #START240502
+    parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='extend',nargs='+',help=hfsf1)
 
     hfsf2='fsf files for second-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
-    parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='append',nargs='+',help=hfsf2)
+    #parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='append',nargs='+',help=hfsf2)
+    #START240502
+    parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='extend',nargs='+',help=hfsf2)
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
@@ -481,6 +485,7 @@ if __name__ == "__main__":
         exit()
     args.dat = [os.path.abspath(i) for i in args.dat]
 
+
     #print(f'args.bs={args.bs}')
     #if args.bs: 
     #    print(f'    if args.bs')
@@ -506,12 +511,11 @@ if __name__ == "__main__":
     if args.HCPDIR: HCPDIR = args.HCPDIR 
     if not 'HCPDIR' in locals():
         HCPDIR = OGREDIR + '/lib/HCP'
-        print('HCPDIR not set. Setting it to {HCPDIR}')
-        exit()
+        print(f'HCPDIR not set. Setting it to {HCPDIR}')
 
-    global WBDIR
-    WBDIR = HCPDIR + '/workbench-mac/bin_macosx64' 
-
+    if not 'WBDIR' in globals():
+        global WBDIR
+        WBDIR = HCPDIR + '/lib/HCP/workbench-mac/bin_macosx64' 
 
 
     if args.FREESURFVER: FREESURFVER = args.FREESURFVER
