@@ -775,7 +775,7 @@ if __name__ == "__main__":
                     if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
                     if args.paradigm_hp_sec: 
                         F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[scans.taskidx[j]][0])) for j in scans.taskidx])}" \\\n') 
+                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[j][0])) for j in scans.taskidx])}" \\\n') 
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
                     if not args.lcnobidscopy:
