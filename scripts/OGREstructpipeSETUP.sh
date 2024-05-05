@@ -331,14 +331,6 @@ for((i=0;i<${#dat[@]};++i));do
 
     mkdir -p ${dir0}
 
-
-    #if((lcdate==1));then
-    #    date0=$(date +%y%m%d)
-    #elif((lcdate==2));then
-    #    date0=$(date +%y%m%d%H%M%S)
-    #fi
-    #((lcdate==0)) && F0stem=${dir0}/${s0}_OGREstruct || F0stem=${dir0}/${s0}_OGREstruct_${date0} 
-    #START240302
     datestr=''
     if((lcdate==1));then
         datestr=_$(date +%y%m%d)
@@ -347,31 +339,23 @@ for((i=0;i<${#dat[@]};++i));do
     fi
     F0stem=${dir0}/${s0}_OGREstruct${datestr} 
 
-
     F0=${F0stem}.sh
     F1=${F0stem}_fileout.sh
     #echo  "F0=${F0}"
     #echo  "F1=${F1}"
 
-    #START240302
     F0name='${s0}'_OGREstruct${datestr}.sh
     
 
     if [ -n "${bs}" ];then
-
-        #((lcdate==0)) && bs0stem=${dir0}/${s0}_OGREbatch || bs0stem=${dir0}/${s0}_OGREbatch_${date0} 
-        #START240302
         bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
-
         bs0=${bs0stem}.sh
-
         echo -e "$shebang\nset -e\n" > ${bs0} 
         bs1=${bs0stem}_fileout.sh
         echo -e "$shebang\nset -e\n" > ${bs1} 
     fi
 
     echo -e "$shebang\nset -e\n" > ${F0} 
-    #echo -e "$shebang\nset -e\n" > ${F1} 
 
     echo -e "#$0 $@\n" >> ${F0}
     echo "FREESURFVER=${FREESURFVER}" >> ${F0}
@@ -390,16 +374,35 @@ for((i=0;i<${#dat[@]};++i));do
 
     echo -e "Hires=${Hires}\n" >> ${F0}
 
-    echo '${PRE} \' >> ${F0}
-    echo '    --StudyFolder=${sf0} \' >> ${F0}
-    echo '    --Subject=${s0} \' >> ${F0}
-    echo '    --runlocal \' >> ${F0}
-    echo '    --T1='${T1f}' \' >> ${F0}
-    echo '    --T2='${T2f}' \' >> ${F0}
-    echo '    --GREfieldmapMag="NONE" \' >> ${F0}
-    echo '    --GREfieldmapPhase="NONE" \' >> ${F0}
-    echo '    --Hires=${Hires} \' >> ${F0}
-    echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
+    #echo '${PRE} \' >> ${F0}
+    #echo '    --StudyFolder=${sf0} \' >> ${F0}
+    #echo '    --Subject=${s0} \' >> ${F0}
+    #echo '    --runlocal \' >> ${F0}
+    #echo '    --T1='${T1f}' \' >> ${F0}
+    #echo '    --T2='${T2f}' \' >> ${F0}
+    #echo '    --GREfieldmapMag="NONE" \' >> ${F0}
+    #echo '    --GREfieldmapPhase="NONE" \' >> ${F0}
+    #echo '    --Hires=${Hires} \' >> ${F0}
+    #echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
+    #START240504
+    echo 'freesurferdir=${sf0}/T1w/${s0}' >> ${F0}
+    echo 'if [ ! -d "$freesurferdir" ];then' >> ${F0}
+    echo '    ${PRE} \' >> ${F0}
+    echo '        --StudyFolder=${sf0} \' >> ${F0}
+    echo '        --Subject=${s0} \' >> ${F0}
+    echo '        --runlocal \' >> ${F0}
+    echo '        --T1='${T1f}' \' >> ${F0}
+    echo '        --T2='${T2f}' \' >> ${F0}
+    echo '        --GREfieldmapMag="NONE" \' >> ${F0}
+    echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
+    echo '        --Hires=${Hires} \' >> ${F0}
+    echo '        --EnvironmentScript=${SETUP}' >> ${F0}
+    echo 'else' >> ${F0}
+    echo '    dirdate=$(date -r $freesurferdir)' >> ${F0}
+    echo '    newname=${freesurferdir}_${dirdate// /_}' >> ${F0}
+    echo '    mv "$freesurferdir" "$newname"' >> ${F0}
+    echo '    echo "$freesurferdir renamed to $newname"' >> ${F0}
+    echo -e 'fi\n' >> ${F0}
 
     echo '${FREE} \' >> ${F0}
     echo '    --StudyFolder=${sf0} \' >> ${F0}
@@ -417,16 +420,6 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    --runlocal \' >> ${F0}
     echo '    --EnvironmentScript=${SETUP}' >> ${F0}
 
-
-    #echo "out=${F0}.txt" >> ${F1}
-    #echo 'if [ -f "${out}" ];then' >> ${F1}
-    #echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
-    #echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
-    #echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
-    #echo "fi" >> ${F1}
-    #echo "cd ${dir0}" >> ${F1} 
-    #echo ${F0}' >> ${out} 2>&1 &' >> ${F1}
-    #START240302
     echo -e "$shebang\nset -e\n" > ${F1} 
     echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
     echo 'if [ -f "${out}" ];then' >> ${F1}
@@ -434,6 +427,7 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
     echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
     echo "fi" >> ${F1}
+
     echo 'cd ${sf0}' >> ${F1}
     echo '${F0} >> ${out} 2>&1 &' >> ${F1}
 
