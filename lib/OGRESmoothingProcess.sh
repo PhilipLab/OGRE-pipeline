@@ -117,7 +117,8 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
     #od0=${fMRITimeSeriesResults[i]%/*}
     sd0=${fMRITimeSeriesResults[i]%/*}/SCRATCH$(date +%y%m%d%H%M%S)
     echo "sd0=${sd0}"
-    root0=${fMRITimeSeriesResults[i]%.nii*}
+    #root0=${fMRITimeSeriesResults[i]%.nii*}
+    root0=${fMRITimeSeriesResults[i]%_bold.nii*}
     #echo "od0=${od0}"
     echo "root0=${root0}"
     #exit
@@ -193,8 +194,12 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
         bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR[i]})" | bc))
         declare -p bptf 
         #${FSLDIR}/bin/fslmaths prefiltered_func_data_intnorm -bptf ${bptf} -1 -add tempMean prefiltered_func_data_tempfilt
-        ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN${FWHM[j]}mmHPTF${PARADIGM_HP_SEC}s 
+        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN${FWHM[j]}mmHPTF${PARADIGM_HP_SEC}s 
         #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN-${FWHM[j]}_filt-${PARADIGM_HP_SEC}
+        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_susan-${FWHM[j]}mm_hpf-${PARADIGM_HP_SEC}s_bold
+        out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
+        ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
+        echo "Output written to ${out0}"
     done
 
     rm -r ${sd0}

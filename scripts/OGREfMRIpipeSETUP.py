@@ -762,16 +762,25 @@ if __name__ == "__main__":
                     for j in range(len(scans.bold)): 
                         str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
                         F0f[0].write('mv ${sf0}/'+f'{str0} '+'${sf0}/TemporaryFiles\n')
+                    F0f[0].write('\n')
                         
 
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
                     F0f[0].write('${SMOOTH} \\\n')
                     F0f[0].write('    --fMRITimeSeriesResults="\\\n')
+
+                    #for j in range(len(scans.taskidx)-1): 
+                    #    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
+                    #    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
+                    #str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
+                    #F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+                    #START240505
                     for j in range(len(scans.taskidx)-1): 
                         str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                        F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
+                        F0f[0].write('        ${sf0}/Results/'+f'{str0}/{str0}.nii.gz \\\n')
                     str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+                    F0f[0].write('        ${sf0}/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
+
                     if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
                     if args.paradigm_hp_sec: 
                         F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
