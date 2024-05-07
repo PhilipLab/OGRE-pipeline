@@ -134,7 +134,10 @@ class Scans:
             f0.write(f'    {str0})\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
+
+            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
+            f0.write('    file=${sf0}/Results/${i}/${i}.nii.gz\n')
+
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
@@ -144,13 +147,16 @@ class Scans:
             f0.write('done\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
+
+            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
+            f0.write('    file=${sf0}/Results/${i}/brainmask_fs.2.nii.gz\n')
+
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            #f0.write('    cp -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
             f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
+
             f0.write('done\n\n')
 
             f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
@@ -175,22 +181,31 @@ class Scans:
 
                 if paradigm_hp_sec: 
                     f0.write(f'paradigm_hp_sec={paradigm_hp_sec}\n')
-                    f0.write('PSTR_OGRE=HPTF${paradigm_hp_sec}s\n')
-                    f0.write('PSTR_BIDS=_filt-${paradigm_hp_sec}\n')
+
+                    #f0.write('PSTR_OGRE=HPTF${paradigm_hp_sec}s\n')
+                    #f0.write('PSTR_BIDS=_filt-${paradigm_hp_sec}\n')
+                    f0.write('PSTR=_hpf-${paradigm_hp_sec}s\n')
+
                 else:
-                    f0.write('PSTR_OGRE=;PSTR_BIDS=\n')
+                    #f0.write('PSTR_OGRE=;PSTR_BIDS=\n')
+                    f0.write('PSTRE=\n')
 
                 f0.write(f'fwhm=({' '.join(fwhm)})\n')
 
                 f0.write('for i in ${TASK_BOLD[@]};do\n')
                 f0.write('    for j in ${fwhm[@]};do\n')
-                f0.write('        file=${sf0}/MNINonLinear/Results/${i}/${i}_SUSAN${j}mm${PSTR_OGRE}.nii.gz\n')
+
+                #f0.write('        file=${sf0}/MNINonLinear/Results/${i}/${i}_SUSAN${j}mm${PSTR_OGRE}.nii.gz\n')
+                f0.write('        file=${sf0}/Results/${i}/${i}_susan-${j}mm${PSTR}_bold.nii.gz\n')
+
                 f0.write('        if [ ! -f "${file}" ];then\n')
                 f0.write('            echo ${file} not found.\n')
                 f0.write('            continue\n')
                 f0.write('        fi\n')
-                #f0.write('        cp -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
-                f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
+
+                #f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
+                f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_susan-${j}mm${PSTR}_bold.nii.gz\n')
+
                 f0.write('    done\n')
                 f0.write('done\n')
 
