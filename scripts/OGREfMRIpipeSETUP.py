@@ -160,7 +160,7 @@ class Scans:
             f0.write('    fi\n')
             #f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
             #START240509
-            f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE-preproc_res-2_desc-brain_mask.nii.gz\n')
+            f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
 
             f0.write('done\n\n')
 
