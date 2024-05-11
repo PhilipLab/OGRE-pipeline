@@ -42,10 +42,10 @@ get_batch_options() {
             #    command_line_specified_SmoothFolder=${argument#*=}
             #    index=$(( index + 1 ))
             #    ;;
-            --EnvironmentScript=*)
-                command_line_specified_EnvironmentScript=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
+            #--EnvironmentScript=*)
+            #    command_line_specified_EnvironmentScript=${argument#*=}
+            #    index=$(( index + 1 ))
+            #    ;;
             *)
                 echo ""
                 echo "ERROR: Unrecognized Option: ${argument}"
@@ -86,12 +86,12 @@ else
     echo "Need to specify --TR"
     exit
 fi
-if [ -n "${command_line_specified_EnvironmentScript}" ]; then
-    EnvironmentScript=$command_line_specified_EnvironmentScript
-else
-    echo "Need to specify --EnvironmentScript"
-    exit
-fi
+#if [ -n "${command_line_specified_EnvironmentScript}" ]; then
+#    EnvironmentScript=$command_line_specified_EnvironmentScript
+#else
+#    echo "Need to specify --EnvironmentScript"
+#    exit
+#fi
 if((${#fMRITimeSeriesResults[@]}!=${#TR[@]}));then
     echo "fMRITimeSeriesResults has ${#fMRITimeSeriesResults[@]} elements, but TR has ${#TR[@]} elements. Must be equal. Abort!"
     exit
@@ -103,7 +103,7 @@ fi
 #    SmoothFolder=
 #fi
 
-source $EnvironmentScript
+#source $EnvironmentScript
 
 for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
 
