@@ -25,7 +25,7 @@ helpmsg(){
 
 
     echo "    -t --t1 -t1             T1 resolution (ie FEAT highres). 1 or 2. Default is 1mm."
-    echo "                            If 1mm, then MNINonLinear/T1w_restore and MNINonLinear/T1w_restore_brain are used."
+    echo "                            If 1mm, then MNINonLinear/T1w_restore and MNINonLinear/T1w_restore_brain are used (or equivalent in "func" dir)"
 
     #echo "                            If 2mm, then MNINonLinear/Results/T1w_restore.2 and MNINonLinear/Results/T1w_restore_brain.2 are used."
     #START240417
@@ -34,7 +34,7 @@ helpmsg(){
     echo "                                NOTE: MNINonLinear/T1w_restore.2 is not the correct image. It is a so-called subcortical T1 for surface analysis."
     echo "    --t1highreshead -t1highreshead --t1hireshead -t1hireshead"
     echo "                            Input your own whole head T1."
-    echo "                            Ex. --t1highreshead /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
+    echo "                            Ex. --t1highreshead /Users/Shared/10_Connectivity/sub-1001/pipelineT7.4.1/func/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
     echo "    --t1highres -t1highres --t1hires -t1hires"
     echo "                            Input your own brain masked T1."
     echo "                            Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
@@ -44,15 +44,13 @@ helpmsg(){
     echo "                            If 2mm, then ${FSLDIR}/data/standard/MNI152_T1_2mm and ${FSLDIR}/data/standard/MNI152_T1_2mm_brain are used."
     echo "    --standardhead -standardhead"
     echo "                            Input your own whole head standard image."
-    echo "                            Ex. --standardhead /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
+    echo "                            Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
     echo "    --standard -standard    Input your own brain masked standard image."
-    echo "                            Ex. --standard /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
+    echo "                            Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
     echo ""
     echo "    -h --help -help         Echo this help message."
     exit
     }
-
-
 if((${#@}<1));then
     helpmsg
     exit
@@ -88,10 +86,6 @@ for((i=0;i<${#@};++i));do
             FREESURFVER=${arg[((++i))]}
             echo "FREESURFVER=$FREESURFVER"
             ;;
-
-
-
-
         -t | --t1 | -t1)
             T1=${arg[((++i))]}
             echo "T1=$T1"
@@ -160,26 +154,23 @@ echo "SUBJECT=$SUBJECT"
 
 OUTDIR=${FEATDIR}/reg
 ANATDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/anat/
-
-#PIPEDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline7.4.0/MNINonLinear/Results/
-#START240417
-PIPEDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline${FREESURFVER}/Results/
+MNLDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline${FREESURFVER}/MNINonLinear/
 
 if [ -z "${T1HIGHRESHEAD}" ];then
     if((T1==1));then
-        if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.nii.gz ]; then
-            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_T1w_restore.nii.gz
-        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.nii.gz ]; then
-            T1HIGHRESHEAD=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.nii.gz
+        if [ -f ${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz ]; then
+            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz
+        elif [ -f ${MNLDIR}/T1w_restore.nii.gz ]; then
+            T!HIGHRESHEAD=${MNLDIR}/T1w_restore.nii.gz
         else
             echo "T1 head 1mm not found: ${T1}"
             exit
         fi
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
         if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
-            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz
-        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
-            T1HIGHRESHEAD=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz
+            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_res-2_T1w.nii.gz
+        elif [ -f ${MNLDIR}/T1w_restore.2.nii.gz ]; then
+            T1HIGHRESHEAD=${MNLDIR}/T1w_restore.2.nii.gz
         else
             echo "T1 head 2mm not found: ${T1}"
             exit
@@ -191,10 +182,10 @@ if [ -z "${T1HIGHRESHEAD}" ];then
 fi
 if [ -z "${T1HIGHRES}" ];then
     if((T1==1));then
-        if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz ]; then
-            T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz
-        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz ]; then
-            T1HIGHRES=${PIPEDIR}/sub-${SUBJECT}_T1w_restore_brain.nii.gz
+        if [ -f ${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz ]; then
+            T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz
+        elif [ -f ${MNLDIR}/T1w_restore_brain.nii.gz ]; then
+            T1HIGHRES=${MNLDIR}/T1w_restore_brain.nii.gz
         else
             echo "T1 brain 1mm not found: ${T1}"
             exit
@@ -202,8 +193,8 @@ if [ -z "${T1HIGHRES}" ];then
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
         if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
             T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
-        elif [ -f ${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
-            T1HIGHRES=${PIPEDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
+        elif [ -f ${MNLDIR}/T1w_restore.2_brain.nii.gz ]; then
+            T1HIGHRES=${MNLDIR}/T1w_restore.2_brain.nii.gz
         else
             echo "T1 brain 2mm not found: ${T1}"
             exit
