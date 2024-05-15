@@ -422,48 +422,113 @@ def get_TR(file):
 
     return dict0['RepetitionTime']
 
+#class Feat:
+#    def __init__(self,arg):
+#        self.outputdir = []
+#        self.fsf = []
+#        print(f'arg={arg}')
+#        for i in arg:
+#            print(f'i={i}')
+#            for j in i:
+#                print(f'j={j}')
+#                if j[-4:]=='feat':
+#                    #if os.path.isdir(j):
+#                    if pathlib.Path(j).exists():
+#                        fsf0 = glob.glob(f'{j}/*.fsf')
+#                        if fsf0:
+#                            if len(fsf0)==1:
+#                                line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+#                                self.outputdir.append(line0.split('"')[1])
+#                                self.fsf.append(fsf0)
+#                elif j[-3:]=='fsf':
+#                    line0 = run_cmd(f'grep "set fmri(outputdir)" {j}')
+#                    self.outputdir.append(line0.split('"')[1])
+#                    self.fsf.append(fsf0)
+#                else:
+#                    with open(j,encoding="utf8",errors='ignore') as f0:
+#                        for line0 in f0:
+#                            line1=line0.strip()
+#                            #print(f'line1={line1}')
+#                            if not line1 or line1.startswith('#'): continue
+#                            if line1[-4:]=='feat':
+#                                #if os.path.isdir(line0):
+#                                if pathlib.Path(line1).exists():
+#                                    fsf0 = glob.glob(f'{line1}/*.fsf')
+#                                    if fsf0:
+#                                        if len(fsf0)==1:
+#                                            line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+#                                            self.outputdir.append(line0.split('"')[1])
+#                                            self.fsf.append(fsf0)
+#                            elif line1[-3:]=='fsf':
+#                                line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+#                                self.outputdir.append(line0.split('"')[1])
+#                                self.fsf.append(line1)
+#        #print(f'self.outputdir={self.outputdir}')
+#        #print(f'self.fsf={self.fsf}')
+#START240514
 class Feat:
     def __init__(self,arg):
         self.outputdir = []
         self.fsf = []
+        #print(f'arg={arg}')
         for i in arg:
             #print(f'i={i}')
-            for j in i:
-                #print(f'j={j}')
-                if j[-4:]=='feat':
-                    #if os.path.isdir(j):
-                    if pathlib.Path(j).exists():
-                        fsf0 = glob.glob(f'{j}/*.fsf')
-                        if fsf0:
-                            if len(fsf0)==1:
-                                line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                                self.outputdir.append(line0.split('"')[1])
-                                self.fsf.append(fsf0)
-                elif j[-3:]=='fsf':
-                    line0 = run_cmd(f'grep "set fmri(outputdir)" {j}')
-                    self.outputdir.append(line0.split('"')[1])
-                    self.fsf.append(fsf0)
-                else:
-                    with open(j,encoding="utf8",errors='ignore') as f0:
-                        for line0 in f0:
-                            line1=line0.strip()
-                            #print(f'line1={line1}')
-                            if not line1 or line1.startswith('#'): continue
-                            if line1[-4:]=='feat':
-                                #if os.path.isdir(line0):
-                                if pathlib.Path(line1).exists():
-                                    fsf0 = glob.glob(f'{line1}/*.fsf')
-                                    if fsf0:
-                                        if len(fsf0)==1:
-                                            line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                                            self.outputdir.append(line0.split('"')[1])
-                                            self.fsf.append(fsf0)
-                            elif line1[-3:]=='fsf':
-                                line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
-                                self.outputdir.append(line0.split('"')[1])
-                                self.fsf.append(line1)
+            if i[-4:]=='feat':
+                #if os.path.isdir(i):
+                if pathlib.Path(i).exists():
+                    fsf0 = glob.glob(f'{i}/*.fsf')
+                    if fsf0:
+
+                        #if len(fsf0)==1:
+                        #    line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                        #    self.outputdir.append(line0.split('"')[1])
+                        #    self.fsf.append(fsf0)
+                        #START240514
+                        line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                        self.outputdir.append(line0.split('"')[1])
+                        self.fsf.append(fsf0)
+
+
+            elif i[-3:]=='fsf':
+                line0 = run_cmd(f'grep "set fmri(outputdir)" {i}')
+                #print(f'line0={line0}')
+                #dummy=line0.split('"')[1]
+                #print(f'dummy={dummy}')
+                self.outputdir.append(line0.split('"')[1])
+                self.fsf.append(i)
+
+            #START240514 Can't distinguish between level and 2
+            #elif pathlib.Path(i).exists():
+            #    fsf0 = glob.glob(f'{i}/*.fsf')
+            #    #print(f'fsf0={fsf0}')
+            #    for j in fsf0:
+            #        #print(f'j={j}')
+            #        line0 = run_cmd(f'grep "set fmri(outputdir)" {j}')
+            #        self.outputdir.append(line0.split('"')[1])
+            #        self.fsf.append(j)
+
+            else:
+                with open(i,encoding="utf8",errors='ignore') as f0:
+                    for line0 in f0:
+                        line1=line0.strip()
+                        #print(f'line1={line1}')
+                        if not line1 or line1.startswith('#'): continue
+                        if line1[-4:]=='feat':
+                            #if os.path.isdir(line0):
+                            if pathlib.Path(line1).exists():
+                                fsf0 = glob.glob(f'{line1}/*.fsf')
+                                if fsf0:
+                                    if len(fsf0)==1:
+                                        line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                        self.outputdir.append(line0.split('"')[1])
+                                        self.fsf.append(fsf0)
+                        elif line1[-3:]=='fsf':
+                            line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+                            self.outputdir.append(line0.split('"')[1])
+                            self.fsf.append(line1)
         #print(f'self.outputdir={self.outputdir}')
         #print(f'self.fsf={self.fsf}')
+
 
 
 
@@ -771,21 +836,15 @@ if __name__ == "__main__":
 
 
             if args.fsf1:
-                F0f[1].write(f'OGREDIR={OGREDIR}\n')
-                for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+                #if len(F0f)>1:F0f[1].write(f'OGREDIR={OGREDIR}\n')
+                #for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+                for fn in F0f: fn.write(f'OGREDIR={OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
-
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
-
-                #F0f[0].write(f's0={s0}\nsf0={dir1}\n\n')
-                #START240509
                 F0f[0].write(pathstr+'\n') # s0, bids and sf0
-
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
-                #F1f.write(f's0={s0}\nsf0={dir1}\n\n')
-
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
                     if not args.lcnobidscopy: F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
@@ -842,123 +901,76 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                #if not args.lcsmoothonly: 
-                #    F0f[0].write('${P1} \\\n')
-                #    str0 = pathlib.Path(scans.bold[0][0]).name.split('.nii')[0]
-                #    F0f[0].write('    --t1=${sf0}/'+f'{str0}/T1w_restore.2.nii.gz \\\n')
-                #    F0f[0].write('    --mask=${sf0}/'+f'{str0}/brainmask_fs.2.nii.gz \\\n')
-                #    F0f[0].write('    --outpath=${sf0}/MNINonLinear/Results \\\n')
-                #    F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
-                #
-                #    F0f[0].write('mv ${sf0}/MNINonLinear/Results ${sf0}\n')
-                #    F0f[0].write('mkdir -p ${sf0}/TemporaryFiles\n')
-                #    F0f[0].write('mv ${sf0}/T1w ${sf0}/TemporaryFiles\n')
-                #    F0f[0].write('[ -d "${sf0}/T2w" ] && mv ${sf0}/T2w ${sf0}/TemporaryFiles\n')
-                #    for j in range(len(scans.bold)): 
-                #        str0 = pathlib.Path(scans.bold[j][0]).name.split('.nii')[0]
-                #        F0f[0].write('mv ${sf0}/'+f'{str0} '+'${sf0}/TemporaryFiles\n')
-                #    F0f[0].write('\n')
-                        
-
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
-
-                    #START240509
                     scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
                     if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
-
-
-
-                    #F0f[0].write('${SMOOTH} \\\n')
-                    #F0f[0].write('    --fMRITimeSeriesResults="\\\n')
-                    #
-                    ##for j in range(len(scans.taskidx)-1): 
-                    ##    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                    ##    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-                    ##str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    ##F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-                    ##START240505
-                    #for j in range(len(scans.taskidx)-1): 
-                    #    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-                    #    F0f[0].write('        ${sf0}/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-                    #str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-                    #F0f[0].write('        ${sf0}/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-                    #
-                    #if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
-                    #if args.paradigm_hp_sec: 
-                    #    F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-                    #    F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[j][0])) for j in scans.taskidx])}" \\\n') 
-                    #F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
-                    #START240509
                     scans.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
 
 
-                    #START240509
-                    #if not args.lcnobidscopy:
-                    #    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
-                    #    F0f[0].write('${COPY}\n\n')
 
 
-                if args.fsf1:
-                    for fn in F0f: 
-                        for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                        for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
-                        fn.write('\n')
+            #START240514
+            if args.fsf1:
+                for fn in F0f: 
+                    for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+                    for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
+                    fn.write('\n')
 
-                if args.fsf2:
-                    for fn in F0f: 
-                        for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+            if args.fsf2:
+                for fn in F0f: 
+                    for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
-                if not os.path.isfile(F0[0]):
-                    for j in F0: _=run_cmd(f'rm -f {j}')
-                    _=run_cmd(f'rm -f {F1}')
-                    if not args.lcnobidscopy: _=run_cmd(f'rm -f {F2}')
-                    if arg.bs: _=run_cmd(f'rm -f {bs0}')
+            if not os.path.isfile(F0[0]):
+                for j in F0: _=run_cmd(f'rm -f {j}')
+                _=run_cmd(f'rm -f {F1}')
+                if not args.lcnobidscopy: _=run_cmd(f'rm -f {F2}')
+                if arg.bs: _=run_cmd(f'rm -f {bs0}')
 
-                else:
+            else:
 
-                    F1f.write(f'{SHEBANG}\nset -e\n\n')
-                    F1f.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
-                    F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
-                    F1f.write('if [ -f "${out}" ];then\n')
-                    F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
-                    F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
-                    F1f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
-                    F1f.write('fi\n')
-                    F1f.write('cd ${sf0}\n')
-                    F1f.write('${F0} >> ${out} 2>&1 &\n')
+                F1f.write(f'{SHEBANG}\nset -e\n\n')
+                F1f.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
+                F1f.write('if [ -f "${out}" ];then\n')
+                F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
+                F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
+                F1f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
+                F1f.write('fi\n')
+                F1f.write('cd ${sf0}\n')
+                F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
-                    for j in F0: 
-                        _=run_cmd(f'chmod +x {j}')
-                        print(f'    Output written to {j}')
-                    _=run_cmd(f'chmod +x {F1}')
-                    print(f'    Output written to {F1}')
+                for j in F0: 
+                    _=run_cmd(f'chmod +x {j}')
+                    print(f'    Output written to {j}')
+                _=run_cmd(f'chmod +x {F1}')
+                print(f'    Output written to {F1}')
 
-                    if not args.lcnobidscopy:
-                        _=run_cmd(f'chmod +x {F2}')
-                        print(f'    Output written to {F2}')
+                if not args.lcnobidscopy:
+                    _=run_cmd(f'chmod +x {F2}')
+                    print(f'    Output written to {F2}')
 
-                    if args.bs: 
-                        if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n')
-                        bs0f.write(f'\nFREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
-                        bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
-                        bs0f.write('if [ -f "${out}" ];then\n')
-                        bs0f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
-                        bs0f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
-                        bs0f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
-                        bs0f.write('fi\n')
-                        bs0f.write('cd ${sf0}\n')
-                        bs0f.write('${F0} >> ${out} 2>&1\n') #no ampersand at end
+                if args.bs: 
+                    if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n')
+                    bs0f.write(f'\nFREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                    bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
+                    bs0f.write('if [ -f "${out}" ];then\n')
+                    bs0f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
+                    bs0f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
+                    bs0f.write('    echo -e "**********************************************************************\\n\\n" >> ${out}\n')
+                    bs0f.write('fi\n')
+                    bs0f.write('cd ${sf0}\n')
+                    bs0f.write('${F0} >> ${out} 2>&1\n') #no ampersand at end
 
-                        _=run_cmd(f'chmod +x {bs0}')
-                        print(f'    Output written to {bs0}')
+                    _=run_cmd(f'chmod +x {bs0}')
+                    print(f'    Output written to {bs0}')
 
-                        bs1f.write(f'{SHEBANG}\n\n')
-                        bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
-                        _=run_cmd(f'chmod +x {bs1}')
-                        print(f'    Output written to {bs1}')
+                    bs1f.write(f'{SHEBANG}\n\n')
+                    bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
+                    _=run_cmd(f'chmod +x {bs1}')
+                    print(f'    Output written to {bs1}')
 
-                        if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
+                    if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
 
 
     if 'batchscriptf' in locals(): 
