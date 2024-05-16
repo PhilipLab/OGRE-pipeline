@@ -86,7 +86,8 @@ class Scans:
                 line1 = re.findall(r'[^,\s]+', line0)
                 #print(line1[1])
                 file0 = line1[1] + '.nii.gz'
-                if not os.path.isfile(file0):
+                #if not os.path.isfile(file0):
+                if not pathlib.Path(file0).is_file():
                     print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
                     exit()
 
@@ -388,11 +389,28 @@ class Par:
 
 
 def run_cmd(cmd):
-    return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
+    #return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
+    #START240515
+    return subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
+    #print('********* here-1 ******************')
+    #try:
+    #    #out = subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
+    #    #subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
+    #    #subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, check=True, text=True).stdout.decode().strip()
+    #    print('********* here0 ******************')
+    #    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, check=True, text=True)
+    #except subprocess.CalledProcessError as e:
+    #    print('********* here1 ******************')
+    #    #print(out)
+    #    print(e.returncode)
+    #    print(e.output)
+    #    exit() 
+    #return subprocess.STDOUT 
 
 def get_phase(file):
     jsonf = file.split('.')[0] + '.json'
-    if not os.path.isfile(jsonf):
+    #if not os.path.isfile(jsonf):
+    if not pathlib.Path(jsonf).is_file():
         print(f'    ERROR: {jsonf} does not exist. Abort!')
         #return 'ERROR'
         exit()
@@ -412,7 +430,8 @@ def get_dim(file):
 
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
-    if not os.path.isfile(jsonf):
+    #if not os.path.isfile(jsonf):
+    if not pathlib.Path(jsonf).is_file():
         print(f'    ERROR: {jsonf} does not exist. Abort!')
         #return 'ERROR'
         exit()
@@ -484,12 +503,18 @@ class Feat:
                         #    self.outputdir.append(line0.split('"')[1])
                         #    self.fsf.append(fsf0)
                         #START240514
+                        if not pathlib.Path(i).is_file():
+                            print(f'{fsf0[0]} does not exist. Abort!')
+                            exit()
                         line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
                         self.outputdir.append(line0.split('"')[1])
                         self.fsf.append(fsf0)
 
 
             elif i[-3:]=='fsf':
+                if not pathlib.Path(i).is_file():
+                    print(f'{i} does not exist. Abort!')
+                    exit()
                 line0 = run_cmd(f'grep "set fmri(outputdir)" {i}')
                 #print(f'line0={line0}')
                 #dummy=line0.split('"')[1]
@@ -519,12 +544,30 @@ class Feat:
                                 fsf0 = glob.glob(f'{line1}/*.fsf')
                                 if fsf0:
                                     if len(fsf0)==1:
-                                        line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                                        self.outputdir.append(line0.split('"')[1])
+
+                                        #line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                        #self.outputdir.append(line0.split('"')[1])
+                                        #START240514
+                                        if not pathlib.Path(fsf0[0]).is_file():
+                                            print(f'{line1} does not exist. Abort!')
+                                            exit()
+                                        line2 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                        self.outputdir.append(line2.split('"')[1])
+
                                         self.fsf.append(fsf0)
                         elif line1[-3:]=='fsf':
-                            line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
-                            self.outputdir.append(line0.split('"')[1])
+
+                            #line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+                            #self.outputdir.append(line0.split('"')[1])
+                            #START240514
+                            #print('************* here2 ****************')
+                            if not pathlib.Path(line1).is_file():
+                                print(f'{line1} does not exist. Abort!')
+                                exit()
+                            line2 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+                            #print(f'line2={line2}')
+                            self.outputdir.append(line2.split('"')[1])
+
                             self.fsf.append(line1)
         #print(f'self.outputdir={self.outputdir}')
         #print(f'self.fsf={self.fsf}')
@@ -634,7 +677,8 @@ if __name__ == "__main__":
         args.dat=args.dat0
     else:
         exit()
-    args.dat = [os.path.abspath(i) for i in args.dat]
+    #args.dat = [os.path.abspath(i) for i in args.dat]
+    args.dat = [pathlib.Path(i).resolve() for i in args.dat]
 
 
     #print(f'args.bs={args.bs}')
@@ -719,7 +763,10 @@ if __name__ == "__main__":
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
-            args.bs = os.path.abspath(args.bs)
+
+            #args.bs = os.path.abspath(args.bs)
+            args.bs = pathlib.Path(args.bs).resolve()
+
             if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
             bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
             #print(f'bs_fileout={bs_fileout}')
@@ -775,7 +822,8 @@ if __name__ == "__main__":
             str0 = stem0 + '_OGREbatch' + datestr
             bs0 = str0 + '.sh'
 
-            if not os.path.isfile(bs0):
+            #if not os.path.isfile(bs0):
+            if not pathlib.Path(bs0).is_file():
                 mode0 = 'wt'
             else:
                 mode0 = 'at'
@@ -921,11 +969,18 @@ if __name__ == "__main__":
                 for fn in F0f: 
                     for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
-            if not os.path.isfile(F0[0]):
-                for j in F0: _=run_cmd(f'rm -f {j}')
-                _=run_cmd(f'rm -f {F1}')
-                if not args.lcnobidscopy: _=run_cmd(f'rm -f {F2}')
-                if arg.bs: _=run_cmd(f'rm -f {bs0}')
+            #if not os.path.isfile(F0[0]):
+            if not pathlib.Path(F0[0]).is_file():
+
+                #for j in F0: _=run_cmd(f'rm -f {j}')
+                #_=run_cmd(f'rm -f {F1}')
+                #if not args.lcnobidscopy: _=run_cmd(f'rm -f {F2}')
+                #if arg.bs: _=run_cmd(f'rm -f {bs0}')
+                #START240515
+                for j in F0: pathlib.Path.unlink(j) 
+                pathlib.Path.unlink(F1)
+                if not args.lcnobidscopy: pathlib.Path.unlink(F2) 
+                if arg.bs: pathlib.Path.unlink(bs0) 
 
             else:
 
