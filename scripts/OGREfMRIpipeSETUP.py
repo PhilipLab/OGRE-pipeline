@@ -221,32 +221,12 @@ class Scans:
             """
 
 
-
-#                    F0f[0].write('${SMOOTH} \\\n')
-#                    F0f[0].write('    --fMRITimeSeriesResults="\\\n')
-#
-#                    #for j in range(len(scans.taskidx)-1):
-#                    #    str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-#                    #    F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-#                    #str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-#                    #F0f[0].write('        ${sf0}/MNINonLinear/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-#                    #START240505
-#                    for j in range(len(scans.taskidx)-1):
-#                        str0 = pathlib.Path(scans.bold[scans.taskidx[j]][0]).name.split('.nii')[0]
-#                        F0f[0].write('        ${sf0}/Results/'+f'{str0}/{str0}.nii.gz \\\n')
-#                    str0 = pathlib.Path(scans.bold[scans.taskidx[j+1]][0]).name.split('.nii')[0]
-#                    F0f[0].write('        ${sf0}/Results/'+f'{str0}/{str0}.nii.gz" \\\n')
-#
-#                    if args.fwhm: F0f[0].write(f'    --fwhm="{' '.join(args.fwhm)}" \\\n')
-#                    if args.paradigm_hp_sec:
-#                        F0f[0].write(f'    --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-#                        F0f[0].write(f'    --TR="{' '.join([str(get_TR(scans.bold[j][0])) for j in scans.taskidx])}" \\\n')
-#                    F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
-
-
-    #START240509
     def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-        bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
+
+        #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
+        #START240516
+        boldtask = [self.bold[j] for j in self.taskidx]
+        bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
 
         f0.write('BOLD=(\\\n')
         for j in range(len(bold_bash)-1):
@@ -389,9 +369,9 @@ class Par:
 
 
 def run_cmd(cmd):
-    #return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
+    return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
     #START240515
-    return subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
+    #return subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
     #print('********* here-1 ******************')
     #try:
     #    #out = subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
@@ -678,7 +658,8 @@ if __name__ == "__main__":
     else:
         exit()
     #args.dat = [os.path.abspath(i) for i in args.dat]
-    args.dat = [pathlib.Path(i).resolve() for i in args.dat]
+    #args.dat = [pathlib.Path(i).resolve() for i in args.dat]
+    args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
 
 
     #print(f'args.bs={args.bs}')
@@ -782,7 +763,12 @@ if __name__ == "__main__":
 
         print(f'Reading {i}')
         scans = Scans(i)
+
+        #print(f'i={i}')
+        #print(f'type(i)={type(i)}')
+
         idx = i.find('sub-')
+
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
             #print(f's0={s0}')
