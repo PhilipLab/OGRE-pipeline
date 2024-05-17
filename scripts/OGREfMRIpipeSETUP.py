@@ -610,7 +610,8 @@ if __name__ == "__main__":
     hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
     parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
 
-    hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.'
+    hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
+        + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
     hfsf1='fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
