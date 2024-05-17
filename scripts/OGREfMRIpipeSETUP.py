@@ -875,7 +875,13 @@ if __name__ == "__main__":
                 for fn in F0f: fn.write(f'OGREDIR={OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
 
             if not args.lcfeatadapter:
-                F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
+
+                #F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
+                if not args.lcsmoothonly: 
+                    F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
+                else:
+                    F0f[0].write('\n')
+
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
                 F0f[0].write(pathstr+'\n') # s0, bids and sf0
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
@@ -937,7 +943,10 @@ if __name__ == "__main__":
 
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
                     scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
-                    if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
+
+                    #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
+                    if not args.lcnobidscopy and not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
+
                     scans.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
 
