@@ -59,8 +59,8 @@ echo $0 $@
 
 #do not set FEATDIR or unexpected
 unset SUBJECT T1HIGHRESHEAD T1HIGHRES STANDARDHEAD STANDARD
-arg=("$@")
 
+arg=("$@")
 for((i=0;i<${#@};++i));do
     case "${arg[i]}" in
         -s | --sub | -sub)
@@ -145,27 +145,54 @@ if [ -z "${FEATDIR}" ];then
     echo "Need to provide FEATDIR"
     exit
 fi
+
 echo "FEATDIR=$FEATDIR"
 
 if [ -z "${SUBJECT}" ];then
-    SUBJECT=$(awk -F'/sub-' '{print $2}' <<< "$FEATDIR")
+    #SUBJECT=$(awk -F'/sub-' '{print $2}' <<< "$FEATDIR")
+    #START240519
+    SUBJECT=${FEATDIR##*/} #everything after the last /
+    SUBJECT=${SUBJECT%%_*} #everthing before the first _
 fi
 echo "SUBJECT=$SUBJECT"
 
-OUTDIR=${FEATDIR}/reg
-ANATDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/anat/
-MNLDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline${FREESURFVER}/MNINonLinear/
+
+#OUTDIR=${FEATDIR}/reg
+#ANATDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/anat
+#MNLDIR=${STUDYPATH}/derivatives/preprocessed/sub-${SUBJECT}/pipeline${FREESURFVER}/MNINonLinear
+#START240519
+ANATDIR=${STUDYPATH}/derivatives/preprocessed/${SUBJECT}/anat
+MNLDIR=${STUDYPATH}/derivatives/preprocessed/${SUBJECT}/pipeline${FREESURFVER}/MNINonLinear
+FEATPATH=${STUDYPATH}/derivatives/analysis/${SUBJECT}/${SUBJECT}_model-OGRE/${FEATDIR}.feat
+OUTDIR=${FEATPATH}/reg
+
+echo "OUTDIR=$OUTDIR"
+
 
 if [ -z "${T1HIGHRESHEAD}" ];then
     if((T1==1));then
-        if [ -f ${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz ]; then
-            T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz
-        elif [ -f ${MNLDIR}/T1w_restore.nii.gz ]; then
-            T!HIGHRESHEAD=${MNLDIR}/T1w_restore.nii.gz
+
+        #if [ -f ${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz ]; then
+        #    T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz
+        #elif [ -f ${MNLDIR}/T1w_restore.nii.gz ]; then
+        #    T1HIGHRESHEAD=${MNLDIR}/T1w_restore.nii.gz
+        #else
+        #    echo "T1 head 1mm not found: ${T1}"
+        #    exit
+        #fi
+        #START240519
+        t1bids=${ANATDIR}/${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz
+        t1ogre=${MNLDIR}/T1w_restore.nii.gz
+        if [ -f "${t1bids}" ];then
+            T1HIGHRESHEAD=${t1bids}
+        elif [ -f "${t1ogre}" ];then
+            T1HIGHRESHEAD=${t1ogre}
         else
-            echo "T1 head 1mm not found: ${T1}"
+            echo -e "T1 head 1mm not found.Looked for\n    ${t1bids}\n    ${t1ogre}"
             exit
         fi
+
+
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
         if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
             T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_res-2_T1w.nii.gz
@@ -182,14 +209,27 @@ if [ -z "${T1HIGHRESHEAD}" ];then
 fi
 if [ -z "${T1HIGHRES}" ];then
     if((T1==1));then
-        if [ -f ${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz ]; then
-            T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz
-        elif [ -f ${MNLDIR}/T1w_restore_brain.nii.gz ]; then
-            T1HIGHRES=${MNLDIR}/T1w_restore_brain.nii.gz
+
+        #if [ -f ${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz ]; then
+        #    T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz
+        #elif [ -f ${MNLDIR}/T1w_restore_brain.nii.gz ]; then
+        #    T1HIGHRES=${MNLDIR}/T1w_restore_brain.nii.gz
+        #else
+        #    echo "T1 brain 1mm not found: ${T1}"
+        #    exit
+        #fi
+        #START240519
+        t1bids=${ANATDIR}/${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz
+        t1ogre=${MNLDIR}/T1w_restore_brain.nii.gz
+        if [ -f "${t1bids}" ];then
+            T1HIGHRES=${t1bids}
+        elif [ -f "${t1ogre}" ];then
+            T1HIGHRES=${t1ogre}
         else
-            echo "T1 brain 1mm not found: ${T1}"
+            echo -e "T1 brain 1mm not found.Looked for\n    ${t1bids}\n    ${t1ogre}"
             exit
         fi
+
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
         if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
             T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
@@ -238,11 +278,21 @@ fi
 
 mkdir -p ${OUTDIR}
 
-if [ ! -f ${FEATDIR}/example_func.nii.gz ];then
-    echo "ERROR: ${FEATDIR}/example_func.nii.gz does not exist. Abort!"
+#if [ ! -f ${FEATDIR}/example_func.nii.gz ];then
+#    echo "ERROR: ${FEATDIR}/example_func.nii.gz does not exist. Abort!"
+#    exit
+#fi
+#cp -p ${FEATDIR}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz
+#START240519
+if [ ! -f ${FEATPATH}/example_func.nii.gz ];then
+    echo "ERROR: ${FEATPATH}/example_func.nii.gz does not exist. Abort!"
     exit
 fi
-cp -p ${FEATDIR}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz
+cp -p ${FEATPATH}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz
+
+
+
+
 cp $STANDARDHEAD ${OUTDIR}/standard_head.nii.gz
 cp $STANDARD ${OUTDIR}/standard.nii.gz
 cp -p $T1HIGHRESHEAD ${OUTDIR}/highres_head.nii.gz # this is still broken under BIDS

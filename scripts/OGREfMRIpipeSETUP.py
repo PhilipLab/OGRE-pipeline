@@ -958,7 +958,11 @@ if __name__ == "__main__":
             if args.fsf1:
                 for fn in F0f: 
                     for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                    for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
+
+                    #for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
+                    #START240519
+                    for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
+
                     fn.write('\n')
 
             if args.fsf2:
