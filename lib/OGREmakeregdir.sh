@@ -9,15 +9,17 @@ ATLAS=2
 [ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.1
 
 helpmsg(){
-    echo "Required: ${root0} <Feat directory>"
+    echo "Required: ${root0} <Feat directory>, via one of these two:"
     echo "    -f --feat -feat       Feat directory. If no option provided, then assumed to be the FEAT directory."
     echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.0/sub-1001_RHflip_susan-6_run-1.feat/"
+    echo "                          If it doesn't end in .feat, will treat it as relative path (e.g. sub-1001_RHflip_susan-6_run-1)
+    echo " "
+    echo "  Everything below here is OPTIONAL. Defaults to BIDS based on sub/study info"
     echo "    -s --sub -sub         Subject name, e.g. 2000, is read from the FEAT directory. This option will override that of the FEAT directory." 
     echo "                          Used to find anatomical and other data in BIDS"
     echo "    -y -S --study -study  OPTIONAL. Study path. Default is /Users/Shared/10_Connectivity" 
     echo "                          Syntax: if full path is /Users/Shared/10_Connectivity/10_2000/pipeline7.4.0, STUDYPATH is /Users/Shared/10_Connectivity"  
-    echo " "
-    echo "  Everything below here is OPTIONAL. Defaults to BIDS based on sub/study info"
+    echo "
 
     #START240417
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
@@ -146,6 +148,12 @@ if [ -z "${FEATDIR}" ];then
     exit
 fi
 
+# Ben update 240521 to handle either full path or relative file
+if [[ $FEATDIR == *".feat" ]];then # if ends in .feat, reduces it to relative file
+    DIRTEMP=${FEATDIR##*/} #everything after the last /
+    FEATDIR=${DIRTEMP%%.*} #everthing before the last .
+fi
+
 echo "FEATDIR=$FEATDIR"
 
 if [ -z "${SUBJECT}" ];then
@@ -269,7 +277,7 @@ fi
 #REGSTD=${SUBJDIR}/model/${ANALYSISNAME}.feat/reg
 THEDATE=`date +%y%m%d_%H%M`
 if [[ -d "$OUTDIR" ]];then
-    echo "storing ${OUTDIR} as ${THEDATE}"
+    echo "Reg already found in ${FEATDIR}. Backing up old ${OUTDIR} as ${THEDATE}"
     mv ${OUTDIR} ${OUTDIR}_${THEDATE}
     #mkdir -p ${OUTDIR}_${THEDATE}
     #mv ${OUTDIR}/ ${OUTDIR}_${THEDATE}/
