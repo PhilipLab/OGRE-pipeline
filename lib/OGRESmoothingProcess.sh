@@ -12,7 +12,7 @@ get_batch_options() {
     unset command_line_specified_paradigm_hp_sec
     unset command_line_specified_TR
     #unset command_line_specified_SmoothFolder
-    unset command_line_specified_EnvironmentScript
+    #unset command_line_specified_EnvironmentScript
 
     local index=0
     local numArgs=${#arguments[@]}
@@ -73,43 +73,76 @@ else
     echo "Need to specify --fwhm"
     exit
 fi
+
+
+#START240521
+#if [ -n "${command_line_specified_paradigm_hp_sec}" ]; then
+#    #PARADIGM_HP_SEC=($command_line_specified_paradigm_hp_sec)
+#    PARADIGM_HP_SEC=$command_line_specified_paradigm_hp_sec
+#else
+#    echo "Need to specify --paradigm_hp_sec"
+#    exit
+#fi
+
+
 if [ -n "${command_line_specified_paradigm_hp_sec}" ]; then
-    #PARADIGM_HP_SEC=($command_line_specified_paradigm_hp_sec)
     PARADIGM_HP_SEC=$command_line_specified_paradigm_hp_sec
-else
-    echo "Need to specify --paradigm_hp_sec"
-    exit
+    if [ -n "${command_line_specified_TR}" ]; then
+        TR=($command_line_specified_TR)
+
+        #START240521
+        if((${#fMRITimeSeriesResults[@]}!=${#TR[@]}));then
+            echo "fMRITimeSeriesResults has ${#fMRITimeSeriesResults[@]} elements, but TR has ${#TR[@]} elements. Must be equal. Abort!"
+            exit
+        fi
+
+    else
+        #echo "Need to specify --TR"
+        #exit
+        #START240521
+        echo "--TR not provided. Will look for it in the json files."
+    fi
 fi
-if [ -n "${command_line_specified_TR}" ]; then
-    TR=($command_line_specified_TR)
-else
-    echo "Need to specify --TR"
-    exit
-fi
+
+
 #if [ -n "${command_line_specified_EnvironmentScript}" ]; then
 #    EnvironmentScript=$command_line_specified_EnvironmentScript
 #else
 #    echo "Need to specify --EnvironmentScript"
 #    exit
 #fi
-if((${#fMRITimeSeriesResults[@]}!=${#TR[@]}));then
-    echo "fMRITimeSeriesResults has ${#fMRITimeSeriesResults[@]} elements, but TR has ${#TR[@]} elements. Must be equal. Abort!"
-    exit
-fi
-
+#if((${#fMRITimeSeriesResults[@]}!=${#TR[@]}));then
+#    echo "fMRITimeSeriesResults has ${#fMRITimeSeriesResults[@]} elements, but TR has ${#TR[@]} elements. Must be equal. Abort!"
+#    exit
+#fi
 #if [ -n "${command_line_specified_SmoothFolder}" ]; then
 #    SmoothFolder=${command_line_specified_SmoothFolder}/
 #else
 #    SmoothFolder=
 #fi
-
 #source $EnvironmentScript
 
 for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
 
     if [ ! -f "${fMRITimeSeriesResults[i]}" ];then
-        echo ${fMRITimeSeriesResults[i]} not found.
+        echo ${fMRITimeSeriesResults[i]} not found
         continue
+    fi
+
+    #START240521
+    if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
+        if [ -n "${command_line_specified_TR}" ];then
+            TR0=${TR[i]}
+        else
+            echo "here0" 
+            json=${fMRITimeSeriesResults[i]%%.*}.json
+            if [ ! -f $json ];then
+                echo " $json not found"
+                continue
+            fi
+            IFS=$' ,' read -ra line0 < <( grep RepetitionTime $json )
+            TR0=${line0[1]}
+        fi
     fi
 
 
@@ -191,14 +224,21 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -Tmean ${sd0}/tempMean
 
         #/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -bptf 45.4545454545 -1 -add tempMean prefiltered_func_data_tempfilt
-        bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR[i]})" | bc))
-        declare -p bptf 
-        #${FSLDIR}/bin/fslmaths prefiltered_func_data_intnorm -bptf ${bptf} -1 -add tempMean prefiltered_func_data_tempfilt
-        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN${FWHM[j]}mmHPTF${PARADIGM_HP_SEC}s 
-        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_SUSAN-${FWHM[j]}_filt-${PARADIGM_HP_SEC}
-        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${root0}_susan-${FWHM[j]}mm_hpf-${PARADIGM_HP_SEC}s_bold
-        out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
-        ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
+        #bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR[i]})" | bc))
+        #declare -p bptf 
+        #out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
+        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
+        #START240521
+        if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
+            bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR0})" | bc))
+            declare -p bptf 
+            out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
+            ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
+        else
+            out0=${root0}_susan-${FWHM[j]}mm_bold
+            ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -add ${sd0}/tempMean ${out0}
+        fi
+
         echo "Output written to ${out0}"
     done
 
