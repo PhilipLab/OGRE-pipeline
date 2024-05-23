@@ -9,10 +9,10 @@ ATLAS=2
 [ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.1
 
 helpmsg(){
-    echo "Required: ${root0} <Feat directory>, via one of these two:"
-    echo "    -f --feat -feat       Feat directory. If no option provided, then assumed to be the FEAT directory."
-    echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.0/sub-1001_RHflip_susan-6_run-1.feat/"
-    echo "                          If it doesn't end in .feat, will treat it as relative path (e.g. sub-1001_RHflip_susan-6_run-1)
+    echo "Required: ${root0} <Feat directory>:"
+    echo "    -f --feat -feat       Feat directory. If no -option provided, then input is assumed to be this."
+    echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.1/sub-1001_RHflip_susan-6_run-1.feat/"
+    echo "                          If input doesn't end in .feat, will treat it as relative path in current directory (e.g. sub-1001_RHflip_susan-6_run-1)
     echo " "
     echo "  Everything below here is OPTIONAL. Defaults to BIDS based on sub/study info"
     echo "    -s --sub -sub         Subject name, e.g. 2000, is read from the FEAT directory. This option will override that of the FEAT directory." 
