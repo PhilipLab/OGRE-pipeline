@@ -262,7 +262,34 @@ class Scans:
     #    if args.paradigm_hp_sec: f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}"\n')
     #    f0.write('done\n\n')
     #START240521
+    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
+    #    boldtask = [self.bold[j] for j in self.taskidx]
+    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
+    #    f0.write('BOLD=(\\\n')
+    #    for j in range(len(bold_bash)-1):
+    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
+    #        f0.write(f'    {str0} \\\n')
+    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
+    #    f0.write(f'    {str0})\n')
+    #    f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
+    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
+    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
+    #    f0.write('    ${SMOOTH} \\\n')
+    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
+    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
+    #    if args.paradigm_hp_sec:
+    #        f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
+    #        f0.write('        --TR="${TR[i]}" \n')
+    #    f0.write('done\n\n')
+    #START240522
     def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
+        f0.write("# --TR= is only needed for high pass filtering --paradigm_hp_sec\n")
+        f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR= can be omitted.\n")
+        f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
+        f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+        f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6 --paradigm_hp_sec=60\n")
+        f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
+        f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n\n")
         boldtask = [self.bold[j] for j in self.taskidx]
         bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
         f0.write('BOLD=(\\\n')
