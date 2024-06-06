@@ -1,6 +1,6 @@
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run1_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run1_RH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run2_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run2_RH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run3_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/run3_RH_susan6.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_task-drawLH_run-1.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_task-drawRH_run-1.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_task-drawLH_run-2.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_task-drawRH_run-2.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_task-drawLH_run-3.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_task-drawRH_run-3.fsf

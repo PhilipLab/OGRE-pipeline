@@ -63,7 +63,7 @@ helpmsg(){
     echo "    -DL --DL --DATELONG -DATELONG --datelong -datelong"
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
     echo "    -r  --hires"
-    echo "        Resolution. Should match that for the sturctural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
+    echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
     echo "    -b --batchscript -batchscript"
     echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."

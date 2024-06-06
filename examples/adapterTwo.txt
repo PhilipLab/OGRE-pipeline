@@ -1,3 +1,3 @@
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/L2_LH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/L2_RH_susan6.fsf
-/Users/Shared/10_Connectivity/10_2017/pipeline7.3.2/model/L2_AH_susan6.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_level-2_task-drawLH_model-OGRE.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_level-2_task-drawRH_model-OGRE.fsf
+/Users/Shared/10_Connectivity/derivatives/analysis/sub-2025/sub-2025_model-OGRE/sub-2025_level-2_task-drawAH_model-OGRE.fsf
