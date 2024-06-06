@@ -109,9 +109,9 @@ class Scans:
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
             exit()
-        #print(f'self.fmap={self.fmap}')
+        print(f'self.fmap={self.fmap}')
         #print(f'self.sbref={self.sbref}')
-        #print(f'self.bold={self.bold}')
+        print(f'self.bold={self.bold}')
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
@@ -875,6 +875,10 @@ if __name__ == "__main__":
         if not args.lcfeatadapter:
             par = Par(len(scans.bold),int(len(scans.fmap)))
             par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
+
+            print(f'par.fmapnegidx={par.fmapnegidx}')
+            print(f'par.fmapposidx={par.fmapposidx}')
+
             if not args.lcsmoothonly and not args.lct1copymaskonly: 
                 par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
                 fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created

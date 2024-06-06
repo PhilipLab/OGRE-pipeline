@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+
+#https://realpython.com/python-import/
+#https://www.geeksforgeeks.org/python-import-module-from-different-directory/
+
 import argparse
 import sys
 
