@@ -115,11 +115,8 @@ class Scans:
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
-    #def write_copy_script(self,file,pathstr,fwhm,paradigm_hp_sec):
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec):
         with open(file,'w') as f0:
-
-            bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
 
             f0.write(f'{SHEBANG}\nset -e\n\n')          
             f0.write(f'FREESURFVER={FREESURFVER}\n\n')
@@ -127,27 +124,23 @@ class Scans:
 
             f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
 
-            f0.write('BOLD=(\\\n')
-            for j in range(len(bold_bash)-1):
-                str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-                f0.write(f'    {str0} \\\n')
-            str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-            f0.write(f'    {str0})\n\n')
+            #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
+            #f0.write('BOLD=(\\\n')
+            #for j in range(len(bold_bash)-1):
+            #    str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
+            #    f0.write(f'    {str0} \\\n')
+            #str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
+            #f0.write(f'    {str0})\n\n')
+            #START240607
+            self.write_bold_bash(f0,s0,self.bold)
 
             f0.write('for i in ${BOLD[@]};do\n')
-
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
-            #f0.write('    file=${sf0}/Results/${i}/${i}.nii.gz\n')
-
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-
-            #f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
-            #START240509
             f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
-
             f0.write('done\n\n')
 
             f0.write('for i in ${BOLD[@]};do\n')
@@ -180,108 +173,6 @@ class Scans:
             f0.write('    cp -f -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
             f0.write('done\n')
 
-            """
-            if fwhm: 
-                f0.write('\nTASK_BOLD=(\\\n')
-                for j in range(len(self.taskidx)-1):
-                    str0 = pathlib.Path(bold_bash[self.taskidx[j]]).name.split('.nii')[0]
-                    f0.write(f'    {str0} \\\n')
-                str0 = pathlib.Path(bold_bash[self.taskidx[j+1]]).name.split('.nii')[0]
-                f0.write(f'    {str0})\n\n')
-
-                if paradigm_hp_sec: 
-                    f0.write(f'paradigm_hp_sec={paradigm_hp_sec}\n')
-
-                    #f0.write('PSTR_OGRE=HPTF${paradigm_hp_sec}s\n')
-                    #f0.write('PSTR_BIDS=_filt-${paradigm_hp_sec}\n')
-                    f0.write('PSTR=_hpf-${paradigm_hp_sec}s\n')
-
-                else:
-                    #f0.write('PSTR_OGRE=;PSTR_BIDS=\n')
-                    f0.write('PSTRE=\n')
-
-                f0.write(f'fwhm=({' '.join(fwhm)})\n')
-
-                f0.write('for i in ${TASK_BOLD[@]};do\n')
-                f0.write('    for j in ${fwhm[@]};do\n')
-
-                f0.write('        file=${sf0}/MNINonLinear/Results/${i}/${i}_SUSAN${j}mm${PSTR_OGRE}.nii.gz\n')
-                #f0.write('        file=${sf0}/Results/${i}/${i}_susan-${j}mm${PSTR}_bold.nii.gz\n')
-
-                f0.write('        if [ ! -f "${file}" ];then\n')
-                f0.write('            echo ${file} not found.\n')
-                f0.write('            continue\n')
-                f0.write('        fi\n')
-
-                #f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
-                f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_susan-${j}mm${PSTR}_bold.nii.gz\n')
-
-                f0.write('    done\n')
-                f0.write('done\n')
-            """
-
-
-    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-    #    f0.write('BOLD=(\\\n')
-    #    for j in range(len(bold_bash)-1):
-    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-    #        f0.write(f'    {str0} \\\n')
-    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-    #    f0.write(f'    {str0})\n')
-    #    f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-    #    f0.write('    if [ ! -f "${file}" ];then\n')
-    #    f0.write('        echo ${file} not found.\n')
-    #    f0.write('        continue\n')
-    #    f0.write('    fi\n\n')
-    #    f0.write('    ${SMOOTH} \\\n')
-    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-    #    if args.paradigm_hp_sec:
-    #        f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-    #        f0.write('        --TR="${TR[i]}" \n')
-    #    f0.write('done\n\n')
-    #START240521 KEEP
-    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-    #    f0.write('BOLD=(\\\n')
-    #    for j in range(len(bold_bash)-1):
-    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-    #        f0.write(f'    {str0} \\\n')
-    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-    #    f0.write(f'    {str0})\n')
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-    #    f0.write('    ${SMOOTH} \\\n')
-    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-    #    if args.paradigm_hp_sec: f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}"\n')
-    #    f0.write('done\n\n')
-    #START240521
-    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-    #    f0.write('BOLD=(\\\n')
-    #    for j in range(len(bold_bash)-1):
-    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-    #        f0.write(f'    {str0} \\\n')
-    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-    #    f0.write(f'    {str0})\n')
-    #    f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-    #    f0.write('    ${SMOOTH} \\\n')
-    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-    #    if args.paradigm_hp_sec:
-    #        f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-    #        f0.write('        --TR="${TR[i]}" \n')
-    #    f0.write('done\n\n')
-    #START240522
     def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
         f0.write("# --TR= is only needed for high pass filtering --paradigm_hp_sec\n")
         f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR= can be omitted.\n")
@@ -291,12 +182,16 @@ class Scans:
         f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
         f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n\n")
         boldtask = [self.bold[j] for j in self.taskidx]
-        bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-        f0.write('BOLD=(\\\n')
-        for j in range(len(bold_bash)-1):
-            str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-            f0.write(f'    {str0} \\\n')
-        str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
+
+        #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
+        #f0.write('BOLD=(\\\n')
+        #for j in range(len(bold_bash)-1):
+        #    str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
+        #    f0.write(f'    {str0} \\\n')
+        #str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
+        #START240607
+        self.write_bold_bash(f0,s0,boldtask)
+
         f0.write(f'    {str0})\n')
         f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
@@ -309,7 +204,15 @@ class Scans:
             f0.write('        --TR="${TR[i]}" \n')
         f0.write('done\n\n')
 
-
+    #START240607
+    def write_bold_bash(self,f0,s0,bolds):
+        bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
+        f0.write('BOLD=(\\\n')
+        for j in range(len(bold_bash)-1):
+            str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
+            f0.write(f'    {str0} \\\n')
+        str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
+        f0.write(f'    {str0})\n')
 
 
 
@@ -859,6 +762,9 @@ if __name__ == "__main__":
             F2name = '${s0}_bidscp' + datestr + '.sh'
         F0name = '${s0}_' + l0 + datestr + '.sh'
 
+        #START240607
+        Fclean = stem0 + '_cleanup' + datestr + '.sh'
+
         if args.bs:
             str0 = stem0 + '_OGREbatch' + datestr
             bs0 = str0 + '.sh'
@@ -886,20 +792,15 @@ if __name__ == "__main__":
         with ExitStack() as fs:
             F0f = [fs.enter_context(open(fn, "w")) for fn in F0]
             F1f = fs.enter_context(open(F1, "w"))
-            
-            #START240221
             if args.bs: 
                 bs0f = fs.enter_context(open(bs0, mode0))
                 bs1f = fs.enter_context(open(bs1, "w"))
+      
+            #START240607
+            Fcleanf = fs.enter_context(open(Fclean, "w"))
+
 
             for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
-            #F1f.write(f'{SHEBANG}\nset -e\n\n')          
-
-            #START240221
-            #if args.bs: 
-            #    #if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
-            #    ##bs1f.write(f'{SHEBANG}\nset -e\n\n')
-            #    #bs1f.write(f'{SHEBANG}\n\n')
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -996,7 +897,10 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
+                #if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
+                #START240607
+                if scans.taskidx and not args.lct1copymaskonly: 
+
                     scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
 
                     #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
@@ -1025,12 +929,6 @@ if __name__ == "__main__":
 
             #if not os.path.isfile(F0[0]):
             if not pathlib.Path(F0[0]).is_file():
-
-                #for j in F0: _=run_cmd(f'rm -f {j}')
-                #_=run_cmd(f'rm -f {F1}')
-                #if not args.lcnobidscopy: _=run_cmd(f'rm -f {F2}')
-                #if arg.bs: _=run_cmd(f'rm -f {bs0}')
-                #START240515
                 for j in F0: pathlib.Path.unlink(j) 
                 pathlib.Path.unlink(F1)
                 if not args.lcnobidscopy: pathlib.Path.unlink(F2) 
@@ -1080,6 +978,20 @@ if __name__ == "__main__":
                     print(f'    Output written to {bs1}')
 
                     if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
+
+                #START240607
+                Fcleanf.write(f'{SHEBANG}\n\n')
+                Fcleanf.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
+                #Fcleanf.write('rm -rf ${sf0}/*/\n')
+                Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
+                Fcleanf.write('rm -rf ${sf0}/T1w\n')
+                Fcleanf.write('rm -rf ${sf0}/T2w\n')
+                scans.write_bold_bash(Fcleanf,s0,scans.bold)
+                Fcleanf.write('for i in ${BOLD[@]};do\n')
+                Fcleanf.write('    rm -rf ${sf0}/${i}\n')
+                Fcleanf.write('done\n\n')
+                _=run_cmd(f'chmod +x {Fclean}')
+                print(f'    Output written to {Fclean}')
 
 
     if 'batchscriptf' in locals(): 
