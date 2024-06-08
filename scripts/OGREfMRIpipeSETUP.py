@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
-import os
-import subprocess
-import pathlib
-from datetime import datetime
-import json
-import re
-import glob
+#import os
+#import subprocess
+#import pathlib
+#import json
+#import re
+#import glob
 
 #**** default global variables **** 
 
@@ -69,359 +68,6 @@ def open_files(filenames,mode):
         return files
 
 
-class Scans:
-    def __init__(self,file):
-        self.fmap = []
-        self.sbref = []
-        self.bold = [] 
-        self.taskidx = []
-        self.restidx = []
-
-        with open(file,encoding="utf8",errors='ignore') as f0:
-            i,j = 0,0
-            for line0 in f0:
-                i+=1
-                if not line0.strip() or line0.startswith('#'): continue
-                #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
-                line1 = re.findall(r'[^,\s]+', line0)
-                #print(line1[1])
-                file0 = line1[1] + '.nii.gz'
-                #if not os.path.isfile(file0):
-                if not pathlib.Path(file0).is_file():
-                    print(f'Error: {file0} does not exist. Please place a # at the beginning of line {i}')
-                    exit()
-
-                line2=file0.split('/')
-                if line2[-2] == 'fmap':
-                    if line2[-1].find('dbsi') == -1:
-                        self.fmap.append(file0)
-                elif line2[-2] == 'func':
-                    if line2[-1].find('sbref') != -1:
-                        self.sbref.append((file0,int(len(self.fmap)/2-1)))
-                    else:
-                        self.bold.append((file0,int(len(self.fmap)/2-1)))
-                        if line2[-1].find('task-rest') != -1:
-                            self.restidx.append(j)
-                        else:
-                            self.taskidx.append(j)
-                        j+=1
-
-        if len(self.sbref) != len(self.bold):
-            print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
-            exit()
-        print(f'self.fmap={self.fmap}')
-        #print(f'self.sbref={self.sbref}')
-        print(f'self.bold={self.bold}')
-        #print(f'self.taskidx={self.taskidx}')
-        #print(f'self.restidx={self.restidx}')
-
-    #def write_copy_script(self,file,pathstr,fwhm,paradigm_hp_sec):
-    def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec):
-        with open(file,'w') as f0:
-
-            bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
-
-            f0.write(f'{SHEBANG}\nset -e\n\n')          
-            f0.write(f'FREESURFVER={FREESURFVER}\n\n')
-            f0.write(pathstr+'\n') # s0, bids and sf0
-
-            f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
-
-            f0.write('BOLD=(\\\n')
-            for j in range(len(bold_bash)-1):
-                str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-                f0.write(f'    {str0} \\\n')
-            str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-            f0.write(f'    {str0})\n\n')
-
-            f0.write('for i in ${BOLD[@]};do\n')
-
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
-            #f0.write('    file=${sf0}/Results/${i}/${i}.nii.gz\n')
-
-            f0.write('    if [ ! -f "${file}" ];then\n')
-            f0.write('        echo ${file} not found.\n')
-            f0.write('        continue\n')
-            f0.write('    fi\n')
-
-            #f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE.nii.gz\n')
-            #START240509
-            f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
-
-            f0.write('done\n\n')
-
-            f0.write('for i in ${BOLD[@]};do\n')
-
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
-            #f0.write('    file=${sf0}/Results/${i}/brainmask_fs.2.nii.gz\n')
-
-            f0.write('    if [ ! -f "${file}" ];then\n')
-            f0.write('        echo ${file} not found.\n')
-            f0.write('        continue\n')
-            f0.write('    fi\n')
-            #f0.write('    cp -f -p $file ${bids}/func/${i}_OGRE_brainmask-2.nii.gz\n')
-            #START240509
-            f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
-
-            f0.write('done\n\n')
-
-            f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-
-            #f0.write('OUT=(T1w_restore_OGRE T1w_restore_OGRE_brain T2w_restore_OGRE T2w_restore_OGRE_brain)\n')
-            #START240509
-            f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
-
-            f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
-            f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
-            f0.write('    if [ ! -f "${file}" ];then\n')
-            f0.write('        echo ${file} not found.\n')
-            f0.write('        continue\n')
-            f0.write('    fi\n')
-            f0.write('    cp -f -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
-            f0.write('done\n')
-
-            """
-            if fwhm: 
-                f0.write('\nTASK_BOLD=(\\\n')
-                for j in range(len(self.taskidx)-1):
-                    str0 = pathlib.Path(bold_bash[self.taskidx[j]]).name.split('.nii')[0]
-                    f0.write(f'    {str0} \\\n')
-                str0 = pathlib.Path(bold_bash[self.taskidx[j+1]]).name.split('.nii')[0]
-                f0.write(f'    {str0})\n\n')
-
-                if paradigm_hp_sec: 
-                    f0.write(f'paradigm_hp_sec={paradigm_hp_sec}\n')
-
-                    #f0.write('PSTR_OGRE=HPTF${paradigm_hp_sec}s\n')
-                    #f0.write('PSTR_BIDS=_filt-${paradigm_hp_sec}\n')
-                    f0.write('PSTR=_hpf-${paradigm_hp_sec}s\n')
-
-                else:
-                    #f0.write('PSTR_OGRE=;PSTR_BIDS=\n')
-                    f0.write('PSTRE=\n')
-
-                f0.write(f'fwhm=({' '.join(fwhm)})\n')
-
-                f0.write('for i in ${TASK_BOLD[@]};do\n')
-                f0.write('    for j in ${fwhm[@]};do\n')
-
-                f0.write('        file=${sf0}/MNINonLinear/Results/${i}/${i}_SUSAN${j}mm${PSTR_OGRE}.nii.gz\n')
-                #f0.write('        file=${sf0}/Results/${i}/${i}_susan-${j}mm${PSTR}_bold.nii.gz\n')
-
-                f0.write('        if [ ! -f "${file}" ];then\n')
-                f0.write('            echo ${file} not found.\n')
-                f0.write('            continue\n')
-                f0.write('        fi\n')
-
-                #f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_SUSAN-${j}${PSTR_BIDS}.nii.gz\n')
-                f0.write('        cp -f -p $file ${bids}/func/${i}_OGRE_susan-${j}mm${PSTR}_bold.nii.gz\n')
-
-                f0.write('    done\n')
-                f0.write('done\n')
-            """
-
-
-    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-    #    f0.write('BOLD=(\\\n')
-    #    for j in range(len(bold_bash)-1):
-    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-    #        f0.write(f'    {str0} \\\n')
-    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-    #    f0.write(f'    {str0})\n')
-    #    f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-    #    f0.write('    if [ ! -f "${file}" ];then\n')
-    #    f0.write('        echo ${file} not found.\n')
-    #    f0.write('        continue\n')
-    #    f0.write('    fi\n\n')
-    #    f0.write('    ${SMOOTH} \\\n')
-    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-    #    if args.paradigm_hp_sec:
-    #        f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-    #        f0.write('        --TR="${TR[i]}" \n')
-    #    f0.write('done\n\n')
-    #START240521 KEEP
-    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-    #    f0.write('BOLD=(\\\n')
-    #    for j in range(len(bold_bash)-1):
-    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-    #        f0.write(f'    {str0} \\\n')
-    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-    #    f0.write(f'    {str0})\n')
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-    #    f0.write('    ${SMOOTH} \\\n')
-    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-    #    if args.paradigm_hp_sec: f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}"\n')
-    #    f0.write('done\n\n')
-    #START240521
-    #def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-    #    f0.write('BOLD=(\\\n')
-    #    for j in range(len(bold_bash)-1):
-    #        str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-    #        f0.write(f'    {str0} \\\n')
-    #    str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-    #    f0.write(f'    {str0})\n')
-    #    f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-    #    f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-    #    f0.write('    ${SMOOTH} \\\n')
-    #    f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-    #    if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-    #    if args.paradigm_hp_sec:
-    #        f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-    #        f0.write('        --TR="${TR[i]}" \n')
-    #    f0.write('done\n\n')
-    #START240522
-    def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
-        f0.write("# --TR= is only needed for high pass filtering --paradigm_hp_sec\n")
-        f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR= can be omitted.\n")
-        f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
-        f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-        f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6 --paradigm_hp_sec=60\n")
-        f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
-        f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n\n")
-        boldtask = [self.bold[j] for j in self.taskidx]
-        bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-        f0.write('BOLD=(\\\n')
-        for j in range(len(bold_bash)-1):
-            str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-            f0.write(f'    {str0} \\\n')
-        str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-        f0.write(f'    {str0})\n')
-        f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
-        f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
-        f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
-        f0.write('    ${SMOOTH} \\\n')
-        f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-        if args.fwhm: f0.write(f'        --fwhm="{' '.join(args.fwhm)}" \\\n')
-        if args.paradigm_hp_sec:
-            f0.write(f'        --paradigm_hp_sec="{args.paradigm_hp_sec}" \\\n')
-            f0.write('        --TR="${TR[i]}" \n')
-        f0.write('done\n\n')
-
-
-
-
-
-
-
-
-
-#        bSBRef,ped,dim = check_phase_dims(list(zip(*bold2))[0],list(zip(*SBRef2))[0])
-#        bfmap,ped_fmap,dim_fmap = check_phase_dims_fmap(fmap[0::2],fmap[1::2])
-#        bbold_fmap = check_ped_dims(bold2,ped,dim,bfmap,ped_fmap,dim_fmap,fmap[0::2])
-class Par:
-    def __init__(self,lenbold,lenfmap0):
-        self.bsbref = [False]*lenbold
-        self.ped = []
-        self.dim = []
-        self.bfmap = [False]*int(lenfmap0/2)
-        self.ped_fmap = []
-        self.dim_fmap = []
-        self.bbold_fmap = []
-
-        #START240207 
-        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
-        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
-
-    def check_phase_dims(self,bold,sbref):
-        for j in range(len(bold)):
-            self.ped.append(get_phase(bold[j]))
-            ped0 = get_phase(sbref[j])
-
-            if ped0 != self.ped[j]:
-                print(f'    ERROR: {bold[j]} {self.ped[j]}')
-                print(f'    ERROR: {sbref[j]} {ped0}')
-                print(f'           Phases should be the same. Will not use this SBRef.')
-                continue
-
-            self.dim.append(get_dim(bold[j]))
-            dim0 = get_dim(sbref[j])
-    
-            if dim0 != self.dim[j]:
-                print(f'    ERROR: {bold[j]} {self.dim[j]}')
-                print(f'    ERROR: {sbref[j]} {dim0}')
-                print(f'           Dimensions should be the same. Will not use this SBRef.')
-                continue
-
-            self.bsbref[j]=True
-
-        #print(f'bsbref={self.bsbref}')
-        #print(f'ped={self.ped}')
-        #print(f'dim={self.dim}')
-
-    def check_phase_dims_fmap(self,fmap0,fmap1):
-        for j in range(len(fmap0)):
-            self.ped_fmap.append(get_phase(fmap0[j]))
-            ped0 = get_phase(fmap1[j])
-
-            #print(f'ped0[0]={ped0[0]}')
-
-            if ped0[0] != self.ped_fmap[j][0]:
-                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j][0]}')
-                print(f'    ERROR: {fmap1[j]} {ped0[0]}')
-                print(f'           Fieldmap encoding direction must be the same!')
-                continue
-            if ped0 == self.ped_fmap[j]:
-                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j]}')
-                print(f'    ERROR: {fmap1[j]} {ped0}')
-                print(f'           Fieldmap phases must be opposite!')
-                continue
-
-            self.dim_fmap.append(get_dim(fmap0[j]))
-            dim0 = get_dim(fmap1[j])
-
-            if dim0 != self.dim_fmap[j]:
-                print(f'    ERROR: {fmap0[j]} {self.dim_fmap[j]}')
-                print(f'    ERROR: {fmap1[j]} {dim0}')
-                print(f'           Dimensions must be the same. Will not use these fieldmaps.')
-                continue
-
-            self.bfmap[j]=True
-            if self.ped_fmap[j][1] == '+': 
-                self.fmapnegidx[j]=1
-                self.fmapposidx[j]=0
-
-        #print(f'bfmap={self.bfmap}')
-        #print(f'ped_fmap={self.ped_fmap}')
-        #print(f'dim_fmap={self.dim_fmap}')
-
-    def check_ped_dims(self,bold,fmap):
-        self.bbold_fmap=[False]*len(self.ped)
-        if any(self.bfmap):
-            for j in range(len(self.ped)):
-                if self.bfmap[bold[j][1]]:
-                    if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
-                        print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
-                        print(f'    ERROR: {fmap[bold[j][1]*2]} {self.ped_fmap[bold[j][1]][0]}')
-                        print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
-                        continue
-                    if self.dim[j] != self.dim_fmap[bold[j][1]]:
-                        print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
-                        print(f'    ERROR: {fmap[bold[j][1]*2]} {self.dim_fmap[bold[j][1]]}')
-                        print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
-                        ynq = input('    Would like to resample the field maps? y, n, q').casefold()
-                        if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
-                        if ynq=='n' or ynq=='no': continue
-                        for i in bold[j][1]*2,bold[j][1]*2+1:
-                            fmap0 = pathlib.Path(fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-                            junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
-                            self.dim_fmap[bold[j][1]] = self.dim[j]
-                            fmap[j] = fmap0
-                    self.bbold_fmap[j]=True
-        #print(f'bbold_fmap={self.bbold_fmap}')
-
-
 def run_cmd(cmd):
     return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
     #START240515
@@ -441,27 +87,6 @@ def run_cmd(cmd):
     #    exit() 
     #return subprocess.STDOUT 
 
-def get_phase(file):
-    jsonf = file.split('.')[0] + '.json'
-    #if not os.path.isfile(jsonf):
-    if not pathlib.Path(jsonf).is_file():
-        print(f'    ERROR: {jsonf} does not exist. Abort!')
-        #return 'ERROR'
-        exit()
-    #print(f'get_phase jsonf={jsonf}')
-
-    with open(jsonf,encoding="utf8",errors='ignore') as f0:
-        dict0 = json.load(f0)
-
-    #print(f"get_phase {dict0['PhaseEncodingDirection']}")
-
-    return dict0['PhaseEncodingDirection']
-
-def get_dim(file):
-    line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
-    line1=line0.split()
-    return (line1[1],line1[3],line1[5])
-
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
     #if not os.path.isfile(jsonf):
@@ -475,50 +100,6 @@ def get_TR(file):
 
     return dict0['RepetitionTime']
 
-#class Feat:
-#    def __init__(self,arg):
-#        self.outputdir = []
-#        self.fsf = []
-#        print(f'arg={arg}')
-#        for i in arg:
-#            print(f'i={i}')
-#            for j in i:
-#                print(f'j={j}')
-#                if j[-4:]=='feat':
-#                    #if os.path.isdir(j):
-#                    if pathlib.Path(j).exists():
-#                        fsf0 = glob.glob(f'{j}/*.fsf')
-#                        if fsf0:
-#                            if len(fsf0)==1:
-#                                line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-#                                self.outputdir.append(line0.split('"')[1])
-#                                self.fsf.append(fsf0)
-#                elif j[-3:]=='fsf':
-#                    line0 = run_cmd(f'grep "set fmri(outputdir)" {j}')
-#                    self.outputdir.append(line0.split('"')[1])
-#                    self.fsf.append(fsf0)
-#                else:
-#                    with open(j,encoding="utf8",errors='ignore') as f0:
-#                        for line0 in f0:
-#                            line1=line0.strip()
-#                            #print(f'line1={line1}')
-#                            if not line1 or line1.startswith('#'): continue
-#                            if line1[-4:]=='feat':
-#                                #if os.path.isdir(line0):
-#                                if pathlib.Path(line1).exists():
-#                                    fsf0 = glob.glob(f'{line1}/*.fsf')
-#                                    if fsf0:
-#                                        if len(fsf0)==1:
-#                                            line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-#                                            self.outputdir.append(line0.split('"')[1])
-#                                            self.fsf.append(fsf0)
-#                            elif line1[-3:]=='fsf':
-#                                line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
-#                                self.outputdir.append(line0.split('"')[1])
-#                                self.fsf.append(line1)
-#        #print(f'self.outputdir={self.outputdir}')
-#        #print(f'self.fsf={self.fsf}')
-#START240514
 class Feat:
     def __init__(self,arg):
         self.outputdir = []
@@ -606,13 +187,13 @@ class Feat:
         #print(f'self.outputdir={self.outputdir}')
         #print(f'self.fsf={self.fsf}')
 
-
-
-
 if __name__ == "__main__":
-    get_env_vars()
-
     import argparse
+    import pathlib
+    import sys
+    from datetime import datetime
+    import os
+
     parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be scanlist.csv files.')
@@ -731,6 +312,11 @@ if __name__ == "__main__":
     if not 'OGREDIR' in locals():
         print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
         exit()
+
+    #START240605
+    sys.path.insert(0,OGREDIR+'/lib')
+    from ScansPar import Scans,Par,run_cmd
+
 
     if not args.lcfeatadapter: 
         if not args.fwhm: 
@@ -871,9 +457,10 @@ if __name__ == "__main__":
 
             bs1 = str0 + '_fileout.sh'
 
-
         if not args.lcfeatadapter:
+
             par = Par(len(scans.bold),int(len(scans.fmap)))
+
             par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
             print(f'par.fmapnegidx={par.fmapnegidx}')
@@ -1026,6 +613,7 @@ if __name__ == "__main__":
             if args.fsf2:
                 for fn in F0f: 
                     for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+
 
             #if not os.path.isfile(F0[0]):
             if not pathlib.Path(F0[0]).is_file():
