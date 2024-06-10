@@ -1,62 +1,21 @@
 #!/usr/bin/env python3
 
-#import os
-#import subprocess
-#import pathlib
-#import json
-#import re
-#import glob
+import argparse
+import pathlib
+import sys
+from datetime import datetime
+import os
+import glob
+
+
 
 #**** default global variables **** 
-
-SHEBANG = "#!/usr/bin/env bash"
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
 P1='OGRET1w_restore.sh'
 P2='OGRESmoothingProcess.sh'
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
-
-#**** These are overwritten by their environment variables in get_env_vars ****
-#HCPDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP'
-#WBDIR='~/Documents/GitHub/OGRE-pipeline/lib/HCP/workbench-mac/bin_macosx64'
-FSLDIR='/usr/local/fsl'
-FREESURFDIR='/Applications/freesurfer'
-FREESURFVER='7.4.1'
-
-#**** These overwrite the default global variables and are overwritten in options ****
-def get_env_vars():
-    try:
-        global OGREDIR
-        OGREDIR = os.environ['OGREDIR'] 
-    except KeyError:
-        pass 
-    try:
-        global WBDIR
-        WBDIR = os.environ['WBDIR'] 
-    except KeyError:
-        pass 
-    try:
-        global HCPDIR
-        HCPDIR = os.environ['HCPDIR'] 
-    except KeyError:
-        pass 
-    try:
-        global FSLDIR
-        FSLDIR = os.environ['FSLDIR'] 
-    except KeyError:
-        pass 
-    try:
-        global FREESURFDIR
-        FREESURFDIR = os.environ['FREESURFDIR'] 
-    except KeyError:
-        pass 
-    try:
-        global FREESURFVER
-        FREESURFVER = os.environ['FREESURFVER'] 
-    except KeyError:
-        pass 
-
 
 from contextlib import ExitStack
 def open_files(filenames,mode):
@@ -66,39 +25,6 @@ def open_files(filenames,mode):
         files = [stack.enter_context(open(fname,mode)) for fname in filenames]
         stack.pop_all()
         return files
-
-
-def run_cmd(cmd):
-    return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
-    #START240515
-    #return subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
-    #print('********* here-1 ******************')
-    #try:
-    #    #out = subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
-    #    #subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
-    #    #subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, check=True, text=True).stdout.decode().strip()
-    #    print('********* here0 ******************')
-    #    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, check=True, text=True)
-    #except subprocess.CalledProcessError as e:
-    #    print('********* here1 ******************')
-    #    #print(out)
-    #    print(e.returncode)
-    #    print(e.output)
-    #    exit() 
-    #return subprocess.STDOUT 
-
-def get_TR(file):
-    jsonf = file.split('.')[0] + '.json'
-    #if not os.path.isfile(jsonf):
-    if not pathlib.Path(jsonf).is_file():
-        print(f'    ERROR: {jsonf} does not exist. Abort!')
-        #return 'ERROR'
-        exit()
-
-    with open(jsonf,encoding="utf8",errors='ignore') as f0:
-        dict0 = json.load(f0)
-
-    return dict0['RepetitionTime']
 
 class Feat:
     def __init__(self,arg):
@@ -188,11 +114,8 @@ class Feat:
         #print(f'self.fsf={self.fsf}')
 
 if __name__ == "__main__":
-    import argparse
-    import pathlib
-    import sys
-    from datetime import datetime
-    import os
+    get_env_vars()
+
 
     parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
 
@@ -298,15 +221,6 @@ if __name__ == "__main__":
     args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
 
 
-    #print(f'args.bs={args.bs}')
-    #if args.bs: 
-    #    print(f'    if args.bs')
-    #    if args.bs==True: 
-    #        print(f'    if args.bs==True')
-    #    if args.bs!=True: 
-    #        print(f'    if args.bs!=True')
-    #if not args.bs: print(f'    if not args.bs')
-    ##exit()
 
     if args.OGREDIR: OGREDIR = args.OGREDIR
     if not 'OGREDIR' in locals():
@@ -315,7 +229,7 @@ if __name__ == "__main__":
 
     #START240605
     sys.path.insert(0,OGREDIR+'/lib')
-    from ScansPar import Scans,Par,run_cmd
+    from ScansPar import Scans,Par,run_cmd,SHEBANG
 
 
     if not args.lcfeatadapter: 
@@ -445,6 +359,9 @@ if __name__ == "__main__":
             F2name = '${s0}_bidscp' + datestr + '.sh'
         F0name = '${s0}_' + l0 + datestr + '.sh'
 
+        #START240607
+        Fclean = stem0 + '_cleanup' + datestr + '.sh'
+
         if args.bs:
             str0 = stem0 + '_OGREbatch' + datestr
             bs0 = str0 + '.sh'
@@ -477,20 +394,15 @@ if __name__ == "__main__":
         with ExitStack() as fs:
             F0f = [fs.enter_context(open(fn, "w")) for fn in F0]
             F1f = fs.enter_context(open(F1, "w"))
-            
-            #START240221
             if args.bs: 
                 bs0f = fs.enter_context(open(bs0, mode0))
                 bs1f = fs.enter_context(open(bs1, "w"))
 
-            for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
-            #F1f.write(f'{SHEBANG}\nset -e\n\n')          
+            #START240607
+            Fcleanf = fs.enter_context(open(Fclean, "w"))
 
-            #START240221
-            #if args.bs: 
-            #    #if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n\n')
-            #    ##bs1f.write(f'{SHEBANG}\nset -e\n\n')
-            #    #bs1f.write(f'{SHEBANG}\n\n')
+
+            for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
@@ -587,8 +499,13 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
-                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
+
+                #if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
+                #    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
+                #START240608
+                if scans.taskidx and not args.lct1copymaskonly:
+                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,FREESURFVER)
+
 
                     #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
                     if not args.lcnobidscopy and not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
@@ -672,6 +589,21 @@ if __name__ == "__main__":
                     print(f'    Output written to {bs1}')
 
                     if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
+
+                #START240608
+                Fcleanf.write(f'{SHEBANG}\n\n')
+                Fcleanf.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
+                #Fcleanf.write('rm -rf ${sf0}/*/\n')
+                Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
+                Fcleanf.write('rm -rf ${sf0}/T1w\n')
+                Fcleanf.write('rm -rf ${sf0}/T2w\n')
+                scans.write_bold_bash(Fcleanf,s0,scans.bold)
+                Fcleanf.write('for i in ${BOLD[@]};do\n')
+                Fcleanf.write('    rm -rf ${sf0}/${i}\n')
+                Fcleanf.write('done\n\n')
+                _=run_cmd(f'chmod +x {Fclean}')
+                print(f'    Output written to {Fclean}')
+
 
 
     if 'batchscriptf' in locals(): 
