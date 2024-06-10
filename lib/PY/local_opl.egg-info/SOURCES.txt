@@ -1,0 +1,7 @@
+setup.cfg
+setup.py
+local_opl.egg-info/PKG-INFO
+local_opl.egg-info/SOURCES.txt
+local_opl.egg-info/dependency_links.txt
+local_opl.egg-info/top_level.txt
+opl/ScansPar.py
