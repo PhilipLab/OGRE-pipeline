@@ -3,48 +3,10 @@
 import re
 import pathlib
 import json
-import subprocess
 
-SHEBANG = "#!/usr/bin/env bash"
+from opl.rou import run_cmd,SHEBANG
 
-#**** These are overwritten by their environment variables in get_env_vars ****
-FSLDIR='/usr/local/fsl'
-FREESURFDIR='/Applications/freesurfer'
-FREESURFVER='7.4.1'
-
-#**** These overwrite the default global variables and are overwritten in options ****
-def get_env_vars():
-    try:
-        global OGREDIR
-        OGREDIR = os.environ['OGREDIR']
-    except KeyError:
-        pass
-    try:
-        global WBDIR
-        WBDIR = os.environ['WBDIR']
-    except KeyError:
-        pass
-    try:
-        global HCPDIR
-        HCPDIR = os.environ['HCPDIR']
-    except KeyError:
-        pass
-    try:
-        global FSLDIR
-        FSLDIR = os.environ['FSLDIR']
-    except KeyError:
-        pass
-    try:
-        global FREESURFDIR
-        FREESURFDIR = os.environ['FREESURFDIR']
-    except KeyError:
-        pass
-    try:
-        global FREESURFVER
-        FREESURFVER = os.environ['FREESURFVER']
-    except KeyError:
-        pass
-
+#SHEBANG = "#!/usr/bin/env bash"
 
 class Scans:
     def __init__(self,file):
@@ -316,25 +278,6 @@ class Par:
                     self.bbold_fmap[j]=True
         #print(f'bbold_fmap={self.bbold_fmap}')
 
-def run_cmd(cmd):
-    return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
-    #START240515
-    #return subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
-    #print('********* here-1 ******************')
-    #try:
-    #    #out = subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
-    #    #subprocess.run(cmd, capture_output=True, shell=False, check=True, text=True).stdout.decode().strip()
-    #    #subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, check=True, text=True).stdout.decode().strip()
-    #    print('********* here0 ******************')
-    #    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, check=True, text=True)
-    #except subprocess.CalledProcessError as e:
-    #    print('********* here1 ******************')
-    #    #print(out)
-    #    print(e.returncode)
-    #    print(e.output)
-    #    exit()
-    #return subprocess.STDOUT
-
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
     #if not os.path.isfile(jsonf):
@@ -347,4 +290,3 @@ def get_TR(file):
         dict0 = json.load(f0)
 
     return dict0['RepetitionTime']
-

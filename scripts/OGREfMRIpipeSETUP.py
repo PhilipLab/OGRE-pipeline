@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+from datetime import datetime
+import glob
+import os
 import pathlib
 import sys
-from datetime import datetime
-import os
-import glob
-
+import opl
 
 
 #**** default global variables **** 
@@ -114,8 +114,6 @@ class Feat:
         #print(f'self.fsf={self.fsf}')
 
 if __name__ == "__main__":
-    get_env_vars()
-
 
     parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
 
@@ -222,14 +220,36 @@ if __name__ == "__main__":
 
 
 
-    if args.OGREDIR: OGREDIR = args.OGREDIR
-    if not 'OGREDIR' in locals():
-        print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
-        exit()
+    #if args.OGREDIR: OGREDIR = args.OGREDIR
+    #if not 'OGREDIR' in locals():
+    #    print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
+    #    exit()
+    ##START240605
+    #sys.path.insert(0,OGREDIR+'/lib')
+    #from ScansPar import Scans,Par,run_cmd,SHEBANG
+    #if args.HCPDIR: HCPDIR = args.HCPDIR 
+    #if not 'HCPDIR' in locals():
+    #    HCPDIR = OGREDIR + '/lib/HCP'
+    #    print(f'HCPDIR not set. Setting it to {HCPDIR}')
+    #if not 'WBDIR' in globals():
+    #    global WBDIR
+    #    WBDIR = HCPDIR + '/lib/HCP/workbench-mac/bin_macosx64' 
+    #if args.FREESURFVER: FREESURFVER = args.FREESURFVER
+    #print(f'HCPDIR={HCPDIR}')
+    #print(f'FREESURFVER={FREESURFVER}')
+    #START240609
+    #junk = opl.Scans()
+    #dir(opl)
+    #print(f'dir(opl)={dir(opl)}')
+    #from opl import get_env_vars
 
-    #START240605
-    sys.path.insert(0,OGREDIR+'/lib')
-    from ScansPar import Scans,Par,run_cmd,SHEBANG
+    #gev = opl.rou.Envvars()
+    #gev.overwrite(args)
+    #if not gev.check(): exit()
+    #gev.assign()
+    #START2406011
+    gev = opl.rou.get_env_vars(args)
+    if not gev: exit()
 
 
     if not args.lcfeatadapter: 
@@ -239,20 +259,7 @@ if __name__ == "__main__":
             args.fwhm = sum(args.fwhm,[])
         if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
-    if args.HCPDIR: HCPDIR = args.HCPDIR 
-    if not 'HCPDIR' in locals():
-        HCPDIR = OGREDIR + '/lib/HCP'
-        print(f'HCPDIR not set. Setting it to {HCPDIR}')
 
-    if not 'WBDIR' in globals():
-        global WBDIR
-        WBDIR = HCPDIR + '/lib/HCP/workbench-mac/bin_macosx64' 
-
-
-    if args.FREESURFVER: FREESURFVER = args.FREESURFVER
-
-    #print(f'HCPDIR={HCPDIR}')
-    #print(f'FREESURFVER={FREESURFVER}')
 
     if args.fsf1: feat1 = Feat(args.fsf1)
     if args.fsf2: feat2 = Feat(args.fsf2)
@@ -317,7 +324,8 @@ if __name__ == "__main__":
         #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
         print(f'Reading {i}')
-        scans = Scans(i)
+        #scans = opl.ScansPar.Scans(i)
+        scans = opl.scans.Scans(i)
 
         #print(f'i={i}')
         #print(f'type(i)={type(i)}')
@@ -336,9 +344,11 @@ if __name__ == "__main__":
         else:
             #print(i[:idx])
 
-            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
+            #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
+            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
             bids = i[:idx] + 'derivatives/preprocessed/${s0}'
-            dir1 = bids + '/pipeline${FREESURFVER}' + args.append
+            #dir1 = bids + '/pipeline${FREESURFVER}' + args.append
+            dir1 = bids + '/pipeline${gev.FREESURFVER}' + args.append
 
             #print(f'dir0={dir0}\ndir1={dir1}')
 
@@ -376,7 +386,9 @@ if __name__ == "__main__":
 
         if not args.lcfeatadapter:
 
-            par = Par(len(scans.bold),int(len(scans.fmap)))
+            #par = Par(len(scans.bold),int(len(scans.fmap)))
+            #START240611
+            par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
 
             par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
@@ -402,22 +414,25 @@ if __name__ == "__main__":
             Fcleanf = fs.enter_context(open(Fclean, "w"))
 
 
-            for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
+            #for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
+            for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
 
             if not args.lcfeatadapter:
-                F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
-                F0f[0].write(f'export HCPDIR={HCPDIR}\n\n')
+                #F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
+                F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${gev.FREESURFDIR}/${gev.FREESURFVER}\n\n')
+                F0f[0].write(f'export HCPDIR={gev.HCPDIR}\n\n')
 
             if args.fsf1 or args.fsf2:
-                for fn in F0f: fn.write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
-            #START240509
+                #for fn in F0f: fn.write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+                for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${gev.FSLDIR}\n\n')          
             else:
                 if not args.lcfeatadapter:
                     if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
-                        F0f[0].write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+                        #F0f[0].write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+                        F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${gev.FSLDIR}\n\n')          
 
             if not args.lcfeatadapter:
-                F0f[0].write(f'export OGREDIR={OGREDIR}\n')
+                F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
                     F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
                 if not args.lcsmoothonly:
@@ -504,7 +519,7 @@ if __name__ == "__main__":
                 #    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
                 #START240608
                 if scans.taskidx and not args.lct1copymaskonly:
-                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,FREESURFVER)
+                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
 
 
                     #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
@@ -519,17 +534,15 @@ if __name__ == "__main__":
             #START240514
             if args.fsf1:
                 for fn in F0f: 
-                    for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-
-                    #for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} ${s0} '+f'{pathlib.Path(j).stem}')
-                    #START240519
+                    #for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+                    for j in feat1.fsf: fn.write('\n${gev.FSLDIR}/bin/feat '+f'{j}')
                     for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
-
                     fn.write('\n')
 
             if args.fsf2:
                 for fn in F0f: 
-                    for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+                    #for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+                    for j in feat2.fsf: fn.write('\n${gev.FSLDIR}/bin/feat '+f'{j}')
 
 
             #if not os.path.isfile(F0[0]):
@@ -547,8 +560,8 @@ if __name__ == "__main__":
 
             else:
 
-                F1f.write(f'{SHEBANG}\nset -e\n\n')
-                F1f.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                F1f.write(f'{gev.SHEBANG}\nset -e\n\n')
+                F1f.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
                 F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                 F1f.write('if [ -f "${out}" ];then\n')
                 F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
@@ -559,18 +572,18 @@ if __name__ == "__main__":
                 F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
                 for j in F0: 
-                    _=run_cmd(f'chmod +x {j}')
+                    _=opl.rou.run_cmd(f'chmod +x {j}')
                     print(f'    Output written to {j}')
-                _=run_cmd(f'chmod +x {F1}')
+                _=opl.rou.run_cmd(f'chmod +x {F1}')
                 print(f'    Output written to {F1}')
 
                 if not args.lcnobidscopy:
-                    _=run_cmd(f'chmod +x {F2}')
+                    _=opl.rou.run_cmd(f'chmod +x {F2}')
                     print(f'    Output written to {F2}')
 
                 if args.bs: 
-                    if mode0=='wt': bs0f.write(f'{SHEBANG}\nset -e\n')
-                    bs0f.write(f'\nFREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                    if mode0=='wt': bs0f.write(f'{gev.SHEBANG}\nset -e\n')
+                    bs0f.write(f'\nFREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
                     bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                     bs0f.write('if [ -f "${out}" ];then\n')
                     bs0f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
@@ -583,7 +596,7 @@ if __name__ == "__main__":
                     _=run_cmd(f'chmod +x {bs0}')
                     print(f'    Output written to {bs0}')
 
-                    bs1f.write(f'{SHEBANG}\n\n')
+                    bs1f.write(f'{gev.SHEBANG}\n\n')
                     bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
                     _=run_cmd(f'chmod +x {bs1}')
                     print(f'    Output written to {bs1}')
@@ -591,8 +604,8 @@ if __name__ == "__main__":
                     if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
 
                 #START240608
-                Fcleanf.write(f'{SHEBANG}\n\n')
-                Fcleanf.write(f'FREESURFVER={FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
+                Fcleanf.write(f'{gev.SHEBANG}\n\n')
+                Fcleanf.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
                 #Fcleanf.write('rm -rf ${sf0}/*/\n')
                 Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
                 Fcleanf.write('rm -rf ${sf0}/T1w\n')
@@ -601,7 +614,7 @@ if __name__ == "__main__":
                 Fcleanf.write('for i in ${BOLD[@]};do\n')
                 Fcleanf.write('    rm -rf ${sf0}/${i}\n')
                 Fcleanf.write('done\n\n')
-                _=run_cmd(f'chmod +x {Fclean}')
+                _=opl.rou.run_cmd(f'chmod +x {Fclean}')
                 print(f'    Output written to {Fclean}')
 
 
