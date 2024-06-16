@@ -13,6 +13,7 @@
 # https://www.geeksforgeeks.org/python-list-of-lists/
 
 import argparse
+import json
 import pathlib
 import sys
 
@@ -51,6 +52,9 @@ if __name__ == "__main__":
     args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
 
     for i in args.dat:
+
+        print(f'Reading {i}')
+
         scans = opl.scans.Scans(i)
         par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
 
@@ -61,46 +65,29 @@ if __name__ == "__main__":
         par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
         par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
-        print(f'par.fmapnegidx={par.fmapnegidx}')
-        print(f'par.fmapposidx={par.fmapposidx}')
+        #print(f'par.fmapnegidx={par.fmapnegidx}')
+        #print(f'par.fmapposidx={par.fmapposidx}')
 
         par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
         fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
         par.check_ped_dims(scans.bold,fmap)
 
-        print(i)
+        #print(i)
       
         if scans.fmap:
             if any(par.bfmap):
                 if any(par.bbold_fmap):
+
                     for i in range(len(scans.fmap)):
-                        print(f'    {scans.fmap[i]}')
-                        [print(f'        {scans.bold[par.fmap_bold[i][j]][0]}') for j in range(len(par.fmap_bold[i]))]
-
-
-"""
-        if scans.fmap:
-            if any(par.bfmap):
-                if any(par.bbold_fmap):
-                    F0f[0].write('    --SpinEchoPhaseEncodeNegative="\\\n')
-                    for j in range(len(scans.bold)-1):
-                        if par.bbold_fmap[j]:
-                            F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
-                        else:
-                            F0f[0].write('        NONE \\\n')
-                    if par.bbold_fmap[j+1]:
-                        F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}" \\\n')
-                    else:
-                        F0f[0].write('        NONE"\n')
-                    F0f[0].write('    --SpinEchoPhaseEncodePositive="\\\n')
-                    for j in range(len(scans.bold)-1):
-                        if par.bbold_fmap[j]:
-                            F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
-                        else:
-                            F0f[0].write('        NONE \\\n')
-                    if par.bbold_fmap[j+1]:
-                        F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}" \\\n')
-                    else:
-                        F0f[0].write('        NONE"\n')
-
-"""
+                        dict0 = {'PhaseEncodingDirection':par.ped_fmap[i]}
+                        #print(f'    {scans.fmap[i]}')
+                        #print(f'    {scans.fmap[i].split('.nii')[0]}.json')
+                        val=[]
+                        val += [scans.bold[par.fmap_bold[i][j]][0] for j in range(len(par.fmap_bold[i]))]
+                        #[print(f'        {j}') for j in val]
+                        dict0['IntendedFor'] = val
+                        #print(f'dict0={dict0}')
+                        jf = (f'{scans.fmap[i].split('.nii')[0]}.json')
+                        with open(jf, 'w', encoding='utf-8') as f:
+                            json.dump(dict0, f, ensure_ascii=False, indent=4)
+                        print(f'Output written to {jf}')

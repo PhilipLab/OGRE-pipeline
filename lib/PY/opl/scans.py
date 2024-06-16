@@ -48,9 +48,9 @@ class Scans:
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
             exit()
-        print(f'self.fmap={self.fmap}')
+        #print(f'self.fmap={self.fmap}')
         #print(f'self.sbref={self.sbref}')
-        print(f'self.bold={self.bold}')
+        #print(f'self.bold={self.bold}')
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
@@ -216,9 +216,9 @@ class Par:
 
             self.bsbref[j]=True
 
-        print(f'check_phase_dims bsbref={self.bsbref}')
-        print(f'check_phase_dims ped={self.ped}')
-        print(f'check_phase_dims dim={self.dim}')
+        #print(f'check_phase_dims bsbref={self.bsbref}')
+        #print(f'check_phase_dims ped={self.ped}')
+        #print(f'check_phase_dims dim={self.dim}')
 
     def check_phase_dims_fmap(self,fmap0,fmap1):
         for j in range(len(fmap0)):
@@ -270,16 +270,16 @@ class Par:
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
-        print(f'bfmap={self.bfmap}')
-        print(f'ped_fmap={self.ped_fmap}')
-        print(f'dim_fmap={self.dim_fmap}')
+        #print(f'bfmap={self.bfmap}')
+        #print(f'ped_fmap={self.ped_fmap}')
+        #print(f'dim_fmap={self.dim_fmap}')
 
     def check_ped_dims(self,bold,fmap):
         self.bbold_fmap=[False]*len(self.ped)
 
-        print(f'here0 bbold_fmap={self.bbold_fmap}')
-        print(f'here0 len(self.ped)={len(self.ped)}')
-        print(f'here0 len(fmap)={len(fmap)}')
+        #print(f'here0 bbold_fmap={self.bbold_fmap}')
+        #print(f'here0 len(self.ped)={len(self.ped)}')
+        #print(f'here0 len(fmap)={len(fmap)}')
 
 
         if any(self.bfmap):
@@ -308,8 +308,8 @@ class Par:
                     self.fmap_bold[bold[j][1]*2].append(j)
                     self.fmap_bold[bold[j][1]*2+1].append(j)
 
-        print(f'here1 bbold_fmap={self.bbold_fmap}')
-        print(f'here1 fmap_bold={self.fmap_bold}')
+        #print(f'here1 bbold_fmap={self.bbold_fmap}')
+        #print(f'here1 fmap_bold={self.fmap_bold}')
 
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
