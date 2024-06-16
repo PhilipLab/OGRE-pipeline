@@ -76,7 +76,7 @@ def txt2dict(plain_text):
 if __name__ == "__main__":
     import sys
     import argparse
-    import json
+    #import json
 
     parser=argparse.ArgumentParser(description='Convert pdf(s) to a single scanlist.csv.\nRequired: <pdf(s)> -p <protocol.csv>',formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('dat0',metavar='<pdf(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be pdfs.')
