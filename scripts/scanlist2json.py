@@ -9,9 +9,14 @@
 # python3 how to import global variables
 # https://stackoverflow.com/questions/15959534/visibility-of-global-variables-in-imported-modules
 
+# python3 list of lists
+# https://www.geeksforgeeks.org/python-list-of-lists/
+
 import argparse
+import pathlib
 import sys
-import libpy
+
+import opl 
 
 
 if __name__ == "__main__":
@@ -43,22 +48,54 @@ if __name__ == "__main__":
         args.dat=args.dat0
     else:
         exit()
-    #print(f'args.dat={args.dat}')
-
-
-    """
-    #START240605
-    sys.path.insert(0,OGREDIR+'/lib')
-    from ScansPar import Scans,Par #,run_cmd,SHEBANG
+    args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
 
     for i in args.dat:
+        scans = opl.scans.Scans(i)
+        par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
 
-        #print(f'i={i}')
-        #print(f'pathlib.Path(i).parent={pathlib.Path(i).parent}')
-        #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
+        #par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+        #fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
+        #par.check_ped_dims(scans.bold,fmap)
 
-        print(f'Reading {i}')
-        scans = Scans(i)
+        par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
+        par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
-        print(f'scans.fmap={scans.fmap}')
-    """
+        print(f'par.fmapnegidx={par.fmapnegidx}')
+        print(f'par.fmapposidx={par.fmapposidx}')
+
+        par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+        fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
+        par.check_ped_dims(scans.bold,fmap)
+
+
+
+
+
+
+"""
+        if scans.fmap:
+            if any(par.bfmap):
+                if any(par.bbold_fmap):
+                    F0f[0].write('    --SpinEchoPhaseEncodeNegative="\\\n')
+                    for j in range(len(scans.bold)-1):
+                        if par.bbold_fmap[j]:
+                            F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
+                        else:
+                            F0f[0].write('        NONE \\\n')
+                    if par.bbold_fmap[j+1]:
+                        F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}" \\\n')
+                    else:
+                        F0f[0].write('        NONE"\n')
+                    F0f[0].write('    --SpinEchoPhaseEncodePositive="\\\n')
+                    for j in range(len(scans.bold)-1):
+                        if par.bbold_fmap[j]:
+                            F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
+                        else:
+                            F0f[0].write('        NONE \\\n')
+                    if par.bbold_fmap[j+1]:
+                        F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}" \\\n')
+                    else:
+                        F0f[0].write('        NONE"\n')
+
+"""

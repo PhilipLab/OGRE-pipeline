@@ -218,39 +218,8 @@ if __name__ == "__main__":
     #args.dat = [pathlib.Path(i).resolve() for i in args.dat]
     args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
 
-
-
-    #if args.OGREDIR: OGREDIR = args.OGREDIR
-    #if not 'OGREDIR' in locals():
-    #    print('OGREDIR not set. Abort!\nBefore calling this script: export OGREDIR=<OGRE directory>\nor via an option to this script: -OGREDIR <OGRE directory>\n')
-    #    exit()
-    ##START240605
-    #sys.path.insert(0,OGREDIR+'/lib')
-    #from ScansPar import Scans,Par,run_cmd,SHEBANG
-    #if args.HCPDIR: HCPDIR = args.HCPDIR 
-    #if not 'HCPDIR' in locals():
-    #    HCPDIR = OGREDIR + '/lib/HCP'
-    #    print(f'HCPDIR not set. Setting it to {HCPDIR}')
-    #if not 'WBDIR' in globals():
-    #    global WBDIR
-    #    WBDIR = HCPDIR + '/lib/HCP/workbench-mac/bin_macosx64' 
-    #if args.FREESURFVER: FREESURFVER = args.FREESURFVER
-    #print(f'HCPDIR={HCPDIR}')
-    #print(f'FREESURFVER={FREESURFVER}')
-    #START240609
-    #junk = opl.Scans()
-    #dir(opl)
-    #print(f'dir(opl)={dir(opl)}')
-    #from opl import get_env_vars
-
-    #gev = opl.rou.Envvars()
-    #gev.overwrite(args)
-    #if not gev.check(): exit()
-    #gev.assign()
-    #START2406011
     gev = opl.rou.get_env_vars(args)
     if not gev: exit()
-
 
     if not args.lcfeatadapter: 
         if not args.fwhm: 
@@ -324,7 +293,6 @@ if __name__ == "__main__":
         #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
         print(f'Reading {i}')
-        #scans = opl.ScansPar.Scans(i)
         scans = opl.scans.Scans(i)
 
         #print(f'i={i}')
@@ -386,10 +354,7 @@ if __name__ == "__main__":
 
         if not args.lcfeatadapter:
 
-            #par = Par(len(scans.bold),int(len(scans.fmap)))
-            #START240611
             par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
-
             par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
             print(f'par.fmapnegidx={par.fmapnegidx}')

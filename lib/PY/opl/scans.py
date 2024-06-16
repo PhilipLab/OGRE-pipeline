@@ -249,12 +249,14 @@ class Par:
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
-        #print(f'bfmap={self.bfmap}')
-        #print(f'ped_fmap={self.ped_fmap}')
-        #print(f'dim_fmap={self.dim_fmap}')
+        print(f'bfmap={self.bfmap}')
+        print(f'ped_fmap={self.ped_fmap}')
+        print(f'dim_fmap={self.dim_fmap}')
 
     def check_ped_dims(self,bold,fmap):
         self.bbold_fmap=[False]*len(self.ped)
+        print(f'here0 bbold_fmap={self.bbold_fmap}')
+        print(f'here0 len(self.ped)={len(self.ped)}')
         if any(self.bfmap):
             for j in range(len(self.ped)):
                 if self.bfmap[bold[j][1]]:
@@ -274,9 +276,9 @@ class Par:
                             fmap0 = pathlib.Path(fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
                             junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
                             self.dim_fmap[bold[j][1]] = self.dim[j]
-                            fmap[j] = fmap0
+                            fmap[i] = fmap0
                     self.bbold_fmap[j]=True
-        #print(f'bbold_fmap={self.bbold_fmap}')
+        print(f'here1 bbold_fmap={self.bbold_fmap}')
 
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
