@@ -68,9 +68,14 @@ if __name__ == "__main__":
         fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
         par.check_ped_dims(scans.bold,fmap)
 
-
-
-
+        print(i)
+      
+        if scans.fmap:
+            if any(par.bfmap):
+                if any(par.bbold_fmap):
+                    for i in range(len(scans.fmap)):
+                        print(f'    {scans.fmap[i]}')
+                        [print(f'        {scans.bold[par.fmap_bold[i][j]][0]}') for j in range(len(par.fmap_bold[i]))]
 
 
 """

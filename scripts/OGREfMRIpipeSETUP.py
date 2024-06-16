@@ -357,8 +357,8 @@ if __name__ == "__main__":
             par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
             par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
-            print(f'par.fmapnegidx={par.fmapnegidx}')
-            print(f'par.fmapposidx={par.fmapposidx}')
+            #print(f'par.fmapnegidx={par.fmapnegidx}')
+            #print(f'par.fmapposidx={par.fmapposidx}')
 
             if not args.lcsmoothonly and not args.lct1copymaskonly: 
                 par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])

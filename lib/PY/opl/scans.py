@@ -168,6 +168,9 @@ class Par:
         self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
         self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
 
+        #START240615
+        self.fmap_bold = [ [] for i in range(lenfmap0)] 
+
     def __get_phase(self,file):
 
         jsonf = file.split('.')[0] + '.json'
@@ -220,18 +223,32 @@ class Par:
     def check_phase_dims_fmap(self,fmap0,fmap1):
         for j in range(len(fmap0)):
             self.ped_fmap.append(self.__get_phase(fmap0[j]))
-            ped0 = self.__get_phase(fmap1[j])
 
-            #print(f'ped0[0]={ped0[0]}')
+            #ped0 = self.__get_phase(fmap1[j])
+            #START240615
+            self.ped_fmap.append(self.__get_phase(fmap1[j]))
 
-            if ped0[0] != self.ped_fmap[j][0]:
-                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j][0]}')
-                print(f'    ERROR: {fmap1[j]} {ped0[0]}')
+            #if ped0[0] != self.ped_fmap[j][0]:
+            #    print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j][0]}')
+            #    print(f'    ERROR: {fmap1[j]} {ped0[0]}')
+            #    print(f'           Fieldmap encoding direction must be the same!')
+            #    continue
+            #START240615
+            if self.ped_fmap[2*j+1][0] != self.ped_fmap[2*j][0]:
+                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[2*j][0]}')
+                print(f'    ERROR: {fmap1[j]} {self.ped_fmap[2*j+1][0]}')
                 print(f'           Fieldmap encoding direction must be the same!')
                 continue
-            if ped0 == self.ped_fmap[j]:
-                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j]}')
-                print(f'    ERROR: {fmap1[j]} {ped0}')
+
+            #if ped0 == self.ped_fmap[j]:
+            #    print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j]}')
+            #    print(f'    ERROR: {fmap1[j]} {ped0}')
+            #    print(f'           Fieldmap phases must be opposite!')
+            #    continue
+            #START240615
+            if self.ped_fmap[2*j+1] == self.ped_fmap[2*j]:
+                print(f'    ERROR: {fmap0[j]} {self.ped_fmap[2*j]}')
+                print(f'    ERROR: {fmap1[j]} {self.ped_fmap[2*j]+1}')
                 print(f'           Fieldmap phases must be opposite!')
                 continue
 
@@ -245,7 +262,11 @@ class Par:
                 continue
 
             self.bfmap[j]=True
-            if self.ped_fmap[j][1] == '+': 
+
+            #if self.ped_fmap[j][1] == '+': 
+            #START240615
+            if self.ped_fmap[2*j][1] == '+': 
+
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
@@ -255,8 +276,12 @@ class Par:
 
     def check_ped_dims(self,bold,fmap):
         self.bbold_fmap=[False]*len(self.ped)
+
         print(f'here0 bbold_fmap={self.bbold_fmap}')
         print(f'here0 len(self.ped)={len(self.ped)}')
+        print(f'here0 len(fmap)={len(fmap)}')
+
+
         if any(self.bfmap):
             for j in range(len(self.ped)):
                 if self.bfmap[bold[j][1]]:
@@ -278,7 +303,13 @@ class Par:
                             self.dim_fmap[bold[j][1]] = self.dim[j]
                             fmap[i] = fmap0
                     self.bbold_fmap[j]=True
+
+                    #START240615
+                    self.fmap_bold[bold[j][1]*2].append(j)
+                    self.fmap_bold[bold[j][1]*2+1].append(j)
+
         print(f'here1 bbold_fmap={self.bbold_fmap}')
+        print(f'here1 fmap_bold={self.fmap_bold}')
 
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
