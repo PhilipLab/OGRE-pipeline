@@ -204,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
     #START240618
-    hd='Top level directory. Overrides path read from scanlist.csv.'
+    hd='Top level directory (i.e. study dir; contains raw_data). Overrides path read from scanlist.csv; required if those paths don\'t contain raw_data'
     parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
