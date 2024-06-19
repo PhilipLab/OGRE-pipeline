@@ -47,7 +47,8 @@ class Feat:
                         if not pathlib.Path(i).is_file():
                             print(f'{fsf0[0]} does not exist. Abort!')
                             exit()
-                        line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                        #line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                        line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
                         self.outputdir.append(line0.split('"')[1])
                         self.fsf.append(fsf0)
 
@@ -56,7 +57,8 @@ class Feat:
                 if not pathlib.Path(i).is_file():
                     print(f'{i} does not exist. Abort!')
                     exit()
-                line0 = run_cmd(f'grep "set fmri(outputdir)" {i}')
+                #line0 = run_cmd(f'grep "set fmri(outputdir)" {i}')
+                line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {i}')
                 #print(f'line0={line0}')
                 #dummy=line0.split('"')[1]
                 #print(f'dummy={dummy}')
@@ -92,7 +94,8 @@ class Feat:
                                         if not pathlib.Path(fsf0[0]).is_file():
                                             print(f'{line1} does not exist. Abort!')
                                             exit()
-                                        line2 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                        #line2 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+                                        line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
                                         self.outputdir.append(line2.split('"')[1])
 
                                         self.fsf.append(fsf0)
@@ -105,7 +108,8 @@ class Feat:
                             if not pathlib.Path(line1).is_file():
                                 print(f'{line1} does not exist. Abort!')
                                 exit()
-                            line2 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+                            #line2 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
+                            line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {line1}')
                             #print(f'line2={line2}')
                             self.outputdir.append(line2.split('"')[1])
 
@@ -198,6 +202,10 @@ if __name__ == "__main__":
     huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
+
+    #START240618
+    hd='Top level directory. Overrides path read from scanlist.csv.'
+    parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     import sys
@@ -306,24 +314,40 @@ if __name__ == "__main__":
             #print(f'{s0}')
         
 
-        idx = i.find('raw_data')
-        if idx == -1:
-            pass
+        #idx = i.find('raw_data')
+        #if idx == -1:
+        #    pass
+        #else:
+        #    #print(i[:idx])
+        #    #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
+        #    dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
+        #    bids = i[:idx] + 'derivatives/preprocessed/${s0}'
+        #    #dir1 = bids + '/pipeline${FREESURFVER}' + args.append
+        #    dir1 = bids + '/pipeline${gev.FREESURFVER}' + args.append
+        #    #print(f'dir0={dir0}\ndir1={dir1}')
+        #START240618
+        if args.dir0:
+            d0 = str(pathlib.Path(args.dir0).resolve()) + '/'
         else:
-            #print(i[:idx])
+            idx = i.find('raw_data')
+            if idx == -1:
+                d0 = str(pathlib.Path(i).resolve().parent) + '/'
+            else:
+                d0 = i[:idx]
+        print(f'd0={d0}') 
+        dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
+        bids = d0 + 'derivatives/preprocessed/${s0}'
+        dir1 = bids + '/pipeline${FREESURFVER}' + args.append
 
-            #dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + FREESURFVER + args.append
-            dir0 = i[:idx] + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
-            bids = i[:idx] + 'derivatives/preprocessed/${s0}'
-            #dir1 = bids + '/pipeline${FREESURFVER}' + args.append
-            dir1 = bids + '/pipeline${gev.FREESURFVER}' + args.append
+        
 
-            #print(f'dir0={dir0}\ndir1={dir1}')
+
+
 
         if args.bhostname:
-            hostname = run_cmd('hostname')
-            dir0 += '_' + hostname 
-            dir1 += '_$(hostname)' 
+            hostname = opl.rou.run_cmd('hostname')
+            dir0 += '_' + hostname
+            dir1 += '_$(hostname)'
 
         stem0 = dir0 + '/' + s0
         str0 = stem0 + '_' + l0 + datestr
@@ -384,37 +408,31 @@ if __name__ == "__main__":
 
             if not args.lcfeatadapter:
                 #F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
-                F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${gev.FREESURFDIR}/${gev.FREESURFVER}\n\n')
+                F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
                 F0f[0].write(f'export HCPDIR={gev.HCPDIR}\n\n')
 
             if args.fsf1 or args.fsf2:
-                #for fn in F0f: fn.write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
-                for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${gev.FSLDIR}\n\n')          
+                for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
             else:
                 if not args.lcfeatadapter:
                     if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
-                        #F0f[0].write(f'FSLDIR={FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
-                        F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${gev.FSLDIR}\n\n')          
+                        F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
 
+            fi0=0
             if not args.lcfeatadapter:
                 F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
+                fi0+=1
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
                     F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
-
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
-
-
             if args.fsf1:
-                #if len(F0f)>1:F0f[1].write(f'OGREDIR={OGREDIR}\n')
-                #for fn in F0f: fn.write('MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
-                for fn in F0f: fn.write(f'OGREDIR={OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+                #for fn in F0f: fn.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+                for j in range(fi0,len(F0f)): F0f[j].write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
 
             if not args.lcfeatadapter:
-
-                #F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
                 if not args.lcsmoothonly: 
                     F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
                 else:
@@ -499,16 +517,13 @@ if __name__ == "__main__":
             #START240514
             if args.fsf1:
                 for fn in F0f: 
-                    #for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                    for j in feat1.fsf: fn.write('\n${gev.FSLDIR}/bin/feat '+f'{j}')
+                    for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
                     for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
                     fn.write('\n')
 
             if args.fsf2:
                 for fn in F0f: 
-                    #for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                    for j in feat2.fsf: fn.write('\n${gev.FSLDIR}/bin/feat '+f'{j}')
-
+                    for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
             #if not os.path.isfile(F0[0]):
             if not pathlib.Path(F0[0]).is_file():
@@ -536,15 +551,25 @@ if __name__ == "__main__":
                 F1f.write('cd ${sf0}\n')
                 F1f.write('${F0} >> ${out} 2>&1 &\n')
                     
-                for j in F0: 
-                    _=opl.rou.run_cmd(f'chmod +x {j}')
-                    print(f'    Output written to {j}')
-                _=opl.rou.run_cmd(f'chmod +x {F1}')
-                print(f'    Output written to {F1}')
 
+                #for j in F0: 
+                #    _=opl.rou.run_cmd(f'chmod +x {j}')
+                #    print(f'    Output written to {j}')
+                #_=opl.rou.run_cmd(f'chmod +x {F1}')
+                #print(f'    Output written to {F1}')
+                #if not args.lcnobidscopy:
+                #    _=opl.rou.run_cmd(f'chmod +x {F2}')
+                #    print(f'    Output written to {F2}')
+                #START240618
+                for j in F0:
+                    opl.rou.make_executable(j)
+                    print(f'    Output written to {j}')
+                opl.rou.make_executable(F1)
+                print(f'    Output written to {F1}')
                 if not args.lcnobidscopy:
-                    _=opl.rou.run_cmd(f'chmod +x {F2}')
+                    opl.rou.make_executable(F2)
                     print(f'    Output written to {F2}')
+
 
                 if args.bs: 
                     if mode0=='wt': bs0f.write(f'{gev.SHEBANG}\nset -e\n')
@@ -558,12 +583,14 @@ if __name__ == "__main__":
                     bs0f.write('cd ${sf0}\n')
                     bs0f.write('${F0} >> ${out} 2>&1\n') #no ampersand at end
 
-                    _=run_cmd(f'chmod +x {bs0}')
+                    #_=run_cmd(f'chmod +x {bs0}')
+                    opl.rou.make_executable(bs0)
                     print(f'    Output written to {bs0}')
 
                     bs1f.write(f'{gev.SHEBANG}\n\n')
                     bs1f.write(f'{bs0} >> {bs0}.txt 2>&1 &\n')
-                    _=run_cmd(f'chmod +x {bs1}')
+                    #_=run_cmd(f'chmod +x {bs1}')
+                    opl.rou.make_executable(bs1)
                     print(f'    Output written to {bs1}')
 
                     if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
@@ -579,15 +606,17 @@ if __name__ == "__main__":
                 Fcleanf.write('for i in ${BOLD[@]};do\n')
                 Fcleanf.write('    rm -rf ${sf0}/${i}\n')
                 Fcleanf.write('done\n\n')
-                _=opl.rou.run_cmd(f'chmod +x {Fclean}')
+                #_=opl.rou.run_cmd(f'chmod +x {Fclean}')
+                opl.rou.make_executable(Fclean)
                 print(f'    Output written to {Fclean}')
 
 
-
     if 'batchscriptf' in locals(): 
-        _=run_cmd(f'chmod +x {args.bs}')
+        #_=run_cmd(f'chmod +x {args.bs}')
+        opl.rou.make_executable(args.bs)
         print(f'    Output written to {args.bs}')
 
         batchscriptf[1].write(f'{args.bs} >> {args.bs}.txt 2>&1 &\n')
-        _=run_cmd(f'chmod +x {bs_fileout}')
+        #_=run_cmd(f'chmod +x {bs_fileout}')
+        opl.rou.make_executable(bs_fileout)
         print(f'    Output written to {bs_fileout}')
