@@ -77,17 +77,18 @@ if __name__ == "__main__":
         if scans.fmap:
             if any(par.bfmap):
                 if any(par.bbold_fmap):
-
                     for i in range(len(scans.fmap)):
-                        dict0 = {'PhaseEncodingDirection':par.ped_fmap[i]}
-                        #print(f'    {scans.fmap[i]}')
-                        #print(f'    {scans.fmap[i].split('.nii')[0]}.json')
+                        jsonf = (f'{scans.fmap[i].split('.nii')[0]}.json')
+                        try:
+                            with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                                dict0 = json.load(f0)
+                        except FileNotFoundError:
+                            print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
+                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[i]}
                         val=[]
-                        val += [scans.bold[par.fmap_bold[i][j]][0] for j in range(len(par.fmap_bold[i]))]
-                        #[print(f'        {j}') for j in val]
+                        #val += [scans.bold[par.fmap_bold[i][j]][0] for j in range(len(par.fmap_bold[i]))]
+                        val += [(f'func{scans.bold[par.fmap_bold[i][j]][0].split('/func')[1]}') for j in range(len(par.fmap_bold[i]))]
                         dict0['IntendedFor'] = val
-                        #print(f'dict0={dict0}')
-                        jf = (f'{scans.fmap[i].split('.nii')[0]}.json')
-                        with open(jf, 'w', encoding='utf-8') as f:
+                        with open(jsonf, 'w', encoding='utf-8') as f:
                             json.dump(dict0, f, ensure_ascii=False, indent=4)
-                        print(f'Output written to {jf}')
+                        print(f'Output written to {jsonf}')

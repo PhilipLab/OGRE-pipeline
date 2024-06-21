@@ -171,22 +171,27 @@ class Par:
         #START240615
         self.fmap_bold = [ [] for i in range(lenfmap0)] 
 
+
     def __get_phase(self,file):
 
-        jsonf = file.split('.')[0] + '.json'
-        #if not os.path.isfile(jsonf):
-        if not pathlib.Path(jsonf).is_file():
-            print(f'    ERROR: {jsonf} does not exist. Abort!')
-            #return 'ERROR'
-            exit()
-        #print(f'__get_phase jsonf={jsonf}')
-
-        with open(jsonf,encoding="utf8",errors='ignore') as f0:
-            dict0 = json.load(f0)
-
-        #print(f"__get_phase {dict0['PhaseEncodingDirection']}")
-
+        #jsonf = file.split('.')[0] + '.json'
+        ##if not os.path.isfile(jsonf):
+        #if not pathlib.Path(jsonf).is_file():
+        #    print(f'    ERROR: {jsonf} does not exist. Abort!')
+        #    exit()
+        #with open(jsonf,encoding="utf8",errors='ignore') as f0:
+        #    dict0 = json.load(f0)
+        #return dict0['PhaseEncodingDirection']
+        #START240619
+        jsonf = (f'{file.split('.nii')[0]}.json')
+        try:
+            with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                dict0 = json.load(f0)
+        except FileNotFoundError:
+            print(f'    ERROR: __get_phase {jsonf} does not exist. Abort!')
+            exit() 
         return dict0['PhaseEncodingDirection']
+
 
     def __get_dim(self,file):
         line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
