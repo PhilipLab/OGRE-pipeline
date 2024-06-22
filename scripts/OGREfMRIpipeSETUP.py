@@ -141,7 +141,7 @@ if __name__ == "__main__":
     parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
 
     hFREESURFVER='5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER.'
-    parser.add_argument('-V','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER','--freesurferVersion','-freesurferVersion',dest='FREESURFVER',metavar='FreeSurferVersion', \
+    parser.add_argument('-V','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER',dest='FREESURFVER',metavar='FreeSurferVersion', \
         help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0', '7.4.1'])
 
     hbhostname='Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003'
@@ -171,12 +171,12 @@ if __name__ == "__main__":
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
-    hfsf1='fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
+    hfsf1='Locator .txt with fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
     #parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='append',nargs='+',help=hfsf1)
     #START240502
     parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='extend',nargs='+',help=hfsf1)
 
-    hfsf2='fsf files for second-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
+    hfsf2='Locator .txt with fsf files for second-level FEAT analysis. Only runs if -o ran first'
     #parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='append',nargs='+',help=hfsf2)
     #START240502
     parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='extend',nargs='+',help=hfsf2)
