@@ -71,6 +71,12 @@ helpmsg(){
     echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
     echo "    --append -append"
     echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug"
+
+    #START240621
+    echo "    -e --erosion -erosion --ero -ero"
+    echo "        Default is 2. For the brain mask, the number or erosions that follow the three dilations. Ex. -e 2, will result in two erosions"
+    echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
+
     echo "    -h --help -help"
     echo "        Echo this help message."
     exit
@@ -81,9 +87,9 @@ if((${#@}<1));then
 fi
 echo $0 $@
 
-#lcautorun=0;lcbids=0;lchostname=0;lcdate=0 #do not set dat;unexpected
-#START240301
-lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append= #do not set dat;unexpected
+#lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append= #do not set dat;unexpected
+#START240621
+lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append=;erosion=2 #do not set dat;unexpected
 
 unset bs pipedir name
 
@@ -148,21 +154,22 @@ for((i=0;i<${#@};++i));do
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
             ;;
-
-        #START240301
         -b | --batchscript | -batchscript)
-            #lcbs=1
-            #[[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]}
-            #[[ ${arg[((i+1))]:0:1} != "-" ]] && bs=${arg[((++i))]} || bs=True
             bs=True
             ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
             #echo "bs=$bs"
             ;;
-        #START240302
         --append | -append)
             append=${arg[((++i))]}
             echo "append=$append"
             ;;
+
+        #START240621
+        -e | --erosion | -erosion | --ero | -ero)
+            erosion=${arg[((++i))]}
+            echo "erosion=$erosion"
+            ;;
+        
 
         -h | --help | -help)
             helpmsg
@@ -372,7 +379,10 @@ for((i=0;i<${#dat[@]};++i));do
     echo "s0=${s0}" >> ${F0}
     echo "sf0=${dir1}" >> ${F0}
 
-    echo -e "Hires=${Hires}\n" >> ${F0}
+    #echo -e "Hires=${Hires}\n" >> ${F0}
+    #START240621
+    echo -e "Hires=${Hires}" >> ${F0}
+    echo -e "erosion=${erosion}\n" >> ${F0}
 
     #echo '${PRE} \' >> ${F0}
     #echo '    --StudyFolder=${sf0} \' >> ${F0}
@@ -418,6 +428,10 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    --StudyFolder=${sf0} \' >> ${F0}
     echo '    --Subject=${s0} \' >> ${F0}
     echo '    --runlocal \' >> ${F0}
+
+    #START240621
+    echo '    --erosion=${erosion} \' >> ${F0}
+
     echo '    --EnvironmentScript=${SETUP}' >> ${F0}
 
     echo -e "$shebang\nset -e\n" > ${F1} 

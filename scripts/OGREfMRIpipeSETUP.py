@@ -6,10 +6,8 @@ import glob
 import os
 import pathlib
 import sys
+
 import opl
-
-
-#**** default global variables **** 
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
 P1='OGRET1w_restore.sh'
@@ -164,7 +162,6 @@ if __name__ == "__main__":
 
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
-    #parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec,type=float)
     parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
 
     hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
@@ -203,12 +200,11 @@ if __name__ == "__main__":
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
-    #START240618
     hd='Top level directory (i.e. study dir; contains raw_data). Overrides path read from scanlist.csv; required if those paths don\'t contain raw_data'
     parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
 
+
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
-    import sys
     if len(sys.argv)==1:
         parser.print_help()
         # parser.print_usage() # for just the usage line
@@ -241,28 +237,6 @@ if __name__ == "__main__":
     if args.fsf1: feat1 = Feat(args.fsf1)
     if args.fsf2: feat2 = Feat(args.fsf2)
 
-    """
-    if not args.bs:
-        num_sub = 0
-        for i in args.dat:
-            for j in range(len(i)):
-                with open(i[j],encoding="utf8",errors='ignore') as f0:
-                    num_sub0 = 0 #dat could be empty or just have a line of keys
-                    for line0 in f0:
-                        if not line0.strip() or line0.startswith('#'): continue
-                        num_sub0 += 1
-                    if num_sub0 > 0 : num_sub += num_sub0 - 1 #first line is the keys
-        num_cores = int(run_cmd('sysctl -n hw.ncpu'))
-        print(f'num_cores = {num_cores}')
-        if num_sub > num_cores:
-            hostname = run_cmd('hostname')
-            print(f'{num_sub} will be run, however {hostname} only has {num_cores}. Please consider using a batchscript -b.')
-    else:
-        if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent, exist_ok=True)
-        bs=open(args.bs,mode='wt',encoding="utf8")
-        bs.write(f'{SHEBANG}\n')
-    """
-
     datestr = ''
     if args.lcdate > 0:
         if args.lcdate == 1:
@@ -292,7 +266,6 @@ if __name__ == "__main__":
             #print(f'bs_fileout={bs_fileout}')
             batchscriptf = open_files([args.bs,bs_fileout],'w') 
             for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
-
 
     for i in args.dat:
 
@@ -491,10 +464,7 @@ if __name__ == "__main__":
                                     F0f[0].write('        NONE"\n')
 
                     F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
-              
-                    if args.userefinement:
-                        F0f[0].write('    --userefinement \\\n')
-
+                    if args.userefinement: F0f[0].write('    --userefinement \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
 

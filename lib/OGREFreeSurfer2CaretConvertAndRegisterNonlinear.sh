@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -e # If any commands exit with non-zero value, this script exits
 
-#START230614
 echo "START: $0"
 
 # ------------------------------------------------------------------------------
@@ -115,6 +114,12 @@ log_Msg "RegName: ${RegName}"
 InflateExtraScale="${23}"
 log_Msg "InflateExtraScale: ${InflateExtraScale}"
 
+
+#START240621
+erosion="${24}"
+log_Msg "erosion: ${erosion}"
+
+
 LowResMeshes=${LowResMeshes//@/ }
 log_Msg "LowResMeshes: ${LowResMeshes}"
 
@@ -181,7 +186,15 @@ done
 #echo "    **** Create FreeSurfer Brain Mask ****"
 
 #Create FreeSurfer Brain Mask
-fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD -ero -ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+
+#fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD -ero -ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+#START240621
+ero=;for((i=0;i<$erosion;++i));do ero+=" -ero";done
+echo fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+
+
+
 ${CARET7DIR}/wb_command -volume-fill-holes "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
 fslmaths "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz -bin "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
 applywarp --rel --interp=nn -i "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz -r "$AtlasSpaceFolder"/"$AtlasSpaceT1wImage" --premat=$FSLDIR/etc/flirtsch/ident.mat -o "$T1wFolder"/"$T1wImageBrainMask".nii.gz

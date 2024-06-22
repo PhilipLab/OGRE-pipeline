@@ -1,7 +1,5 @@
 #!/usr/bin/env bash 
 
-#P0=OGREPostFreeSurferPipeline.sh
-#START240111
 P0=${OGREDIR}/lib/OGREPostFreeSurferPipeline.sh
 
 get_batch_options() {
@@ -11,7 +9,9 @@ get_batch_options() {
     unset command_line_specified_subj
     unset command_line_specified_run_local
 
-    #START200113
+    #START240621
+    erosion=2
+
     unset command_line_specified_EnvironmentScript
 
     local index=0
@@ -35,6 +35,12 @@ get_batch_options() {
                 index=$(( index + 1 ))
                 ;;
 
+           #START240621
+            --erosion=*)
+                erosion=${argument#*=}
+                index=$(( index + 1 ))
+                ;;
+
             --EnvironmentScript=*)
                 command_line_specified_EnvironmentScript=${argument#*=}
                 index=$(( index + 1 ))
@@ -52,15 +58,14 @@ get_batch_options() {
 
 get_batch_options "$@"
 
-StudyFolder="${HOME}/projects/Pipelines_ExampleData" #Location of Subject folders (named by subjectID)
-Subjlist="100307" #Space delimited list of subject IDs
+#StudyFolder="${HOME}/projects/Pipelines_ExampleData" #Location of Subject folders (named by subjectID)
+#Subjlist="100307" #Space delimited list of subject IDs
 
 #EnvironmentScript="${HOME}/projects/Pipelines/Examples/Scripts/SetUpHCPPipeline.sh" #Pipeline environment script
 if [ -n "${command_line_specified_EnvironmentScript}" ]; then
     EnvironmentScript="${command_line_specified_EnvironmentScript}"
 else
     echo "MUST PROVIDE EnvironmentScript"
-    #echo "    Ex. --EnvironmentScript=/home/usr/mcavoy/HCP/scripts/SetUpHCPPipeline_mm.sh"
     echo "    Ex. --EnvironmentScript=OGREDIR/lib/OGRESetUpHCPPipeline.sh" # swap 240425
     exit
 fi
@@ -92,8 +97,6 @@ echo "$@"
     QUEUE="-q hcp_priority.q"
 #fi
 
-PRINTCOM=""
-#PRINTCOM="echo"
 #QUEUE="-q veryshort.q"
 
 
@@ -120,19 +123,13 @@ for Subject in $Subjlist ; do
   RegName="FS" 
 
   if [ -n "${command_line_specified_run_local}" ] ; then
-
-      #echo "About to run ${HCPPIPEDIR}/PostFreeSurfer/PostFreeSurferPipeline.sh"
-      #START
       echo "About to run ${P0}"
-
       queuing_command=""
   else
       echo "About to use fsl_sub to queue or run ${HCPPIPEDIR}/PostFreeSurfer/PostFreeSurferPipeline.sh"
       queuing_command="${FSLDIR}/bin/fsl_sub ${QUEUE}"
   fi
 
-  #${queuing_command} ${HCPPIPEDIR}/PostFreeSurfer/PostFreeSurferPipeline.sh \
-  #START200311
   ${queuing_command} ${P0} \
       --path="$StudyFolder" \
       --subject="$Subject" \
@@ -145,23 +142,22 @@ for Subject in $Subjlist ; do
       --freesurferlabels="$FreeSurferLabels" \
       --refmyelinmaps="$ReferenceMyelinMaps" \
       --regname="$RegName" \
-      --printcom=$PRINTCOM
+      --erosion="$erosion"
 
   # The following lines are used for interactive debugging to set the positional parameters: $1 $2 $3 ...
   
-   echo "set -- --path="$StudyFolder" \
-      --subject="$Subject" \
-      --surfatlasdir="$SurfaceAtlasDIR" \
-      --grayordinatesdir="$GrayordinatesSpaceDIR" \
-      --grayordinatesres="$GrayordinatesResolutions" \
-      --hiresmesh="$HighResMesh" \
-      --lowresmesh="$LowResMeshes" \
-      --subcortgraylabels="$SubcorticalGrayLabels" \
-      --freesurferlabels="$FreeSurferLabels" \
-      --refmyelinmaps="$ReferenceMyelinMaps" \
-      --regname="$RegName" \
-      --printcom=$PRINTCOM"
+   echo -e "set -- --path="$StudyFolder" \n\
+       --subject="$Subject" \n\
+       --surfatlasdir="$SurfaceAtlasDIR" \n\
+       --grayordinatesdir="$GrayordinatesSpaceDIR" \n\
+       --grayordinatesres="$GrayordinatesResolutions" \n\
+       --hiresmesh="$HighResMesh" \n\
+       --lowresmesh="$LowResMeshes" \n\
+       --subcortgraylabels="$SubcorticalGrayLabels" \n\
+       --freesurferlabels="$FreeSurferLabels" \n\
+       --refmyelinmaps="$ReferenceMyelinMaps" \n\
+       --regname="$RegName" \n\
+       --erosion="$erosion"" #second " matches one before set
       
    echo ". ${EnvironmentScript}"
 done
-
