@@ -310,7 +310,10 @@ if __name__ == "__main__":
         print(f'd0={d0}') 
         dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
         bids = d0 + 'derivatives/preprocessed/${s0}'
-        dir1 = bids + '/pipeline${FREESURFVER}' + args.append
+
+        #dir1 = bids + '/pipeline${FREESURFVER}' + args.append
+        #START240624
+        dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
 
         
 
@@ -472,7 +475,10 @@ if __name__ == "__main__":
                 #    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
                 #START240608
                 if scans.taskidx and not args.lct1copymaskonly:
-                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
+
+                    #scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
+                    #START240624
+                    if not args.lcnobidscopy: scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
 
 
                     #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')

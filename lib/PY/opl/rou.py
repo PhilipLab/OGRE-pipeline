@@ -71,7 +71,7 @@ class Envvars:
             self.HCPDIR = self.OGREDIR + '/lib/HCP'
             print(f'HCPDIR not set. Setting it to {self.HCPDIR}')
         if not self.WBDIR:
-            self.WBDIR = self.HCPDIR + '/lib/HCP/workbench-mac/bin_macosx64'
+            self.WBDIR = self.OGREDIR + '/lib/HCP/workbench-mac/bin_macosx64'
             print(f'WBDIR not set. Setting it to {self.WBDIR}')
 
 
