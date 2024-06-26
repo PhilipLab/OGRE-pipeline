@@ -28,10 +28,6 @@ get_batch_options() {
     cls_startOneStepResampling="FALSE"
     cls_startIntensityNormalization="FALSE"
 
-    #START240620
-    unset cls_erosion
-
-
     local index=0
     local numArgs=${#arguments[@]}
     local argument
@@ -130,13 +126,6 @@ get_batch_options() {
                 cls_userefinement="true"
                 index=$(( index + 1 ))
                 ;;
-
-            #START240620
-            --erosion=*)
-                cls_erosion=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
-
             --startOneStepResampling)
                 cls_startOneStepResampling="TRUE"
                 index=$(( index + 1 ))
@@ -212,11 +201,6 @@ if [ -n "${command_line_specified_json}" ]; then
     arr5=($command_line_specified_json)
 fi
 
-
-echo "cls_erosion=$cls_erosion"
-exit
-
-
 if [ -n "${command_line_specified_EnvironmentScript}" ]; then
     EnvironmentScript="${command_line_specified_EnvironmentScript}"
 else
@@ -225,7 +209,6 @@ else
     echo "    Ex. --EnvironmentScript=OGREDIR/lib/OGRESetUpHCPPipeline.sh" # swap 240425
     exit
 fi
-
 
 
 # Requirements for this script
