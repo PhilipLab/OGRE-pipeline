@@ -176,22 +176,18 @@ for((i=0;i<${#dat[@]};++i));do
         echo -e "${P0} -o ${od} -f ${line[1]##*/} ${dir1}\n" >> $bs
     done < <(grep -vE '^(\s*$|#)' ${dat[i]})
 
+    #START240626
+    echo "scanlist2json.py ${dat[i]}" >> $bs
+
     tr -d '\r' <${bs} >${bs}.new && mv ${bs}.new ${bs} 
     chmod +x $bs
 
-    #echo "Output written to $bs"
-    #START240107
     ((lcverbose==1)) && echo "Output written to $bs"
-
     if((lcautorun==1)) && [ -z "${bs0}" ];then
         [[ "${dir0}" != ".." ]] && cd ${dir0} || cd $(pwd)
         $bs > $bs.txt 2>&1 & 
         cd ${wd0} #"cd -" echoes the path
-
-        #echo "$bs has been executed"
-        #START240107
         ((lcverbose==1)) && echo "$bs has been executed"
-
     fi
 
     if((lcautorun==0));then
@@ -204,17 +200,9 @@ if((lcautorun==1)) && [ -n "${bs0}" ];then
     cd ${dir0}
     $bs > $bs.txt 2>&1 & 
     cd ${wd0} #"cd -" echoes the path
-
-    #echo "$bs has been executed"
-    #START240107
     ((lcverbose==1)) && echo "$bs has been executed"
-
 fi
 if((lcautorun==0));then 
     chmod +x ${F1}
-
-    #echo "Output written to ${F1}"
-    #START240107
     ((lcverbose==1)) && echo "Output written to ${F1}"
-
 fi

@@ -200,8 +200,15 @@ if __name__ == "__main__":
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
-    hd='Top level directory (i.e. study dir; contains raw_data). Overrides path read from scanlist.csv; required if those paths don\'t contain raw_data'
-    parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
+    #hd='Top level directory (i.e. study dir; contains raw_data). Overrides path read from scanlist.csv; required if those paths don\'t contain raw_data'
+    #parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
+    #START240626
+    hd='Pipeline directory. Optional. BIDS directories are assumed to be at the same level on the directory tree.\n' \
+        +'Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/pipeline7.4.1\n' \
+        +'        BIDS directories are /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/anat\n' \
+        +'                             /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/func\n'
+    hd='Pipeline directory. Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-2051/pipeline7.4.1\n'
+    parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -299,8 +306,13 @@ if __name__ == "__main__":
         #    dir1 = bids + '/pipeline${gev.FREESURFVER}' + args.append
         #    #print(f'dir0={dir0}\ndir1={dir1}')
         #START240618
-        if args.dir0:
-            d0 = str(pathlib.Path(args.dir0).resolve()) + '/'
+        #if args.dir0:
+        #    d0 = str(pathlib.Path(args.dir0).resolve()) + '/'
+        #START240626
+        if args.dir:
+            d0 = str(pathlib.Path(args.dir).resolve()).split("derivatives/preprocessed")[0]
+            print(f'args.dir={args.dir} d0={d0}')
+
         else:
             idx = i.find('raw_data')
             if idx == -1:
