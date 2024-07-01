@@ -9,17 +9,18 @@ ATLAS=2
 [ -z ${FREESURFVER+x} ] && FREESURFVER=7.4.1
 
 helpmsg(){
+    echo "Builds reg directory within a .feat folder, from OGRE results."
     echo "Required: ${root0} <Feat directory>:"
     echo "    -f --feat -feat       Feat directory. If no -option provided, then input is assumed to be this."
     echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.1/sub-1001_RHflip_susan-6_run-1.feat/"
-    echo "                          If input doesn't end in .feat, will treat it as relative path in current directory (e.g. sub-1001_RHflip_susan-6_run-1)
+    echo "                          If input doesn't end in .feat, will treat it as relative path in current directory (e.g. sub-1001_RHflip_susan-6_run-1)"
     echo " "
     echo "  Everything below here is OPTIONAL. Defaults to BIDS based on sub/study info"
     echo "    -s --sub -sub         Subject name, e.g. 2000, is read from the FEAT directory. This option will override that of the FEAT directory." 
     echo "                          Used to find anatomical and other data in BIDS"
     echo "    -y -S --study -study  OPTIONAL. Study path. Default is /Users/Shared/10_Connectivity" 
     echo "                          Syntax: if full path is /Users/Shared/10_Connectivity/10_2000/pipeline7.4.0, STUDYPATH is /Users/Shared/10_Connectivity"  
-    echo "
+    echo " "
 
     #START240417
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
@@ -284,6 +285,11 @@ if [[ -d "$OUTDIR" ]];then
     #rm -rf ${OUTDIR}
 fi
 
+# copy motion correction - DOES NOT WORK b/c feat will create a brand new confoundevs.txt
+# MOCOFILE=${MNLDIR}/../${FEATDIR}_bold/MotionCorrection/${FEATDIR}_bold_mc.par
+# echo "MOCINPUT = ${MOCOFILE}"
+# cp -fp ${MOCOFILE} ${FEATPATH}/confoundevs.txt
+
 mkdir -p ${OUTDIR}
 
 #if [ ! -f ${FEATDIR}/example_func.nii.gz ];then
@@ -316,3 +322,4 @@ ${FSLDIR}/bin/epi_reg --epi=${OUTDIR}/example_func --t1=${OUTDIR}/highres_head -
 # make EF2S
 ${FSLDIR}/bin/convert_xfm -omat ${OUTDIR}/example_func2standard.mat -concat ${OUTDIR}/highres2standard.mat ${OUTDIR}/example_func2highres.mat
 echo "Registration complete for "${FEATDIR}
+
