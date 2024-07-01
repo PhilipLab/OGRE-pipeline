@@ -14,7 +14,7 @@ helpmsg(){
     echo "Required: ${root0} <Feat directory>:"
     echo "    -f --feat -feat       Feat directory. If no -argument provided, then input is assumed to be this."
     echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.1/sub-1008_task-drawLH_run-1.feat"
-    echo "                          If you want the script to look for a path in current directory (rather than a full path), omit the final .feat"
+    echo "                          If you want the script to look for a relative path in current directory (rather than a full path), omit the final .feat"
     echo " "
     echo "  Everything below here is OPTIONAL. Defaults to pulling from your feat directory path & assuming it is in BIDS "
     echo "    -v --overwrite        Flag. If set, overwrite existing makeregdir output. Otherwise, if makeregdir output exists, script does nothing."
