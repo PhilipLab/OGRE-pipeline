@@ -24,96 +24,145 @@ def open_files(filenames,mode):
         stack.pop_all()
         return files
 
+#class Feat:
+#    def __init__(self,arg):
+#        self.outputdir = []
+#        self.fsf = []
+#        for i in arg:
+#            if i[-4:]=='feat':
+#                if pathlib.Path(i).exists():
+#                    fsf0 = glob.glob(f'{i}/*.fsf')
+#                    if fsf0:
+#                        if not pathlib.Path(i).is_file():
+#                            print(f'{fsf0[0]} does not exist. Abort!')
+#                            exit()
+#                        line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+#                        self.outputdir.append(line0.split('"')[1])
+#                        self.fsf.append(fsf0)
+#            elif i[-3:]=='fsf':
+#                if not pathlib.Path(i).is_file():
+#                    print(f'{i} does not exist. Abort!')
+#                    exit()
+#                line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {i}')
+#                self.outputdir.append(line0.split('"')[1])
+#                self.fsf.append(i)
+#            else:
+#                with open(i,encoding="utf8",errors='ignore') as f0:
+#                    for line0 in f0:
+#                        line1=line0.strip()
+#                        if not line1 or line1.startswith('#'): continue
+#                        if line1[-4:]=='feat':
+#                            if pathlib.Path(line1).exists():
+#                                fsf0 = glob.glob(f'{line1}/*.fsf')
+#                                if fsf0:
+#                                    if len(fsf0)==1:
+#                                        if not pathlib.Path(fsf0[0]).is_file():
+#                                            print(f'{line1} does not exist. Abort!')
+#                                            exit()
+#                                        line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
+#                                        self.outputdir.append(line2.split('"')[1])
+#                                        self.fsf.append(fsf0)
+#                        elif line1[-3:]=='fsf':
+#                            if not pathlib.Path(line1).is_file():
+#                                print(f'{line1} does not exist. Abort!')
+#                                exit()
+#                            line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {line1}')
+#                            self.outputdir.append(line2.split('"')[1])
+#                            self.fsf.append(line1)
+#START240629
 class Feat:
     def __init__(self,arg):
         self.outputdir = []
+        self.level = []
         self.fsf = []
-        #print(f'arg={arg}')
         for i in arg:
-            #print(f'i={i}')
-            if i[-4:]=='feat':
-                #if os.path.isdir(i):
-                if pathlib.Path(i).exists():
-                    fsf0 = glob.glob(f'{i}/*.fsf')
-                    if fsf0:
+            p0 = pathlib.Path(i)
+            if not p0.exists():
+                print(f'{i} does not exist. Skipping!')
+                continue 
+            if p0.is_dir():
+                fsf0 = p0.glob('*.fsf') 
+                if fsf0:
+                    for j in fsf0: __grep_fsf(self,j.as_posix())
+            elif p0.is_file():
+                if p0.suffix=='.fsf': 
+                    __grep_fsf(self,p0.as_posix())
+                else:
+                    with open(p0,encoding="utf8",errors='ignore') as f0:
+                        for line0 in f0:
+                            line1=line0.strip()
+                            if not line1 or line1.startswith('#'): continue
 
-                        #if len(fsf0)==1:
-                        #    line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                        #    self.outputdir.append(line0.split('"')[1])
-                        #    self.fsf.append(fsf0)
-                        #START240514
-                        if not pathlib.Path(i).is_file():
-                            print(f'{fsf0[0]} does not exist. Abort!')
-                            exit()
-                        #line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                        line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                        self.outputdir.append(line0.split('"')[1])
-                        self.fsf.append(fsf0)
-
-
-            elif i[-3:]=='fsf':
-                if not pathlib.Path(i).is_file():
-                    print(f'{i} does not exist. Abort!')
-                    exit()
-                #line0 = run_cmd(f'grep "set fmri(outputdir)" {i}')
-                line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {i}')
-                #print(f'line0={line0}')
-                #dummy=line0.split('"')[1]
-                #print(f'dummy={dummy}')
-                self.outputdir.append(line0.split('"')[1])
-                self.fsf.append(i)
-
-            #START240514 Can't distinguish between level and 2
-            #elif pathlib.Path(i).exists():
-            #    fsf0 = glob.glob(f'{i}/*.fsf')
-            #    #print(f'fsf0={fsf0}')
-            #    for j in fsf0:
-            #        #print(f'j={j}')
-            #        line0 = run_cmd(f'grep "set fmri(outputdir)" {j}')
-            #        self.outputdir.append(line0.split('"')[1])
-            #        self.fsf.append(j)
-
-            else:
-                with open(i,encoding="utf8",errors='ignore') as f0:
-                    for line0 in f0:
-                        line1=line0.strip()
-                        #print(f'line1={line1}')
-                        if not line1 or line1.startswith('#'): continue
-                        if line1[-4:]=='feat':
-                            #if os.path.isdir(line0):
-                            if pathlib.Path(line1).exists():
-                                fsf0 = glob.glob(f'{line1}/*.fsf')
+                            p0 = pathlib.Path(line0)
+                            if not p0.exists():
+                                print(f'{line0} does not exist. Skipping!')
+                                continue
+                            if p0.is_dir():
+                                fsf0 = p0.glob('*.fsf')
                                 if fsf0:
-                                    if len(fsf0)==1:
+                                    for j in fsf0: __grep_fsf(self,j.as_posix())
+                            elif p0.is_file():
+                                if p0.suffix=='.fsf':
+                                    __grep_fsf(self,p0.as_posix())
+                            else:
+                                print(f'{i} is neither a directory of file. Skipping!')
+            else:
+                print(f'{i} is neither a directory of file. Skipping!')
 
-                                        #line0 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                                        #self.outputdir.append(line0.split('"')[1])
-                                        #START240514
-                                        if not pathlib.Path(fsf0[0]).is_file():
-                                            print(f'{line1} does not exist. Abort!')
-                                            exit()
-                                        #line2 = run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                                        line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-                                        self.outputdir.append(line2.split('"')[1])
+    def ___grep_fsf(self,fsf):
+        line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf}')
+        self.outputdir.append(line0.split('"')[1])
+        line0 = opl.rou.run_cmd(f'grep "set fmri(level)" {fsf}')
+        self.level.append(line0.split('"')[1])
+        self.fsf.append(fsf)
 
-                                        self.fsf.append(fsf0)
-                        elif line1[-3:]=='fsf':
+    def write_script(self,filename,gev,cmd_line_call):
+        if not gev:
+            gev = opl.rou.get_env_vars(args)
+            if not gev: exit()
+        with open(filename,'w',encoding="utf8",errors='ignore') as f0:
 
-                            #line0 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
-                            #self.outputdir.append(line0.split('"')[1])
-                            #START240514
-                            #print('************* here2 ****************')
-                            if not pathlib.Path(line1).is_file():
-                                print(f'{line1} does not exist. Abort!')
-                                exit()
-                            #line2 = run_cmd(f'grep "set fmri(outputdir)" {line1}')
-                            line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {line1}')
-                            #print(f'line2={line2}')
-                            self.outputdir.append(line2.split('"')[1])
+            f0.write(f'{gev.SHEBANG}\nset -e\n\n')
+            if cmd_line_call: f0.write(f'#{cmd_line_call}\n\n')
+            f0.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
 
-                            self.fsf.append(line1)
-        #print(f'self.outputdir={self.outputdir}')
-        #print(f'self.fsf={self.fsf}')
+            # https://favtutor.com/blogs/get-list-index-python
+            index = [i for i ,e in enumerate(self.level) if e == 1]
+            if index:
+#STARTHERE need to define P3
+                f0.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
+  
+
+            for i in range(len(self.level)):
+                if self.level[i]==1: 
+                   f0.write( 
+
+
+# https://favtutor.com/blogs/get-list-index-python
+
+
+#for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')
+
+#for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
+
+#            if args.fsf1:
+#                #for fn in F0f: fn.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
+#                for j in range(fi0,len(F0f)): F0f[j].write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
+
+
+#            if args.fsf1:
+#                for fn in F0f:
+#                    for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+#                    for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
+#                    fn.write('\n')
+#
+#            if args.fsf2:
+#                for fn in F0f:
+#                    for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+
+
+
+
 
 if __name__ == "__main__":
 
@@ -171,15 +220,17 @@ if __name__ == "__main__":
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
-    hfsf1='Locator .txt with fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
-    #parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='append',nargs='+',help=hfsf1)
-    #START240502
-    parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='extend',nargs='+',help=hfsf1)
 
-    hfsf2='Locator .txt with fsf files for second-level FEAT analysis. Only runs if -o ran first'
-    #parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='append',nargs='+',help=hfsf2)
-    #START240502
-    parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='extend',nargs='+',help=hfsf2)
+    #hfsf1='Locator .txt with fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
+    #parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='extend',nargs='+',help=hfsf1)
+    #hfsf2='Locator .txt with fsf files for second-level FEAT analysis. Only runs if -o ran first'
+    #parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='extend',nargs='+',help=hfsf2)
+    #START240628
+    hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
+        +'An OGREfeat.sh call is created for each fsf.'
+    parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or*.fsf',action='extend', \
+        nargs='+',help=hfeat)
+
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
@@ -240,9 +291,11 @@ if __name__ == "__main__":
         if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
 
+    #if args.fsf1: feat1 = Feat(args.fsf1)
+    #if args.fsf2: feat2 = Feat(args.fsf2)
+    #START240629
+    if args.feat: feat = Feat(args.feat)
 
-    if args.fsf1: feat1 = Feat(args.fsf1)
-    if args.fsf2: feat2 = Feat(args.fsf2)
 
     datestr = ''
     if args.lcdate > 0:
@@ -390,18 +443,21 @@ if __name__ == "__main__":
             #START240607
             Fcleanf = fs.enter_context(open(Fclean, "w"))
 
-
-            #for fn in F0f: fn.write(f'{SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
             for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
+            #START240629
+            #openinglines = f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n'
+            #for fn in F0f: fn.write(openinglines)          
 
             if not args.lcfeatadapter:
                 #F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
                 F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
                 F0f[0].write(f'export HCPDIR={gev.HCPDIR}\n\n')
 
-            if args.fsf1 or args.fsf2:
-                for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
-            else:
+            #if args.fsf1 or args.fsf2:
+            #    for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+            #else:
+            #START240629
+            if not args.feat:
                 if not args.lcfeatadapter:
                     if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
