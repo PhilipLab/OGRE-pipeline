@@ -285,7 +285,7 @@ if [[ -d "$OUTDIR" ]];then
     #rm -rf ${OUTDIR}
 fi
 
-# copy motion correction - DOES NOT WORK b/c feat will create a brand new confoundevs.txt
+# copy motion correction - DOES NOT WORK b/c feat will create a brand new confoundevs.txtß
 # MOCOFILE=${MNLDIR}/../${FEATDIR}_bold/MotionCorrection/${FEATDIR}_bold_mc.par
 # echo "MOCINPUT = ${MOCOFILE}"
 # cp -fp ${MOCOFILE} ${FEATPATH}/confoundevs.txt
