@@ -129,16 +129,12 @@ class Feat:
             # https://favtutor.com/blogs/get-list-index-python
             index = [i for i ,e in enumerate(self.level) if e == 1]
             if index:
-#STARTHERE need to define P3
                 f0.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
+                for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i]+'\n${MAKEREGDIR} '+self.outdir[i])
+            index = [i for i ,e in enumerate(self.level) if e == 2]
+            if index:
+                for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i])
   
-
-            for i in range(len(self.level)):
-                if self.level[i]==1: 
-                   f0.write( 
-
-
-# https://favtutor.com/blogs/get-list-index-python
 
 
 #for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')
@@ -395,8 +391,14 @@ if __name__ == "__main__":
 
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
-        if not args.lcfeatadapter and args.fsf1: 
-            F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
+
+        #if not args.lcfeatadapter and args.fsf1: 
+        #    F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
+        #START240630
+        if not args.lcfeatadapter and args.feat: 
+            Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
+            Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
+
         if not args.lcnobidscopy:
             F2 = stem0 + '_bidscp' + datestr + '.sh' 
             F2name = '${s0}_bidscp' + datestr + '.sh'
@@ -472,9 +474,12 @@ if __name__ == "__main__":
                     F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
-            if args.fsf1:
-                #for fn in F0f: fn.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
-                for j in range(fi0,len(F0f)): F0f[j].write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+
+            #if args.fsf1:
+            #    #for fn in F0f: fn.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+            #    for j in range(fi0,len(F0f)): F0f[j].write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
+            #START240630
+            if args.feat:
 
             if not args.lcfeatadapter:
                 if not args.lcsmoothonly: 
@@ -488,6 +493,9 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
                     if not args.lcnobidscopy: F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
+
+                    #START240630
+                    if args.feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n\n')
 
                     F0f[0].write('${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
@@ -555,19 +563,20 @@ if __name__ == "__main__":
                     scans.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
 
+            #if args.fsf1:
+            #    for fn in F0f: 
+            #        for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+            #        for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
+            #        fn.write('\n')
+            #if args.fsf2:
+            #    for fn in F0f: 
+            #        for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
+            #START240630
+            if args.feat:
+                F0f[0].write('${FEAT}\n\n')
 
 
 
-            #START240514
-            if args.fsf1:
-                for fn in F0f: 
-                    for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-                    for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
-                    fn.write('\n')
-
-            if args.fsf2:
-                for fn in F0f: 
-                    for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
 
             #if not os.path.isfile(F0[0]):
             if not pathlib.Path(F0[0]).is_file():
