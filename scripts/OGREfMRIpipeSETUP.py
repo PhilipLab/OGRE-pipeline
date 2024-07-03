@@ -392,7 +392,8 @@ if __name__ == "__main__":
         #dir1 = bids + '/pipeline${FREESURFVER}' + args.append
         #START240624
         dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
-
+        #START240702
+        dir2 = bids + '/pipeline${FREESURFVER}' + args.append
         
 
 
@@ -618,7 +619,11 @@ if __name__ == "__main__":
             else:
 
                 F1f.write(f'{gev.SHEBANG}\nset -e\n\n')
-                F1f.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+
+                #F1f.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                #START240702
+                F1f.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir2}\n')
+
                 F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                 F1f.write('if [ -f "${out}" ];then\n')
                 F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
