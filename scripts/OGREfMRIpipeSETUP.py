@@ -70,15 +70,24 @@ def open_files(filenames,mode):
 #                            self.outputdir.append(line2.split('"')[1])
 #                            self.fsf.append(line1)
 #START240629
+
+def get_feat(arg):
+    if not arg: return False
+    feat = Feat(arg)
+    if not feat.fsf: return False
+    return feat
+
+
 class Feat:
     def __init__(self,arg):
         self.outputdir = []
         self.level = []
         self.fsf = []
         for i in arg:
+            #print(f'Reading {i} ...') 
             p0 = pathlib.Path(i)
             if not p0.exists():
-                print(f'{i} does not exist. Skipping!')
+                print(f'ERROR: {i} does not exist. Skipping!')
                 continue 
             if p0.is_dir():
                 fsf0 = p0.glob('*.fsf') 
@@ -108,6 +117,9 @@ class Feat:
                                 print(f'{i} is neither a directory of file. Skipping!')
             else:
                 print(f'{i} is neither a directory of file. Skipping!')
+        print(f'self.outputdir = {self.outputdir}') 
+        print(f'self.level = {self.level}') 
+        print(f'self.fsf = {self.fsf}') 
 
     def ___grep_fsf(self,fsf):
         line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf}')
@@ -116,14 +128,17 @@ class Feat:
         self.level.append(line0.split('"')[1])
         self.fsf.append(fsf)
 
-    def write_script(self,filename,gev,cmd_line_call):
+    #def write_script(self,filename,gev,cmd_line_call):
+    def write_script(self,filename,gev):
         if not gev:
             gev = opl.rou.get_env_vars(args)
             if not gev: exit()
         with open(filename,'w',encoding="utf8",errors='ignore') as f0:
 
             f0.write(f'{gev.SHEBANG}\nset -e\n\n')
-            if cmd_line_call: f0.write(f'#{cmd_line_call}\n\n')
+
+            #if cmd_line_call: f0.write(f'#{cmd_line_call}\n\n')
+
             f0.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
 
             # https://favtutor.com/blogs/get-list-index-python
@@ -225,7 +240,7 @@ if __name__ == "__main__":
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
     parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or*.fsf',action='extend', \
-        nargs='+',help=hfeat)
+        nargs='+',help=hfeat,default='')
 
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
@@ -290,7 +305,9 @@ if __name__ == "__main__":
     #if args.fsf1: feat1 = Feat(args.fsf1)
     #if args.fsf2: feat2 = Feat(args.fsf2)
     #START240629
-    if args.feat: feat = Feat(args.feat)
+    #if args.feat: feat = Feat(args.feat)
+    #START240701
+    feat = get_feat(args.feat) #default is empty string https://stackoverflow.com/questions/9573244/how-to-check-if-the-string-is-empty-in-python
 
 
     datestr = ''
@@ -395,7 +412,8 @@ if __name__ == "__main__":
         #if not args.lcfeatadapter and args.fsf1: 
         #    F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
         #START240630
-        if not args.lcfeatadapter and args.feat: 
+        #if not args.lcfeatadapter and args.feat: 
+        if not args.lcfeatadapter and feat: 
             Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
             Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
 
@@ -459,10 +477,18 @@ if __name__ == "__main__":
             #    for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
             #else:
             #START240629
-            if not args.feat:
+            #if not args.feat:
+            if not feat:
                 if not args.lcfeatadapter:
                     if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+            #START240701
+            else:
+                #feat.write_script(Ffeat,gev,cmd_line_call)
+                feat.write_script(Ffeat,gev)
+
+#write_script(self,filename,gev,cmd_line_call)
+                
 
             fi0=0
             if not args.lcfeatadapter:
@@ -475,11 +501,10 @@ if __name__ == "__main__":
                 if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
+            #START240630
             #if args.fsf1:
             #    #for fn in F0f: fn.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
             #    for j in range(fi0,len(F0f)): F0f[j].write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')          
-            #START240630
-            if args.feat:
 
             if not args.lcfeatadapter:
                 if not args.lcsmoothonly: 
@@ -492,12 +517,11 @@ if __name__ == "__main__":
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
-                    if not args.lcnobidscopy: F0f[0].write('COPY=${sf0}/'+f'{F2name}\n\n')
+                    if not args.lcnobidscopy: F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+                    #if args.feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
+                    if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
 
-                    #START240630
-                    if args.feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n\n')
-
-                    F0f[0].write('${P0} \\\n')
+                    F0f[0].write('\n${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
                     F0f[0].write('    --runlocal \\\n')
@@ -572,8 +596,8 @@ if __name__ == "__main__":
             #    for fn in F0f: 
             #        for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
             #START240630
-            if args.feat:
-                F0f[0].write('${FEAT}\n\n')
+            #if args.feat: F0f[0].write('${FEAT}\n\n')
+            if feat: F0f[0].write('${FEAT}\n\n')
 
 
 
@@ -623,6 +647,9 @@ if __name__ == "__main__":
                     opl.rou.make_executable(F2)
                     print(f'    Output written to {F2}')
 
+                #START240701
+                #if args.feat: print(f'    Output written to {Ffeat}')
+                if feat: print(f'    Output written to {Ffeat}')
 
                 if args.bs: 
                     if mode0=='wt': bs0f.write(f'{gev.SHEBANG}\nset -e\n')
