@@ -24,60 +24,11 @@ def open_files(filenames,mode):
         stack.pop_all()
         return files
 
-#class Feat:
-#    def __init__(self,arg):
-#        self.outputdir = []
-#        self.fsf = []
-#        for i in arg:
-#            if i[-4:]=='feat':
-#                if pathlib.Path(i).exists():
-#                    fsf0 = glob.glob(f'{i}/*.fsf')
-#                    if fsf0:
-#                        if not pathlib.Path(i).is_file():
-#                            print(f'{fsf0[0]} does not exist. Abort!')
-#                            exit()
-#                        line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-#                        self.outputdir.append(line0.split('"')[1])
-#                        self.fsf.append(fsf0)
-#            elif i[-3:]=='fsf':
-#                if not pathlib.Path(i).is_file():
-#                    print(f'{i} does not exist. Abort!')
-#                    exit()
-#                line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {i}')
-#                self.outputdir.append(line0.split('"')[1])
-#                self.fsf.append(i)
-#            else:
-#                with open(i,encoding="utf8",errors='ignore') as f0:
-#                    for line0 in f0:
-#                        line1=line0.strip()
-#                        if not line1 or line1.startswith('#'): continue
-#                        if line1[-4:]=='feat':
-#                            if pathlib.Path(line1).exists():
-#                                fsf0 = glob.glob(f'{line1}/*.fsf')
-#                                if fsf0:
-#                                    if len(fsf0)==1:
-#                                        if not pathlib.Path(fsf0[0]).is_file():
-#                                            print(f'{line1} does not exist. Abort!')
-#                                            exit()
-#                                        line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf0[0]}')
-#                                        self.outputdir.append(line2.split('"')[1])
-#                                        self.fsf.append(fsf0)
-#                        elif line1[-3:]=='fsf':
-#                            if not pathlib.Path(line1).is_file():
-#                                print(f'{line1} does not exist. Abort!')
-#                                exit()
-#                            line2 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {line1}')
-#                            self.outputdir.append(line2.split('"')[1])
-#                            self.fsf.append(line1)
-#START240629
-
 def get_feat(arg):
     if not arg: return False
     feat = Feat(arg)
     if not feat.fsf: return False
     return feat
-
-
 class Feat:
     def __init__(self,arg):
         self.outputdir = []
@@ -128,7 +79,6 @@ class Feat:
         self.level.append(line0.split('"')[1])
         self.fsf.append(fsf)
 
-    #def write_script(self,filename,gev,cmd_line_call):
     def write_script(self,filename,gev):
         if not gev:
             gev = opl.rou.get_env_vars(args)
@@ -149,31 +99,6 @@ class Feat:
             index = [i for i ,e in enumerate(self.level) if e == 2]
             if index:
                 for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i])
-  
-
-
-#for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')
-
-#for fn in F0f: fn.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
-
-#            if args.fsf1:
-#                #for fn in F0f: fn.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
-#                for j in range(fi0,len(F0f)): F0f[j].write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
-
-
-#            if args.fsf1:
-#                for fn in F0f:
-#                    for j in feat1.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-#                    for j in feat1.outputdir: fn.write('\n${MAKEREGDIR} '+f'{pathlib.Path(j).stem}')
-#                    fn.write('\n')
-#
-#            if args.fsf2:
-#                for fn in F0f:
-#                    for j in feat2.fsf: fn.write('\n${FSLDIR}/bin/feat '+f'{j}')
-
-
-
-
 
 if __name__ == "__main__":
 
@@ -239,8 +164,10 @@ if __name__ == "__main__":
     #START240628
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
-    parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or*.fsf',action='extend', \
-        nargs='+',help=hfeat,default='')
+    #parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or .fsf',action='extend', \
+    #    nargs='+',help=hfeat,default='')
+    parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
+        nargs='+',help=hfeat)
 
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
@@ -280,6 +207,7 @@ if __name__ == "__main__":
         parser.exit()
 
     args=parser.parse_args()
+
     if args.dat:
         if args.dat0:
             args.dat += args.dat0
@@ -307,7 +235,8 @@ if __name__ == "__main__":
     #START240629
     #if args.feat: feat = Feat(args.feat)
     #START240701
-    feat = get_feat(args.feat) #default is empty string https://stackoverflow.com/questions/9573244/how-to-check-if-the-string-is-empty-in-python
+    #print(f'args.feat={args.feat}')
+    feat = get_feat(args.feat)
 
 
     datestr = ''
@@ -377,7 +306,7 @@ if __name__ == "__main__":
         #START240626
         if args.dir:
             d0 = str(pathlib.Path(args.dir).resolve()).split("derivatives/preprocessed")[0]
-            print(f'args.dir={args.dir} d0={d0}')
+            #print(f'args.dir={args.dir} d0={d0}')
 
         else:
             idx = i.find('raw_data')
