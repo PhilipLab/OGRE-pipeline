@@ -54,28 +54,13 @@ class Scans:
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
 
-    #def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec):
-    #START240608
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
-
         with open(file,'w') as f0:
             f0.write(f'{SHEBANG}\nset -e\n\n')          
             f0.write(f'FREESURFVER={FREESURFVER}\n\n')
             f0.write(pathstr+'\n') # s0, bids and sf0
             f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
-
-
-            #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*self.bold))[0]]
-            #f0.write('BOLD=(\\\n')
-            #for j in range(len(bold_bash)-1):
-            #    str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-            #    f0.write(f'    {str0} \\\n')
-            #str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-            #f0.write(f'    {str0})\n\n')
-            #START240608
             self.write_bold_bash(f0,s0,self.bold)
-
-
             f0.write('for i in ${BOLD[@]};do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
@@ -83,6 +68,10 @@ class Scans:
             f0.write('        continue\n')
             f0.write('    fi\n')
             f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
+
+            #START240703
+            f0.write('    echo ${file} copied.\n')
+
             f0.write('done\n\n')
             f0.write('for i in ${BOLD[@]};do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
