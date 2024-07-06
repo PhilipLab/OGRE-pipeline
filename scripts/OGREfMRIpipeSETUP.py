@@ -276,7 +276,13 @@ if __name__ == "__main__":
         #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
         print(f'Reading {i}')
-        scans = opl.scans.Scans(i)
+
+        #scans = opl.scans.Scans(i)
+        #START240704
+        if not args.lcfeatadapter:
+            par = opl.scans.Par(i)
+        else:
+            par = opl.scans.Scans(i)
 
         #print(f'i={i}')
         #print(f'type(i)={type(i)}')
@@ -339,10 +345,6 @@ if __name__ == "__main__":
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
 
-        #if not args.lcfeatadapter and args.fsf1: 
-        #    F0.append(stem0 + '_FEATADAPTER' + datestr + '.sh')
-        #START240630
-        #if not args.lcfeatadapter and args.feat: 
         if not args.lcfeatadapter and feat: 
             Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
             Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
@@ -359,7 +361,6 @@ if __name__ == "__main__":
             str0 = stem0 + '_OGREbatch' + datestr
             bs0 = str0 + '.sh'
 
-            #if not os.path.isfile(bs0):
             if not pathlib.Path(bs0).is_file():
                 mode0 = 'wt'
             else:
@@ -369,14 +370,21 @@ if __name__ == "__main__":
 
         if not args.lcfeatadapter:
 
-            par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
-            par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
+            #par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
+            #par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
+            #START240704
+            par.check_phase_dims()
+
 
             #print(f'par.fmapnegidx={par.fmapnegidx}')
             #print(f'par.fmapposidx={par.fmapposidx}')
 
             if not args.lcsmoothonly and not args.lct1copymaskonly: 
-                par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+
+                #par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+                #START240704
+                par.check_phase_dims_fmap()
+
                 fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
                 par.check_ped_dims(scans.bold,fmap)
 

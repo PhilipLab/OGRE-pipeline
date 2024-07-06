@@ -16,6 +16,10 @@ class Scans:
         self.taskidx = []
         self.restidx = []
 
+        #START240704
+        self.fmap_dwi = []
+        self.dwi = []
+
         with open(file,encoding="utf8",errors='ignore') as f0:
             i,j = 0,0
             for line0 in f0:
@@ -32,8 +36,15 @@ class Scans:
 
                 line2=file0.split('/')
                 if line2[-2] == 'fmap':
+
+                    #if line2[-1].find('dbsi') == -1:
+                    #    self.fmap.append(file0)
+                    #START240704
                     if line2[-1].find('dbsi') == -1:
                         self.fmap.append(file0)
+                    else:
+                        self.fmap_dwi.append(file0)
+
                 elif line2[-2] == 'func':
                     if line2[-1].find('sbref') != -1:
                         self.sbref.append((file0,int(len(self.fmap)/2-1)))
@@ -44,6 +55,10 @@ class Scans:
                         else:
                             self.taskidx.append(j)
                         j+=1
+
+                #START240704
+                elif line2[-2] == 'dwi':
+                    self.dwi.append((file0,int(len(self.fmap_dwi)))) #double parentheses for tuple
 
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
@@ -136,20 +151,36 @@ class Scans:
 
 
 
-class Par:
-    def __init__(self,lenbold,lenfmap0):
-        self.bsbref = [False]*lenbold
+#class Par:
+#    def __init__(self,lenbold,lenfmap0):
+#        self.bsbref = [False]*lenbold
+#        self.ped = []
+#        self.dim = []
+#        self.bfmap = [False]*int(lenfmap0/2)
+#        self.ped_fmap = []
+#        self.dim_fmap = []
+#        self.bbold_fmap = []
+#        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
+#        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
+#
+#        #START240615
+#        self.fmap_bold = [ [] for i in range(lenfmap0)] 
+#START240704
+##par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
+class Par(Scans):
+    def __init__(self,file):
+        super().__init__(file)
+        self.bsbref = [False]*len(self.bold)
         self.ped = []
         self.dim = []
-        self.bfmap = [False]*int(lenfmap0/2)
+        self.bfmap = [False]*int(len(self.fmap)/2)
         self.ped_fmap = []
         self.dim_fmap = []
         self.bbold_fmap = []
-        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
-        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
+        self.fmapnegidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
+        self.fmapposidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
+        self.fmap_bold = [ [] for i in range(len(self.fmap))]
 
-        #START240615
-        self.fmap_bold = [ [] for i in range(lenfmap0)] 
 
 
     def __get_phase(self,file):
@@ -178,8 +209,14 @@ class Par:
         line1=line0.split()
         return (line1[1],line1[3],line1[5])
 
+##par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
-    def check_phase_dims(self,bold,sbref):
+    #def check_phase_dims(self,bold,sbref):
+    #START240704
+    def check_phase_dims(self):
+        bold = list(zip(*self.bold))[0]
+        sbref = list(zip(*self.sbref))[0]
+
         for j in range(len(bold)):
             self.ped.append(self.__get_phase(bold[j]))
             ped0 = self.__get_phase(sbref[j])
@@ -205,32 +242,25 @@ class Par:
         #print(f'check_phase_dims ped={self.ped}')
         #print(f'check_phase_dims dim={self.dim}')
 
-    def check_phase_dims_fmap(self,fmap0,fmap1):
+
+#par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+
+    #def check_phase_dims_fmap(self,fmap0,fmap1):
+    #START240704
+    def check_phase_dims_fmap(self):
+        fmap0 = self.fmap[0::2]
+        fmap1 = self.fmap[1::2]
+    
+
+
         for j in range(len(fmap0)):
             self.ped_fmap.append(self.__get_phase(fmap0[j]))
-
-            #ped0 = self.__get_phase(fmap1[j])
-            #START240615
             self.ped_fmap.append(self.__get_phase(fmap1[j]))
-
-            #if ped0[0] != self.ped_fmap[j][0]:
-            #    print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j][0]}')
-            #    print(f'    ERROR: {fmap1[j]} {ped0[0]}')
-            #    print(f'           Fieldmap encoding direction must be the same!')
-            #    continue
-            #START240615
             if self.ped_fmap[2*j+1][0] != self.ped_fmap[2*j][0]:
                 print(f'    ERROR: {fmap0[j]} {self.ped_fmap[2*j][0]}')
                 print(f'    ERROR: {fmap1[j]} {self.ped_fmap[2*j+1][0]}')
                 print(f'           Fieldmap encoding direction must be the same!')
                 continue
-
-            #if ped0 == self.ped_fmap[j]:
-            #    print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j]}')
-            #    print(f'    ERROR: {fmap1[j]} {ped0}')
-            #    print(f'           Fieldmap phases must be opposite!')
-            #    continue
-            #START240615
             if self.ped_fmap[2*j+1] == self.ped_fmap[2*j]:
                 print(f'    ERROR: {fmap0[j]} {self.ped_fmap[2*j]}')
                 print(f'    ERROR: {fmap1[j]} {self.ped_fmap[2*j]+1}')
@@ -247,11 +277,7 @@ class Par:
                 continue
 
             self.bfmap[j]=True
-
-            #if self.ped_fmap[j][1] == '+': 
-            #START240615
             if self.ped_fmap[2*j][1] == '+': 
-
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
