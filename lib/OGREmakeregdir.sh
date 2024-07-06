@@ -29,30 +29,30 @@ helpmsg(){
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
 
 
-    echo "    -t --t1 -t1             T1 resolution (ie FEAT highres). 1 or 2. Default is 1mm."
-    echo "                            If 1mm, then MNINonLinear/T1w_restore and MNINonLinear/T1w_restore_brain are used (or equivalent in "func" dir)"
+    echo "    -t --t1 -t1           T1 resolution (ie FEAT highres). 1 or 2. Default is 1mm."
+    echo "                          If 1mm, then MNINonLinear/T1w_restore and MNINonLinear/T1w_restore_brain are used (or equivalent in "func" dir)"
 
     #echo "                            If 2mm, then MNINonLinear/Results/T1w_restore.2 and MNINonLinear/Results/T1w_restore_brain.2 are used."
     #START240417
-    echo "                            If 2mm, then Results/T1w_restore.2 and Results/T1w_restore_brain.2 are used."
+    echo "                          If 2mm, then Results/T1w_restore.2 and Results/T1w_restore_brain.2 are used."
 
-    echo "                                NOTE: MNINonLinear/T1w_restore.2 is not the correct image. It is a so-called subcortical T1 for surface analysis."
+    echo "                              NOTE: MNINonLinear/T1w_restore.2 is not the correct image. It is a so-called subcortical T1 for surface analysis."
     echo "    --t1highreshead -t1highreshead --t1hireshead -t1hireshead"
-    echo "                            Input your own whole head T1."
-    echo "                            Ex. --t1highreshead /Users/Shared/10_Connectivity/sub-1001/pipeline7.4.1/func/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
+    echo "                          Input your own whole head T1."
+    echo "                          Ex. --t1highreshead /Users/Shared/10_Connectivity/sub-1001/pipeline7.4.1/func/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
     echo "    --t1highres -t1highres --t1hires -t1hires"
-    echo "                            Input your own brain masked T1."
-    echo "                            Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
-    echo ""
-    echo "    -u --atlas -atlas       Standard image resolution (ie FEAT standard). 1 or 2. Default is 2mm."
-    echo "                            If 1mm, then FSLDIR/data/standard/MNI152_T1_1mm and FSLDIR/data/standard/MNI152_T1_1mm_brain are used."
-    echo "                            If 2mm, then FSLDIR/data/standard/MNI152_T1_2mm and FSLDIR/data/standard/MNI152_T1_2mm_brain are used."
+    echo "                          Input your own brain masked T1."
+    echo "                          Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
+    #echo ""
+    echo "    -u --atlas -atlas     Standard image resolution (ie FEAT standard). 1 or 2. Default is 2mm."
+    echo "                          If 1mm, then FSLDIR/data/standard/MNI152_T1_1mm and FSLDIR/data/standard/MNI152_T1_1mm_brain are used."
+    echo "                          If 2mm, then FSLDIR/data/standard/MNI152_T1_2mm and FSLDIR/data/standard/MNI152_T1_2mm_brain are used."
     echo "    --standardhead -standardhead"
-    echo "                            Input your own whole head standard image."
-    echo "                            Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
-    echo "    --standard -standard    Input your own brain masked standard image."
-    echo "                            Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
-    echo ""
+    echo "                          Input your own whole head standard image."
+    echo "                          Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
+    echo "    --standard -standard  Input your own brain masked standard image."
+    echo "                          Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
+    #echo ""
     echo "    -h --help -help         Echo this help message."
     exit
     }
@@ -151,9 +151,10 @@ fi
 
 # Ben update 240521 to handle either full path or relative file
 if [[ $FEATDIR == *".feat" ]];then # if ends in .feat, reduces it to relative file 
-    FEATDIR_LONG=${FEATDIR}
+    FEATDIR_LONG="`pwd`/${FEATDIR}"
     DIRTEMP=${FEATDIR##*/} #everything after the last /
     FEATDIR_SHORT=${DIRTEMP%%.*} #everthing before the last .
+    #echo "top path"
 else # if a relative path, then get info from current directory location (which should be a subject dir)
     CURDIR=`pwd`
     DERIVDIR="${CURDIR%%derivatives*}derivatives"
@@ -161,10 +162,11 @@ else # if a relative path, then get info from current directory location (which 
     SUBJECT=${TEMPSUBJECT%%_*} #everthing before the first _
     FEATDIR_LONG=${DERIVDIR}/analysis/${SUBJECT}/${SUBJECT}_model-OGRE/${FEATDIR}.feat
     FEATDIR_SHORT=${FEATDIR}
+    ##echo "bottom path"
 fi
-
 #echo "FEATDIR_LONG=$FEATDIR_LONG"
 #echo "FEATDIR_SHORT=$FEATDIR_SHORT"
+#exit
 
 if [ -z "${SUBJECT}" ];then
     #SUBJECT=$(awk -F'/sub-' '{print $2}' <<< "$FEATDIR")
@@ -177,6 +179,7 @@ if [ -z "${OGRESUBDIR}" ]; then
     STUDYPATH=${FEATDIR_LONG%%/derivatives*}
     DERIVDIR="${FEATDIR_LONG%%derivatives*}derivatives"
     OGRESUBDIR=${DERIVDIR}/preprocessed/${SUBJECT}
+    #echo "DD = ${DERIVDIR}"
 fi
 
 ANATDIR=${OGRESUBDIR}/anat
@@ -191,7 +194,6 @@ if [ -f $MRDFILE ];then
     exit
 fi
 
-exit
 #echo $DERIVDIR
 
 if [ -z "${T1HIGHRESHEAD}" ];then
@@ -285,11 +287,6 @@ if [[ -d "$OUTDIR" ]];then
     #rm -rf ${OUTDIR}
 fi
 
-# copy motion correction - DOES NOT WORK b/c feat will create a brand new confoundevs.txtß
-# MOCOFILE=${MNLDIR}/../${FEATDIR}_bold/MotionCorrection/${FEATDIR}_bold_mc.par
-# echo "MOCINPUT = ${MOCOFILE}"
-# cp -fp ${MOCOFILE} ${FEATPATH}/confoundevs.txt
-
 mkdir -p ${OUTDIR}
 
 #if [ ! -f ${FEATDIR}/example_func.nii.gz ];then
@@ -304,24 +301,19 @@ if [ ! -f ${FEATDIR_LONG}/example_func.nii.gz ];then
 fi
 cp -p ${FEATDIR_LONG}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz
 
-
-
-
 cp $STANDARDHEAD ${OUTDIR}/standard_head.nii.gz
 cp $STANDARD ${OUTDIR}/standard.nii.gz
 cp -p $T1HIGHRESHEAD ${OUTDIR}/highres_head.nii.gz # this is still broken under BIDS
 cp -p $T1HIGHRES ${OUTDIR}/highres.nii.gz 
 
 # make HR2STD
-echo "Starting transformations for "${FEATDIR_LONG}
-
+#echo "Starting transformations for "${FEATDIR_LONG}
 ${FSLDIR}/bin/flirt -in ${OUTDIR}/highres.nii.gz -ref ${OUTDIR}/standard.nii.gz -out ${OUTDIR}/highres2standard.nii.gz -omat ${OUTDIR}/highres2standard.mat -cost corratio -dof 12 -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -interp trilinear
-
 # make EF2HR
 ${FSLDIR}/bin/epi_reg --epi=${OUTDIR}/example_func --t1=${OUTDIR}/highres_head --t1brain=${OUTDIR}/highres --out=${OUTDIR}/example_func2highres
 # make EF2S
 ${FSLDIR}/bin/convert_xfm -omat ${OUTDIR}/example_func2standard.mat -concat ${OUTDIR}/highres2standard.mat ${OUTDIR}/example_func2highres.mat
-echo "Registration complete for "${FEATDIR_LONG}
+echo "Registration complete for ${FEATDIR_LONG}"
 
 echo "Registration folder created by OGREmakeregdir.sh on ${THEDATE}" > ${MRDFILE}
 chmod 775 ${MRDFILE}
