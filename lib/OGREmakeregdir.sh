@@ -301,9 +301,6 @@ if [ ! -f ${FEATDIR_LONG}/example_func.nii.gz ];then
 fi
 cp -p ${FEATDIR_LONG}/example_func.nii.gz ${OUTDIR}/example_func.nii.gz
 
-
-
-
 cp $STANDARDHEAD ${OUTDIR}/standard_head.nii.gz
 cp $STANDARD ${OUTDIR}/standard.nii.gz
 cp -p $T1HIGHRESHEAD ${OUTDIR}/highres_head.nii.gz # this is still broken under BIDS
@@ -311,14 +308,12 @@ cp -p $T1HIGHRES ${OUTDIR}/highres.nii.gz
 
 # make HR2STD
 #echo "Starting transformations for "${FEATDIR_LONG}
-
 ${FSLDIR}/bin/flirt -in ${OUTDIR}/highres.nii.gz -ref ${OUTDIR}/standard.nii.gz -out ${OUTDIR}/highres2standard.nii.gz -omat ${OUTDIR}/highres2standard.mat -cost corratio -dof 12 -searchrx -90 90 -searchry -90 90 -searchrz -90 90 -interp trilinear
-
 # make EF2HR
 ${FSLDIR}/bin/epi_reg --epi=${OUTDIR}/example_func --t1=${OUTDIR}/highres_head --t1brain=${OUTDIR}/highres --out=${OUTDIR}/example_func2highres
 # make EF2S
 ${FSLDIR}/bin/convert_xfm -omat ${OUTDIR}/example_func2standard.mat -concat ${OUTDIR}/highres2standard.mat ${OUTDIR}/example_func2highres.mat
-echo "Registration complete for "${FEATDIR_LONG}
+echo "Registration complete for ${FEATDIR_LONG}"
 
 echo "Registration folder created by OGREmakeregdir.sh on ${THEDATE}" > ${MRDFILE}
 chmod 775 ${MRDFILE}
