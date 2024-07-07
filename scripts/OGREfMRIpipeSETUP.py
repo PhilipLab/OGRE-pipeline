@@ -385,8 +385,10 @@ if __name__ == "__main__":
                 #START240704
                 par.check_phase_dims_fmap()
 
-                fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
-                par.check_ped_dims(scans.bold,fmap)
+                #fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
+                #par.check_ped_dims(scans.bold,fmap)
+                #START240705
+                par.check_ped_dims()
 
         os.makedirs(pathlib.Path(F0[0]).parent, exist_ok=True)
 
