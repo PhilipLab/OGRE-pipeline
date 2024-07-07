@@ -196,6 +196,7 @@ if [ -z "${dat}" ];then
     echo "Need to provide dat file"
     exit
 fi
+
 #echo "dat[@]=${dat[@]}"
 #echo "#dat[@]=${#dat[@]}"
 
@@ -501,3 +502,6 @@ if [ -n "${bs}" ];then
         echo "Output written to $bs_fileout"
     fi
 fi
+
+# added by Ben 240707
+cp -f ${dat} ${dir0}
