@@ -14,12 +14,12 @@ helpmsg(){
     echo "Required: ${root0} <Feat directory>:"
     echo "    -f --feat -feat       Feat directory. If no -argument provided, then input is assumed to be this."
     echo "                          E.g. /Users/Shared/10_Connectivity/derivatives/analysis/sub-1001/sub-1001_model-OGRE-7.4.1/sub-1008_task-drawLH_run-1.feat"
-    echo "                          If you want the script to look for a relative path in current directory (rather than a full path), omit the final .feat"
+    echo "                          Can use full paths or local paths, and will work if you forget the .feat (e.g. 'sub-1008_task-drawLH_run-1' is a complete input)"
     echo " "
     echo "  Everything below here is OPTIONAL. Defaults to pulling from your feat directory path & assuming it is in BIDS "
     echo "    -v --overwrite        Flag. If set, overwrite existing makeregdir output. Otherwise, if makeregdir output exists, script does nothing."
     echo "    -s --sub -sub         Subject name, e.g. sub-2000. This option will override that of the FEAT directory." 
-    echo "                          Used to find anatomical and other data in BIDS"
+    echo "                          Used to find anatomical and other data in BIDS. Do include the 'sub-'"
     echo "    -o --ogredir          Specify location of OGRE subject directory (i.e. dir that contains subdirectories pipelineVVV, func, anat...)"
 
     echo " "
@@ -149,31 +149,26 @@ if [ -z "${FEATDIR}" ];then
     exit
 fi
 
-# Ben update 240521 to handle either full path or relative file
-if [[ $FEATDIR == *".feat" ]];then # if ends in .feat, reduces it to relative file 
-    FEATDIR_LONG="`pwd`/${FEATDIR}"
-    DIRTEMP=${FEATDIR##*/} #everything after the last /
-    FEATDIR_SHORT=${DIRTEMP%%.*} #everthing before the last .
-    #echo "top path"
-else # if a relative path, then get info from current directory location (which should be a subject dir)
-    CURDIR=`pwd`
-    DERIVDIR="${CURDIR%%derivatives*}derivatives"
-    TEMPSUBJECT=${CURDIR##*/} #everything after the last /
-    SUBJECT=${TEMPSUBJECT%%_*} #everthing before the first _
-    FEATDIR_LONG=${DERIVDIR}/analysis/${SUBJECT}/${SUBJECT}_model-OGRE/${FEATDIR}.feat
-    FEATDIR_SHORT=${FEATDIR}
-    ##echo "bottom path"
+# Ben update 240521 to handle either full path or relative file, with or without .feat
+if [[ $FEATDIR != *".feat" ]];then # if ends in .feat, reduces it to relative file 
+    FEATDIR="${FEATDIR}.feat"
 fi
-#echo "FEATDIR_LONG=$FEATDIR_LONG"
-#echo "FEATDIR_SHORT=$FEATDIR_SHORT"
-#exit
+PRIORPATH=${FEATDIR%%/*} #everthing before the last .
+if [[ $PRIORPATH == $FEATDIR ]];then # this will happen if no / in featdir (i.e. it's a relative path)
+    FEATDIR_LONG="`pwd`/${FEATDIR}"
+else
+    FEATDIR_LONG=${FEATDIR}
+fi
 
 if [ -z "${SUBJECT}" ];then
     #SUBJECT=$(awk -F'/sub-' '{print $2}' <<< "$FEATDIR")
-    TEMPSUBJECT=${FEATDIR_SHORT##*/} #everything after the last /
+    TEMPSUBJECT=${FEATDIR_LONG##*/} #everything after the last / (equiv to previous 'featdir short')
     SUBJECT=${TEMPSUBJECT%%_*} #everthing before the first _
 fi
+
 echo "SUBJECT=$SUBJECT"
+#echo "FEATDIR_LONG=$FEATDIR_LONG"
+#exit
 
 if [ -z "${OGRESUBDIR}" ]; then
     STUDYPATH=${FEATDIR_LONG%%/derivatives*}
