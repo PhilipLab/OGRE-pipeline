@@ -182,9 +182,6 @@ if __name__ == "__main__":
     happend='Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.0debug'
     parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
 
-    hnobidscopy='Flag. Do not copy output files from OGRE pipeline directory to bids directories.'
-    parser.add_argument('-nobidscopy','--nobidscopy','-nobidscp','--nobidscp',dest='lcnobidscopy',action='store_true',help=hnobidscopy)
-
     huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
@@ -347,9 +344,8 @@ if __name__ == "__main__":
             Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
             Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
 
-        if not args.lcnobidscopy:
-            F2 = stem0 + '_bidscp' + datestr + '.sh' 
-            F2name = '${s0}_bidscp' + datestr + '.sh'
+        F2 = stem0 + '_bidscp' + datestr + '.sh' 
+        F2name = '${s0}_bidscp' + datestr + '.sh'
         F0name = '${s0}_' + l0 + datestr + '.sh'
 
         #START240607
@@ -447,7 +443,7 @@ if __name__ == "__main__":
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
                 if not args.lcsmoothonly and not args.lct1copymaskonly: 
 
-                    if not args.lcnobidscopy: F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+                    F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
                     #if args.feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
 
@@ -508,11 +504,11 @@ if __name__ == "__main__":
 
                     #scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     #START240624
-                    if not args.lcnobidscopy: scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
+                    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
 
 
                     #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
-                    if not args.lcnobidscopy and not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
+                    if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
 
                     scans.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
@@ -542,7 +538,7 @@ if __name__ == "__main__":
                 #START240515
                 for j in F0: pathlib.Path.unlink(j) 
                 pathlib.Path.unlink(F1)
-                if not args.lcnobidscopy: pathlib.Path.unlink(F2) 
+                pathlib.Path.unlink(F2) 
                 if arg.bs: pathlib.Path.unlink(bs0) 
 
             else:
@@ -577,9 +573,8 @@ if __name__ == "__main__":
                     print(f'    Output written to {j}')
                 opl.rou.make_executable(F1)
                 print(f'    Output written to {F1}')
-                if not args.lcnobidscopy:
-                    opl.rou.make_executable(F2)
-                    print(f'    Output written to {F2}')
+                opl.rou.make_executable(F2)
+                print(f'    Output written to {F2}')
 
                 #START240701
                 #if args.feat: print(f'    Output written to {Ffeat}')
