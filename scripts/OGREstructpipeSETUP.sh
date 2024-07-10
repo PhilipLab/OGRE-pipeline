@@ -41,8 +41,6 @@ helpmsg(){
     echo "            11,/Users/Shared/10_Connectivity/raw_data/sub-2035/func/sub-2035_task-drawRH_run-1"
     echo "    -A --autorun -autorun --AUTORUN -AUTORUN"
     echo "        Flag. Automatically execute *_fileout.sh script. Default is to not execute."
-    echo "    -B --bids -bids --BIDS -BIDS"
-    echo "        Flag. OGRE output is copied to BIDS directories."
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE software package (e.g. ~/GitHub/OGRE-pipeline)."
     echo "        Defaults to variable OGREDIR if set elsewhere. If set in both places, this one overrides."
@@ -89,7 +87,7 @@ echo $0 $@
 
 #lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append= #do not set dat;unexpected
 #START240621
-lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append=;erosion=2 #do not set dat;unexpected
+lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2 #do not set dat;unexpected
 
 unset bs pipedir name
 
@@ -108,10 +106,6 @@ for((i=0;i<${#@};++i));do
         -A | --autorun | -autorun | --AUTORUN | -AUTORUN)
             lcautorun=1
             echo "lcautorun=$lcautorun"
-            ;;
-        -B | --bids | -bids | --BIDS | -BIDS)
-            lcbids=1
-            echo "lcbids=$lcbids"
             ;;
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
