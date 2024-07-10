@@ -58,7 +58,7 @@ class Scans:
 
                 #START240704
                 elif line2[-2] == 'dwi':
-                    self.dwi.append((file0,int(len(self.dwifmap)))) #double parentheses for tuple
+                    self.dwi.append((file0,int(len(self.dwifmap)-1))) #double parentheses for tuple
 
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
@@ -68,6 +68,9 @@ class Scans:
         #print(f'self.bold={self.bold}')
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
+        print(f'self.dwifmap={self.dwifmap}')
+        print(f'self.dwi={self.dwi}')
+
 
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
         with open(file,'w') as f0:
@@ -181,7 +184,6 @@ class Par(Scans):
         self.fmapposidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
         self.fmap_bold = [ [] for i in range(len(self.fmap))]
         self.fmap_dwi = [ [] for i in range(len(self.dwifmap))]
-
 
     def __get_phase(self,file):
         jsonf = (f'{file.split('.nii')[0]}.json')
@@ -318,7 +320,7 @@ class Par(Scans):
         self.bbold_fmap=[False]*len(self.ped)
         if any(self.bfmap):
             for j in range(len(self.ped)):
-                if self.bfmap[bold[j][1]]:
+                if self.bfmap[self.bold[j][1]]:
                     if self.ped[j][0] != self.ped_fmap[self.bold[j][1]][0]:
                         print(f'    ERROR: {self.bold[j][0]} {self.ped[j][0]}')
                         print(f'    ERROR: {self.fmap[self.bold[j][1]*2]} {self.ped_fmap[self.bold[j][1]][0]}')
@@ -344,18 +346,21 @@ class Par(Scans):
     def check_ped_dims_dwi(self):
         self.bdwi_fmap=[False]*len(self.dwi)
         for j in range(len(self.dwi)):
-            ped_dwi = __get_phase(self.dwi[j])
-            ped_dwifmap = __get_phase(self.dwifmap[self.dwi[j][1]])
-            if ped_dwi != ped_dwifmap:
-                print(f'    ERROR: {self.dwi[j][0]} {ped_dwi]}')
-                print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap]}')
+            #print(f'check_ped_dims_dwi here0 j={j}')
+            ped_dwi = self.__get_phase(self.dwi[j][0])
+            ped_dwifmap = self.__get_phase(self.dwifmap[self.dwi[j][1]])
+            print(f'check_ped_dims_dwi {self.dwi[j][0]} {ped_dwi}')
+            print(f'check_ped_dims_dwi {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
+            if ped_dwi[0] != ped_dwifmap[0]:
+                print(f'    ERROR: {self.dwi[j][0]} {ped_dwi}')
+                print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
                 print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
                 continue
-            dim_dwi = __get_dim(self.dwi[j][0])
-            dim_dwifmap = __get_dim(self.dwifmap[self.dwi[j][1]])
+            dim_dwi = self.__get_dim(self.dwi[j][0])
+            dim_dwifmap = self.__get_dim(self.dwifmap[self.dwi[j][1]])
             if dim_dwi != dim_dwifmap:
-                print(f'    ERROR: {self.dwi[j][0]} {dim_dwi]}')
-                print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {dim_dwifmap]}')
+                print(f'    ERROR: {self.dwi[j][0]} {dim_dwi}')
+                print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {dim_dwifmap}')
                 print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
                 ynq = input('    Would like to resample the field maps? y, n, q').casefold()
                 if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
@@ -365,17 +370,6 @@ class Par(Scans):
                 self.dwifmap[self.dwi[j][1]] = fmap0
             self.bdwi_fmap[j]=True
             self.fmap_dwi[self.dwi[j][1]].append(j)
-
-
-
-                for i in self.bold[j][1]*2,self.bold[j][1]*2+1:
-                    fmap0 = pathlib.Path(self.fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-                    junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
-                    self.dim_fmap[self.bold[j][1]] = self.dim[j]
-                    self.fmap[i] = fmap0
-            self.bbold_fmap[j]=True
-            self.fmap_bold[self.bold[j][1]*2].append(j)
-            self.fmap_bold[self.bold[j][1]*2+1].append(j)
 
 
 def get_TR(file):

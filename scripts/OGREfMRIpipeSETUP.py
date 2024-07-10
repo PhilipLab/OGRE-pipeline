@@ -420,7 +420,11 @@ if __name__ == "__main__":
             #if not args.feat:
             if not feat:
                 if not args.lcfeatadapter:
-                    if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+
+                    #if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                    #START240706
+                    if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
             #START240701
             else:
@@ -438,7 +442,11 @@ if __name__ == "__main__":
                     F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
-                if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+
+                #if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                #START240706
+                if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
             #START240630
@@ -466,43 +474,89 @@ if __name__ == "__main__":
                     F0f[0].write('    --Subject=${s0} \\\n')
                     F0f[0].write('    --runlocal \\\n')
                     F0f[0].write('    --fMRITimeSeries="\\\n')
-                    for j in range(len(scans.bold)-1): F0f[0].write(f'        {scans.bold[j][0]} \\\n')
-                    F0f[0].write(f'        {scans.bold[j+1][0]}" \\\n')
-                    
-                    if scans.sbref:
+
+                    #for j in range(len(scans.bold)-1): F0f[0].write(f'        {scans.bold[j][0]} \\\n')
+                    #F0f[0].write(f'        {scans.bold[j+1][0]}" \\\n')
+                    #START240706
+                    for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
+                    F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
+
+                    #if scans.sbref:
+                    #START240706
+                    if par.sbref:
+
                         if any(par.bsbref):
                             F0f[0].write('    --fMRISBRef="\\\n')
-                            for j in range(len(scans.bold)-1): 
+
+                            #for j in range(len(scans.bold)-1): 
+                            #START240706
+                            for j in range(len(par.bold)-1): 
+
                                 if par.bsbref[j]: 
-                                    F0f[0].write(f'        {scans.sbref[j][0]} \\\n')
+
+                                    #F0f[0].write(f'        {scans.sbref[j][0]} \\\n')
+                                    #START240706
+                                    F0f[0].write(f'        {par.sbref[j][0]} \\\n')
+
                                 else:
                                     F0f[0].write('        NONE \\\n')
                             if par.bsbref[j+1]: 
-                                F0f[0].write(f'        {scans.sbref[j+1][0]}" \\\n')
+
+                                #F0f[0].write(f'        {scans.sbref[j+1][0]}" \\\n')
+                                #START240706
+                                F0f[0].write(f'        {par.sbref[j+1][0]}" \\\n')
+
                             else:
                                 F0f[0].write('        NONE" \\\n')
                             
-                    if scans.fmap:
+                    #if scans.fmap:
+                    #START240706
+                    if par.fmap:
+
                         if any(par.bfmap):
                             if any(par.bbold_fmap):
                                 F0f[0].write('    --SpinEchoPhaseEncodeNegative="\\\n')
-                                for j in range(len(scans.bold)-1): 
+
+                                #for j in range(len(scans.bold)-1): 
+                                #START240706
+                                for j in range(len(par.bold)-1): 
+
                                     if par.bbold_fmap[j]: 
-                                        F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
+
+                                        #F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapnegidx[scans.bold[j][1]]]} \\\n')
+                                        #START240706
+                                        F0f[0].write(f'        {par.fmap[par.bold[j][1]*2+par.fmapnegidx[par.bold[j][1]]]} \\\n')
+
                                     else:
                                         F0f[0].write('        NONE \\\n')
                                 if par.bbold_fmap[j+1]: 
-                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}" \\\n')
+
+                                    #F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapnegidx[scans.bold[j][1]]]}" \\\n')
+                                    #START240706
+                                    F0f[0].write(f'        {par.fmap[par.bold[j+1][1]*2+par.fmapnegidx[par.bold[j][1]]]}" \\\n')
+
                                 else:
                                     F0f[0].write('        NONE"\n')
                                 F0f[0].write('    --SpinEchoPhaseEncodePositive="\\\n')
-                                for j in range(len(scans.bold)-1): 
+
+                                #for j in range(len(scans.bold)-1): 
+                                #START240706
+                                for j in range(len(par.bold)-1): 
+
                                     if par.bbold_fmap[j]: 
-                                        F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
+
+                                        #F0f[0].write(f'        {fmap[scans.bold[j][1]*2+par.fmapposidx[scans.bold[j][1]]]} \\\n')
+                                        #START240706
+                                        F0f[0].write(f'        {par.fmap[par.bold[j][1]*2+par.fmapposidx[par.bold[j][1]]]} \\\n')
+
                                     else:
                                         F0f[0].write('        NONE \\\n')
                                 if par.bbold_fmap[j+1]: 
-                                    F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}" \\\n')
+
+                                    #F0f[0].write(f'        {fmap[scans.bold[j+1][1]*2+par.fmapposidx[scans.bold[j][1]]]}" \\\n')
+                                    #START240706
+                                    F0f[0].write(f'        {par.fmap[par.bold[j+1][1]*2+par.fmapposidx[par.bold[j][1]]]}" \\\n')
+
                                 else:
                                     F0f[0].write('        NONE"\n')
 
@@ -514,17 +568,22 @@ if __name__ == "__main__":
                 #if scans.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec): 
                 #    scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec)
                 #START240608
-                if scans.taskidx and not args.lct1copymaskonly:
+                #if scans.taskidx and not args.lct1copymaskonly:
+                #START240706
+                if par.taskidx and not args.lct1copymaskonly:
 
                     #scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     #START240624
-                    if not args.lcnobidscopy: scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
-
+                    #if not args.lcnobidscopy: scans.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
+                    #START240706
+                    if not args.lcnobidscopy: par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
 
                     #if not args.lcnobidscopy: F0f[0].write('${COPY}\n\n')
                     if not args.lcnobidscopy and not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
 
-                    scans.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+                    #scans.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+                    #START240706
+                    par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
 
             #if args.fsf1:
@@ -626,7 +685,11 @@ if __name__ == "__main__":
                 Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
                 Fcleanf.write('rm -rf ${sf0}/T1w\n')
                 Fcleanf.write('rm -rf ${sf0}/T2w\n')
-                scans.write_bold_bash(Fcleanf,s0,scans.bold)
+
+                #scans.write_bold_bash(Fcleanf,s0,scans.bold)
+                #START240706
+                par.write_bold_bash(Fcleanf,s0,par.bold)
+
                 Fcleanf.write('for i in ${BOLD[@]};do\n')
                 Fcleanf.write('    rm -rf ${sf0}/${i}\n')
                 Fcleanf.write('done\n\n')
