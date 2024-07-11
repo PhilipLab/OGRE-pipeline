@@ -16,6 +16,10 @@ class Scans:
         self.taskidx = []
         self.restidx = []
 
+        #START240704
+        self.dwifmap = []
+        self.dwi = []
+
         with open(file,encoding="utf8",errors='ignore') as f0:
             i,j = 0,0
             for line0 in f0:
@@ -32,8 +36,15 @@ class Scans:
 
                 line2=file0.split('/')
                 if line2[-2] == 'fmap':
+
+                    #if line2[-1].find('dbsi') == -1:
+                    #    self.fmap.append(file0)
+                    #START240704
                     if line2[-1].find('dbsi') == -1:
                         self.fmap.append(file0)
+                    else:
+                        self.dwifmap.append(file0)
+
                 elif line2[-2] == 'func':
                     if line2[-1].find('sbref') != -1:
                         self.sbref.append((file0,int(len(self.fmap)/2-1)))
@@ -45,6 +56,10 @@ class Scans:
                             self.taskidx.append(j)
                         j+=1
 
+                #START240704
+                elif line2[-2] == 'dwi':
+                    self.dwi.append((file0,int(len(self.dwifmap)-1))) #double parentheses for tuple
+
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
             exit()
@@ -53,6 +68,9 @@ class Scans:
         #print(f'self.bold={self.bold}')
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
+        print(f'self.dwifmap={self.dwifmap}')
+        print(f'self.dwi={self.dwi}')
+
 
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
         with open(file,'w') as f0:
@@ -136,33 +154,40 @@ class Scans:
 
 
 
-class Par:
-    def __init__(self,lenbold,lenfmap0):
-        self.bsbref = [False]*lenbold
+#class Par:
+#    def __init__(self,lenbold,lenfmap0):
+#        self.bsbref = [False]*lenbold
+#        self.ped = []
+#        self.dim = []
+#        self.bfmap = [False]*int(lenfmap0/2)
+#        self.ped_fmap = []
+#        self.dim_fmap = []
+#        self.bbold_fmap = []
+#        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
+#        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
+#
+#        #START240615
+#        self.fmap_bold = [ [] for i in range(lenfmap0)] 
+#START240704
+##par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
+class Par(Scans):
+    def __init__(self,file):
+        super().__init__(file)
+        self.bsbref = [False]*len(self.bold)
         self.ped = []
         self.dim = []
-        self.bfmap = [False]*int(lenfmap0/2)
+        self.bfmap = [False]*int(len(self.fmap)/2)
         self.ped_fmap = []
+        self.ped_dwifmap = []
         self.dim_fmap = []
         self.bbold_fmap = []
-        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
-        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
-
-        #START240615
-        self.fmap_bold = [ [] for i in range(lenfmap0)] 
-
+        self.bdwi_fmap = []
+        self.fmapnegidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
+        self.fmapposidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
+        self.fmap_bold = [ [] for i in range(len(self.fmap))]
+        self.fmap_dwi = [ [] for i in range(len(self.dwifmap))]
 
     def __get_phase(self,file):
-
-        #jsonf = file.split('.')[0] + '.json'
-        ##if not os.path.isfile(jsonf):
-        #if not pathlib.Path(jsonf).is_file():
-        #    print(f'    ERROR: {jsonf} does not exist. Abort!')
-        #    exit()
-        #with open(jsonf,encoding="utf8",errors='ignore') as f0:
-        #    dict0 = json.load(f0)
-        #return dict0['PhaseEncodingDirection']
-        #START240619
         jsonf = (f'{file.split('.nii')[0]}.json')
         try:
             with open(jsonf,encoding="utf8",errors='ignore') as f0:
@@ -172,14 +197,19 @@ class Par:
             exit() 
         return dict0['PhaseEncodingDirection']
 
-
     def __get_dim(self,file):
         line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
         line1=line0.split()
         return (line1[1],line1[3],line1[5])
 
+##par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
 
-    def check_phase_dims(self,bold,sbref):
+    #def check_phase_dims(self,bold,sbref):
+    #START240704
+    def check_phase_dims(self):
+        bold = list(zip(*self.bold))[0]
+        sbref = list(zip(*self.sbref))[0]
+
         for j in range(len(bold)):
             self.ped.append(self.__get_phase(bold[j]))
             ped0 = self.__get_phase(sbref[j])
@@ -205,32 +235,25 @@ class Par:
         #print(f'check_phase_dims ped={self.ped}')
         #print(f'check_phase_dims dim={self.dim}')
 
-    def check_phase_dims_fmap(self,fmap0,fmap1):
+
+#par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
+
+    #def check_phase_dims_fmap(self,fmap0,fmap1):
+    #START240704
+    def check_phase_dims_fmap(self):
+        fmap0 = self.fmap[0::2]
+        fmap1 = self.fmap[1::2]
+    
+
+
         for j in range(len(fmap0)):
             self.ped_fmap.append(self.__get_phase(fmap0[j]))
-
-            #ped0 = self.__get_phase(fmap1[j])
-            #START240615
             self.ped_fmap.append(self.__get_phase(fmap1[j]))
-
-            #if ped0[0] != self.ped_fmap[j][0]:
-            #    print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j][0]}')
-            #    print(f'    ERROR: {fmap1[j]} {ped0[0]}')
-            #    print(f'           Fieldmap encoding direction must be the same!')
-            #    continue
-            #START240615
             if self.ped_fmap[2*j+1][0] != self.ped_fmap[2*j][0]:
                 print(f'    ERROR: {fmap0[j]} {self.ped_fmap[2*j][0]}')
                 print(f'    ERROR: {fmap1[j]} {self.ped_fmap[2*j+1][0]}')
                 print(f'           Fieldmap encoding direction must be the same!')
                 continue
-
-            #if ped0 == self.ped_fmap[j]:
-            #    print(f'    ERROR: {fmap0[j]} {self.ped_fmap[j]}')
-            #    print(f'    ERROR: {fmap1[j]} {ped0}')
-            #    print(f'           Fieldmap phases must be opposite!')
-            #    continue
-            #START240615
             if self.ped_fmap[2*j+1] == self.ped_fmap[2*j]:
                 print(f'    ERROR: {fmap0[j]} {self.ped_fmap[2*j]}')
                 print(f'    ERROR: {fmap1[j]} {self.ped_fmap[2*j]+1}')
@@ -247,11 +270,7 @@ class Par:
                 continue
 
             self.bfmap[j]=True
-
-            #if self.ped_fmap[j][1] == '+': 
-            #START240615
             if self.ped_fmap[2*j][1] == '+': 
-
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
@@ -259,42 +278,102 @@ class Par:
         #print(f'ped_fmap={self.ped_fmap}')
         #print(f'dim_fmap={self.dim_fmap}')
 
-    def check_ped_dims(self,bold,fmap):
+#fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
+#par.check_ped_dims(scans.bold,fmap)
+
+    #def check_ped_dims(self,bold,fmap):
+    #    self.bbold_fmap=[False]*len(self.ped)
+    #
+    #    #print(f'here0 bbold_fmap={self.bbold_fmap}')
+    #    #print(f'here0 len(self.ped)={len(self.ped)}')
+    #    #print(f'here0 len(fmap)={len(fmap)}')
+    #
+    #
+    #    if any(self.bfmap):
+    #        for j in range(len(self.ped)):
+    #            if self.bfmap[bold[j][1]]:
+    #                if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
+    #                    print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
+    #                    print(f'    ERROR: {fmap[bold[j][1]*2]} {self.ped_fmap[bold[j][1]][0]}')
+    #                    print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
+    #                    continue
+    #                if self.dim[j] != self.dim_fmap[bold[j][1]]:
+    #                    print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
+    #                    print(f'    ERROR: {fmap[bold[j][1]*2]} {self.dim_fmap[bold[j][1]]}')
+    #                    print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
+    #                    ynq = input('    Would like to resample the field maps? y, n, q').casefold()
+    #                    if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
+    #                    if ynq=='n' or ynq=='no': continue
+    #                    for i in bold[j][1]*2,bold[j][1]*2+1:
+    #                        fmap0 = pathlib.Path(fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
+    #                        junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
+    #                        self.dim_fmap[bold[j][1]] = self.dim[j]
+    #                        fmap[i] = fmap0
+    #                self.bbold_fmap[j]=True
+    #
+    #                #START240615
+    #                self.fmap_bold[bold[j][1]*2].append(j)
+    #                self.fmap_bold[bold[j][1]*2+1].append(j)
+    #
+    #    #print(f'here1 bbold_fmap={self.bbold_fmap}')
+    #    #print(f'here1 fmap_bold={self.fmap_bold}')
+    #START240705
+    def check_ped_dims(self):
         self.bbold_fmap=[False]*len(self.ped)
-
-        #print(f'here0 bbold_fmap={self.bbold_fmap}')
-        #print(f'here0 len(self.ped)={len(self.ped)}')
-        #print(f'here0 len(fmap)={len(fmap)}')
-
-
         if any(self.bfmap):
             for j in range(len(self.ped)):
-                if self.bfmap[bold[j][1]]:
-                    if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
-                        print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
-                        print(f'    ERROR: {fmap[bold[j][1]*2]} {self.ped_fmap[bold[j][1]][0]}')
+                if self.bfmap[self.bold[j][1]]:
+                    if self.ped[j][0] != self.ped_fmap[self.bold[j][1]][0]:
+                        print(f'    ERROR: {self.bold[j][0]} {self.ped[j][0]}')
+                        print(f'    ERROR: {self.fmap[self.bold[j][1]*2]} {self.ped_fmap[self.bold[j][1]][0]}')
                         print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
                         continue
-                    if self.dim[j] != self.dim_fmap[bold[j][1]]:
-                        print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
-                        print(f'    ERROR: {fmap[bold[j][1]*2]} {self.dim_fmap[bold[j][1]]}')
+                    if self.dim[j] != self.dim_fmap[self.bold[j][1]]:
+                        print(f'    ERROR: {self.bold[j][0]} {self.dim[j]}')
+                        print(f'    ERROR: {self.fmap[self.bold[j][1]*2]} {self.dim_fmap[self.bold[j][1]]}')
                         print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
                         ynq = input('    Would like to resample the field maps? y, n, q').casefold()
                         if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
                         if ynq=='n' or ynq=='no': continue
-                        for i in bold[j][1]*2,bold[j][1]*2+1:
-                            fmap0 = pathlib.Path(fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-                            junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
-                            self.dim_fmap[bold[j][1]] = self.dim[j]
-                            fmap[i] = fmap0
+                        for i in self.bold[j][1]*2,self.bold[j][1]*2+1:
+                            fmap0 = pathlib.Path(self.fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
+                            junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+                            self.dim_fmap[self.bold[j][1]] = self.dim[j]
+                            self.fmap[i] = fmap0
                     self.bbold_fmap[j]=True
+                    self.fmap_bold[self.bold[j][1]*2].append(j)
+                    self.fmap_bold[self.bold[j][1]*2+1].append(j)
 
-                    #START240615
-                    self.fmap_bold[bold[j][1]*2].append(j)
-                    self.fmap_bold[bold[j][1]*2+1].append(j)
+    #START240705
+    def check_ped_dims_dwi(self):
+        self.bdwi_fmap=[False]*len(self.dwi)
+        for j in range(len(self.dwi)):
+            #print(f'check_ped_dims_dwi here0 j={j}')
+            ped_dwi = self.__get_phase(self.dwi[j][0])
+            ped_dwifmap = self.__get_phase(self.dwifmap[self.dwi[j][1]])
+            print(f'check_ped_dims_dwi {self.dwi[j][0]} {ped_dwi}')
+            print(f'check_ped_dims_dwi {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
+            if ped_dwi[0] != ped_dwifmap[0]:
+                print(f'    ERROR: {self.dwi[j][0]} {ped_dwi}')
+                print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
+                print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
+                continue
+            dim_dwi = self.__get_dim(self.dwi[j][0])
+            dim_dwifmap = self.__get_dim(self.dwifmap[self.dwi[j][1]])
+            if dim_dwi != dim_dwifmap:
+                print(f'    ERROR: {self.dwi[j][0]} {dim_dwi}')
+                print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {dim_dwifmap}')
+                print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
+                ynq = input('    Would like to resample the field maps? y, n, q').casefold()
+                if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
+                if ynq=='n' or ynq=='no': continue
+                fmap0 = pathlib.Path(self.dwifmap[self.dwi[j][1]]).stem + '_resampled' + 'x'.join(dim_dwi) + '.nii.gz'
+                junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.dwifmap[self.dwi[j][1]]} {self.dwi[j][0]} CUBIC {fmap0}')
+                self.dwifmap[self.dwi[j][1]] = fmap0
+            self.bdwi_fmap[j]=True
+            self.fmap_dwi[self.dwi[j][1]].append(j)
+            self.ped_dwifmap.append(ped_dwifmap)
 
-        #print(f'here1 bbold_fmap={self.bbold_fmap}')
-        #print(f'here1 fmap_bold={self.fmap_bold}')
 
 def get_TR(file):
     jsonf = file.split('.')[0] + '.json'
