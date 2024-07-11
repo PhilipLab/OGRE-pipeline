@@ -178,8 +178,10 @@ class Par(Scans):
         self.dim = []
         self.bfmap = [False]*int(len(self.fmap)/2)
         self.ped_fmap = []
+        self.ped_dwifmap = []
         self.dim_fmap = []
         self.bbold_fmap = []
+        self.bdwi_fmap = []
         self.fmapnegidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
         self.fmapposidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
         self.fmap_bold = [ [] for i in range(len(self.fmap))]
@@ -370,6 +372,7 @@ class Par(Scans):
                 self.dwifmap[self.dwi[j][1]] = fmap0
             self.bdwi_fmap[j]=True
             self.fmap_dwi[self.dwi[j][1]].append(j)
+            self.ped_dwifmap.append(ped_dwifmap)
 
 
 def get_TR(file):

@@ -72,31 +72,54 @@ if __name__ == "__main__":
 
         #print(i)
       
-        #if scans.fmap:
-        #START240706
         if par.fmap:
 
             if any(par.bfmap):
                 if any(par.bbold_fmap):
 
-                    #for i in range(len(scans.fmap)):
-                    #    jsonf = (f'{scans.fmap[i].split('.nii')[0]}.json')
-                    #START240706
-                    for i in range(len(par.fmap)):
-                        jsonf = (f'{par.fmap[i].split('.nii')[0]}.json')
+                    print(f'par.fmap={par.fmap}')
+                    print(f'len(par.fmap)={len(par.fmap)}')
+
+                    for j in range(len(par.fmap)):
+
+                        print(f'j={j}')
+
+                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
 
                         try:
                             with open(jsonf,encoding="utf8",errors='ignore') as f0:
                                 dict0 = json.load(f0)
                         except FileNotFoundError:
                             print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
-                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[i]}
-                        val=[]
+                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[j]}
 
-                        #val += [(f'func{scans.bold[par.fmap_bold[i][j]][0].split('/func')[1]}') for j in range(len(par.fmap_bold[i]))]
-                        val += [(f'func{par.bold[par.fmap_bold[i][j]][0].split('/func')[1]}') for j in range(len(par.fmap_bold[i]))]
+                        val=[]
+                        val += [(f'func{par.bold[par.fmap_bold[j][k]][0].split('/func')[1]}') for k in range(len(par.fmap_bold[j]))]
 
                         dict0['IntendedFor'] = val
                         with open(jsonf, 'w', encoding='utf-8') as f:
                             json.dump(dict0, f, ensure_ascii=False, indent=4)
                         print(f'Output written to {jsonf}')
+
+            if any(par.bdwi_fmap):
+
+                print(f'par.dwifmap={par.dwifmap}')
+
+                for j in range(len(par.dwifmap)):
+                    print(f'j={j}')
+                    jsonf = (f'{par.dwifmap[j].split('.nii')[0]}.json')
+
+                    try:
+                        with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                            dict0 = json.load(f0)
+                    except FileNotFoundError:
+                        print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
+                        dict0 = {'PhaseEncodingDirection':par.ped_dwifmap[j]}
+
+                    val=[]
+                    val += [(f'func{par.dwi[par.fmap_dwi[j][k]][0].split('/dwi')[1]}') for k in range(len(par.fmap_dwi[j]))]
+
+                    dict0['IntendedFor'] = val
+                    with open(jsonf, 'w', encoding='utf-8') as f:
+                        json.dump(dict0, f, ensure_ascii=False, indent=4)
+                    print(f'Output written to {jsonf}')
