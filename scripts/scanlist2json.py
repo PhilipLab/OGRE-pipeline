@@ -22,7 +22,8 @@ import opl
 
 if __name__ == "__main__":
 
-    parser=argparse.ArgumentParser(description=f'Create bids json files for nii. Required: scanlist2json.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
+    hp=f'Create bids json files for nii. Required: scanlist2json.py <scanlist.csv>'
+    parser=argparse.ArgumentParser(description=hp,formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be scanlist.csv files.')
     hdat = 'Ex 1. '+parser.prog+' sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
@@ -55,40 +56,70 @@ if __name__ == "__main__":
 
         print(f'Reading {i}')
 
-        scans = opl.scans.Scans(i)
-        par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
-
+        #scans = opl.scans.Scans(i)
+        #par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
+        #par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
+        #par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
         #par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
         #fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
         #par.check_ped_dims(scans.bold,fmap)
-
-        par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
-        par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
-
-        #print(f'par.fmapnegidx={par.fmapnegidx}')
-        #print(f'par.fmapposidx={par.fmapposidx}')
-
-        par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
-        fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
-        par.check_ped_dims(scans.bold,fmap)
+        #START240706
+        par = opl.scans.Par(i)
+        par.check_phase_dims()
+        par.check_phase_dims_fmap()
+        par.check_ped_dims()
+        par.check_ped_dims_dwi()
 
         #print(i)
       
-        if scans.fmap:
+        if par.fmap:
+
             if any(par.bfmap):
                 if any(par.bbold_fmap):
-                    for i in range(len(scans.fmap)):
-                        jsonf = (f'{scans.fmap[i].split('.nii')[0]}.json')
+
+                    print(f'par.fmap={par.fmap}')
+                    print(f'len(par.fmap)={len(par.fmap)}')
+
+                    for j in range(len(par.fmap)):
+
+                        print(f'j={j}')
+
+                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
+
                         try:
                             with open(jsonf,encoding="utf8",errors='ignore') as f0:
                                 dict0 = json.load(f0)
                         except FileNotFoundError:
                             print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
-                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[i]}
+                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[j]}
+
                         val=[]
-                        #val += [scans.bold[par.fmap_bold[i][j]][0] for j in range(len(par.fmap_bold[i]))]
-                        val += [(f'func{scans.bold[par.fmap_bold[i][j]][0].split('/func')[1]}') for j in range(len(par.fmap_bold[i]))]
+                        val += [(f'func{par.bold[par.fmap_bold[j][k]][0].split('/func')[1]}') for k in range(len(par.fmap_bold[j]))]
+
                         dict0['IntendedFor'] = val
                         with open(jsonf, 'w', encoding='utf-8') as f:
                             json.dump(dict0, f, ensure_ascii=False, indent=4)
                         print(f'Output written to {jsonf}')
+
+            if any(par.bdwi_fmap):
+
+                print(f'par.dwifmap={par.dwifmap}')
+
+                for j in range(len(par.dwifmap)):
+                    print(f'j={j}')
+                    jsonf = (f'{par.dwifmap[j].split('.nii')[0]}.json')
+
+                    try:
+                        with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                            dict0 = json.load(f0)
+                    except FileNotFoundError:
+                        print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
+                        dict0 = {'PhaseEncodingDirection':par.ped_dwifmap[j]}
+
+                    val=[]
+                    val += [(f'func{par.dwi[par.fmap_dwi[j][k]][0].split('/dwi')[1]}') for k in range(len(par.fmap_dwi[j]))]
+
+                    dict0['IntendedFor'] = val
+                    with open(jsonf, 'w', encoding='utf-8') as f:
+                        json.dump(dict0, f, ensure_ascii=False, indent=4)
+                    print(f'Output written to {jsonf}')
