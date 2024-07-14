@@ -147,8 +147,9 @@ if __name__ == "__main__":
     mparadigm_hp_sec='HPFcutoff'
     parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
 
-    hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
-    parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
+    #START240713
+    #hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
+    #parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
 
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
@@ -268,11 +269,10 @@ if __name__ == "__main__":
         if unknown:
             #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
             #args.fslmo = ' '.join(re.findall(r'[^,\s]+',' '.join(str(i) for i in unknown)))
-            args.fslmo = ' '+' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
-
+            #args.fslmo = ' '+' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
+            args.fslmo = ' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
         print(f'args.fslmo={args.fslmo}')
 
-#line1 = re.findall(r'[^,\s]+', line0)
 
 
     for i in args.dat:
@@ -342,7 +342,11 @@ if __name__ == "__main__":
 
         if not args.lcfeatadapter:
             par.check_phase_dims()
-            if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+            #if not args.lcsmoothonly and not args.lct1copymaskonly: 
+            #START240713
+            if not args.lcsmoothonly: 
+
                 par.check_phase_dims_fmap()
                 par.check_ped_dims()
 
@@ -367,7 +371,11 @@ if __name__ == "__main__":
 
             if not feat:
                 if not args.lcfeatadapter:
-                    if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+
+                    #if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                    #START240713
+                    if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
             else:
                 feat.write_script(Ffeat,gev)
@@ -376,12 +384,19 @@ if __name__ == "__main__":
             if not args.lcfeatadapter:
                 F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
                 fi0+=1
-                if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+                #if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                #START240713
+                if not args.lcsmoothonly: 
+
                     F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
 
-                if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                #if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                #START240713
+                if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
             if not args.lcfeatadapter:
@@ -393,17 +408,30 @@ if __name__ == "__main__":
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
                 F0f[0].write(pathstr+'\n') # s0, bids and sf0
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
-                if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+                #if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                #START240713
+                if not args.lcsmoothonly: 
+
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+
+                    #START240713
+                    F0f[0].write('\nRAW_BOLD=(\\\n')
+                    for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
+                    F0f[0].write(f'        {par.bold[j+1][0]})\n')
+
                     if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write('\n${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
                     F0f[0].write('    --runlocal \\\n')
-                    F0f[0].write('    --fMRITimeSeries="\\\n')
 
-                    for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
-                    F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
+                    #F0f[0].write('    --fMRITimeSeries="\\\n')
+                    #for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
+                    #F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
+                    #START240713
+                    F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[@]}"\n')
+
 
                     if par.sbref:
                         if any(par.bsbref):
@@ -445,12 +473,51 @@ if __name__ == "__main__":
                     if args.userefinement: F0f[0].write('    --userefinement \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                if par.taskidx and not args.lct1copymaskonly:
+                #if par.taskidx and not args.lct1copymaskonly:
+                #START240713
+                if par.taskidx:
+
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
                     par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
             if feat: F0f[0].write('${FEAT}\n\n')
+
+            #START240713
+            if args.fslmo:
+                F0f[0].write('mkdir -p ${bids}/regressors\n\n')
+
+                F0f[0].write(f'OPTIONS="{args.fslmo}"\n')
+
+                F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+                F0f[0].write('    if [ ! -f "${i}" ];then\n')
+                F0f[0].write('        echo ${i} not found.\n')
+                F0f[0].write('        continue\n')
+                F0f[0].write('    fi\n')
+                F0f[0].write('    root=${i##*/}\n')
+                F0f[0].write('    root=${root%.nii*}\n')
+                F0f[0].write('    fsl_motion_outliers ${i} ${bids}/regressors/${root}_fmovalues.txt -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS\n')
+                F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('done\n\n')
+            else:
+                #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
+                F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+                F0f[0].write('    root=${i##*/}\n')
+                F0f[0].write('    root=${root%.nii*}\n')
+                F0f[0].write('    mcpar=${bids}/regressors/${root}_mc.par\n')
+                F0f[0].write('    if [ ! -f "${mcpar}" ];then\n')
+                F0f[0].write('        echo ${mcpar} not found.\n')
+                F0f[0].write('        continue\n')
+                F0f[0].write('    fi\n')
+                F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+                F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+                F0f[0].write('        echo ${fmospikes} not found.\n')
+                F0f[0].write('        fmospikes=\n')
+                F0f[0].write('    fi\n')
+                F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('done\n\n')
+
+
 
             if not pathlib.Path(F0[0]).is_file():
                 for j in F0: pathlib.Path.unlink(j) 

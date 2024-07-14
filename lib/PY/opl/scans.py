@@ -71,44 +71,6 @@ class Scans:
         print(f'self.dwifmap={self.dwifmap}')
         print(f'self.dwi={self.dwi}')
 
-
-    #def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
-    #    with open(file,'w') as f0:
-    #        f0.write(f'{SHEBANG}\nset -e\n\n')          
-    #        f0.write(f'FREESURFVER={FREESURFVER}\n\n')
-    #        f0.write(pathstr+'\n') # s0, bids and sf0
-    #        f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
-    #        self.write_bold_bash(f0,s0,self.bold)
-    #        f0.write('for i in ${BOLD[@]};do\n')
-    #        f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
-    #        f0.write('    if [ ! -f "${file}" ];then\n')
-    #        f0.write('        echo ${file} not found.\n')
-    #        f0.write('        continue\n')
-    #        f0.write('    fi\n')
-    #        f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
-    #        f0.write('    echo ${file} copied.\n')
-    #        f0.write('done\n\n')
-    #        f0.write('for i in ${BOLD[@]};do\n')
-    #        f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
-    #        f0.write('    if [ ! -f "${file}" ];then\n')
-    #        f0.write('        echo ${file} not found.\n')
-    #        f0.write('        continue\n')
-    #        f0.write('    fi\n')
-    #        f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
-    #        f0.write('    echo ${file} copied.\n')
-    #        f0.write('done\n\n')
-    #        f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-    #        f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
-    #        f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
-    #        f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
-    #        f0.write('    if [ ! -f "${file}" ];then\n')
-    #        f0.write('        echo ${file} not found.\n')
-    #        f0.write('        continue\n')
-    #        f0.write('    fi\n')
-    #        f0.write('    cp -f -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
-    #        f0.write('    echo ${file} copied.\n')
-    #        f0.write('done\n')
-    #START240711
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
         with open(file,'w') as f0:
             f0.write(f'{SHEBANG}\nset -e\n\n')
@@ -170,10 +132,6 @@ class Scans:
             f0.write('    done\n')
             f0.write('done\n')
 
-
-
-
-
     def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
         f0.write("# --TR= is only needed for high pass filtering --paradigm_hp_sec\n")
         f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR= can be omitted.\n")
@@ -183,18 +141,7 @@ class Scans:
         f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
         f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n\n")
         boldtask = [self.bold[j] for j in self.taskidx]
-
-
-        #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*boldtask))[0]]
-        #f0.write('BOLD=(\\\n')
-        #for j in range(len(bold_bash)-1):
-        #    str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
-        #    f0.write(f'    {str0} \\\n')
-        #str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
-        #f0.write(f'    {str0})\n')
-        #START240608
         self.write_bold_bash(f0,s0,boldtask)
-
 
         f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
