@@ -5,6 +5,7 @@ from datetime import datetime
 import glob
 import os
 import pathlib
+#import re
 import sys
 
 import opl
@@ -140,10 +141,7 @@ if __name__ == "__main__":
 
     hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
     mfwhm='FWHM'
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int)
     parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
-    #START240502
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='extend',nargs='+',help=hfwhm)
 
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
@@ -156,19 +154,10 @@ if __name__ == "__main__":
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
-
-    #hfsf1='Locator .txt with fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
-    #parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='extend',nargs='+',help=hfsf1)
-    #hfsf2='Locator .txt with fsf files for second-level FEAT analysis. Only runs if -o ran first'
-    #parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='extend',nargs='+',help=hfsf2)
-    #START240628
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
-    #parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or .fsf',action='extend', \
-    #    nargs='+',help=hfeat,default='')
     parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
         nargs='+',help=hfeat)
-
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
@@ -186,15 +175,20 @@ if __name__ == "__main__":
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
-    #hd='Top level directory (i.e. study dir; contains raw_data). Overrides path read from scanlist.csv; required if those paths don\'t contain raw_data'
-    #parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
-    #START240626
     hd='Pipeline directory. Optional. BIDS directories are assumed to be at the same level on the directory tree.\n' \
         +'Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/pipeline7.4.1\n' \
         +'        BIDS directories are /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/anat\n' \
         +'                             /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/func\n'
-    hd='Pipeline directory. Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-2051/pipeline7.4.1\n'
     parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+
+    #START240712
+    hfslmo='Run fsl_motion_outliers on raw data, with optional comma-separated arguments.\n' \
+        +'Ex. -fslmo "--fd,--thresh=2"\n' \
+        +'Ex. -fslmo --fd,--thresh=2\n'
+    #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='fsl_motion_outliers',nargs='?',const=True,help=hfslmo)
+    #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='options',nargs='?',const=True,help=hfslmo)
+    parser.add_argument('-fslmo','--fslmo',dest='fslmo',action='store_true',help=hfslmo)
+
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -203,7 +197,14 @@ if __name__ == "__main__":
         # parser.print_usage() # for just the usage line
         parser.exit()
 
-    args=parser.parse_args()
+
+    #args=parser.parse_args()
+    #START240712
+    args, unknown = parser.parse_known_args()
+
+    print(f'unknown={unknown}')
+    print(f'args.fslmo={args.fslmo}')
+    print(f'args.bs={args.bs}')
 
     if args.dat:
         if args.dat0:
@@ -226,15 +227,7 @@ if __name__ == "__main__":
             args.fwhm = sum(args.fwhm,[])
         if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
-
-    #if args.fsf1: feat1 = Feat(args.fsf1)
-    #if args.fsf2: feat2 = Feat(args.fsf2)
-    #START240629
-    #if args.feat: feat = Feat(args.feat)
-    #START240701
-    #print(f'args.feat={args.feat}')
     feat = get_feat(args.feat)
-
 
     datestr = ''
     if args.lcdate > 0:
@@ -256,15 +249,31 @@ if __name__ == "__main__":
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
-
-            #args.bs = os.path.abspath(args.bs)
             args.bs = pathlib.Path(args.bs).resolve()
 
-            if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
-            bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
-            #print(f'bs_fileout={bs_fileout}')
+            #if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+            #bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
+            #START240712
+            if "/" in str(args.bs): os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+            bs_fileout = str(args.bs).split('.sh')[0] + '_fileout.sh'
+
             batchscriptf = open_files([args.bs,bs_fileout],'w') 
-            for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
+
+            #for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
+            #START240712
+            for i in batchscriptf: i.write(f'{gev.SHEBANG}\n\n')          
+
+    #START240712
+    if args.fslmo:
+        if unknown:
+            #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
+            #args.fslmo = ' '.join(re.findall(r'[^,\s]+',' '.join(str(i) for i in unknown)))
+            args.fslmo = ' '+' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
+
+        print(f'args.fslmo={args.fslmo}')
+
+#line1 = re.findall(r'[^,\s]+', line0)
+
 
     for i in args.dat:
 
