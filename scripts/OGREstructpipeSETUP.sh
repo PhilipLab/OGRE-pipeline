@@ -49,7 +49,7 @@ helpmsg(){
     echo "        HCP directory. Optional; default location is OGREDIR/lib/HCP"
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
-    echo "    -p --pipedir -pipedir"
+    echo "    -d -p -directory --directory --pipedir -pipedir"
     echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
     echo "        Optional. Default is <scanlist.csv path>."
     echo "    -n --name -name"
@@ -68,7 +68,7 @@ helpmsg(){
     echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename (an across-subjects script)."
     echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
     echo "    --append -append"
-    echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug"
+    echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug. Overridden by -d."
 
     #START240621
     echo "    -e --erosion -erosion --ero -ero"
@@ -120,7 +120,7 @@ for((i=0;i<${#@};++i));do
             echo "FREESURFVER=$FREESURFVER"
             ;;
 
-        -p | --pipedir | -pipedir)
+        -p | --pipedir | -pipedir | -d | -directory | --directory)
             pipedir=${arg[((++i))]}
             #https://stackoverflow.com/questions/17542892/how-to-get-the-last-character-of-a-string-in-a-shell
             #https://stackoverflow.com/questions/27658675/how-to-remove-last-n-characters-from-a-string-in-bash
@@ -163,8 +163,6 @@ for((i=0;i<${#@};++i));do
             erosion=${arg[((++i))]}
             echo "erosion=$erosion"
             ;;
-        
-
         -h | --help | -help)
             helpmsg
             exit
