@@ -6,8 +6,6 @@ import json
 
 from opl.rou import run_cmd,SHEBANG
 
-#SHEBANG = "#!/usr/bin/env bash"
-
 class Scans:
     def __init__(self,file):
         self.fmap = []
@@ -84,8 +82,9 @@ class Scans:
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
-            f0.write('    echo ${file} copied.\n')
+            f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
+            f0.write('    cp -f -p $file ${file1}\n')
+            f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
             f0.write('for i in ${BOLD[@]};do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
@@ -93,8 +92,9 @@ class Scans:
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -f -p $file ${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
-            f0.write('    echo ${file} copied.\n')
+            f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
+            f0.write('    cp -f -p $file ${file1}\n')
+            f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
             f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
             f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
@@ -104,10 +104,10 @@ class Scans:
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    cp -f -p $file ${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
-            f0.write('    echo ${file} copied.\n')
+            f0.write('    file1=${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
+            f0.write('    cp -f -p $file ${file1}\n')
+            f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
-
             f0.write('mkdir -p ${bids}/regressors\n')
             f0.write('MC=(Movement_Regressors.txt Movement_Regressors_dt.txt)\n')
             f0.write('OUT=(mc-withderiv.txt mc-withdetrendderiv.txt)\n')
@@ -118,7 +118,7 @@ class Scans:
             f0.write('    else\n')
             f0.write('        file1=${bids}/regressors/${i}_mc.par\n')
             f0.write('        cp -f -p ${file} ${file1}\n')
-            f0.write('        echo ${file} copied to ${file1}\n\n')
+            f0.write('        echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('    fi\n')
             f0.write('    for((j=0;j<${#MC[@]};++j));do\n')
             f0.write('        file=${sf0}/${i}/${MC[j]}\n')
@@ -127,7 +127,7 @@ class Scans:
             f0.write('        else\n')
             f0.write('            file1=${bids}/regressors/${i}_${OUT[j]}\n')
             f0.write('            cp -f -p ${file} ${file1}\n')
-            f0.write('            echo ${file} copied to ${file1}\n\n')
+            f0.write('            echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('        fi\n')
             f0.write('    done\n')
             f0.write('done\n')
@@ -164,24 +164,6 @@ class Scans:
         str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
         f0.write(f'    {str0})\n')
 
-
-
-#class Par:
-#    def __init__(self,lenbold,lenfmap0):
-#        self.bsbref = [False]*lenbold
-#        self.ped = []
-#        self.dim = []
-#        self.bfmap = [False]*int(lenfmap0/2)
-#        self.ped_fmap = []
-#        self.dim_fmap = []
-#        self.bbold_fmap = []
-#        self.fmapnegidx = [0]*int(lenfmap0/2)  #j- 0 or 1, for pos subtract 1 and take abs
-#        self.fmapposidx = [1]*int(lenfmap0/2)  #j+ 0 or 1, for pos subtract 1 and take abs
-#
-#        #START240615
-#        self.fmap_bold = [ [] for i in range(lenfmap0)] 
-#START240704
-##par = opl.scans.Par(len(scans.bold),int(len(scans.fmap)))
 class Par(Scans):
     def __init__(self,file):
         super().__init__(file)
@@ -214,10 +196,6 @@ class Par(Scans):
         line1=line0.split()
         return (line1[1],line1[3],line1[5])
 
-##par.check_phase_dims(list(zip(*scans.bold))[0],list(zip(*scans.sbref))[0])
-
-    #def check_phase_dims(self,bold,sbref):
-    #START240704
     def check_phase_dims(self):
         bold = list(zip(*self.bold))[0]
         sbref = list(zip(*self.sbref))[0]
@@ -247,16 +225,9 @@ class Par(Scans):
         #print(f'check_phase_dims ped={self.ped}')
         #print(f'check_phase_dims dim={self.dim}')
 
-
-#par.check_phase_dims_fmap(scans.fmap[0::2],scans.fmap[1::2])
-
-    #def check_phase_dims_fmap(self,fmap0,fmap1):
-    #START240704
     def check_phase_dims_fmap(self):
         fmap0 = self.fmap[0::2]
         fmap1 = self.fmap[1::2]
-    
-
 
         for j in range(len(fmap0)):
             self.ped_fmap.append(self.__get_phase(fmap0[j]))
@@ -290,46 +261,6 @@ class Par(Scans):
         #print(f'ped_fmap={self.ped_fmap}')
         #print(f'dim_fmap={self.dim_fmap}')
 
-#fmap = scans.fmap #if dims don't match bold, fieldmap pairs maybe resampled and new files created
-#par.check_ped_dims(scans.bold,fmap)
-
-    #def check_ped_dims(self,bold,fmap):
-    #    self.bbold_fmap=[False]*len(self.ped)
-    #
-    #    #print(f'here0 bbold_fmap={self.bbold_fmap}')
-    #    #print(f'here0 len(self.ped)={len(self.ped)}')
-    #    #print(f'here0 len(fmap)={len(fmap)}')
-    #
-    #
-    #    if any(self.bfmap):
-    #        for j in range(len(self.ped)):
-    #            if self.bfmap[bold[j][1]]:
-    #                if self.ped[j][0] != self.ped_fmap[bold[j][1]][0]:
-    #                    print(f'    ERROR: {bold[j][0]} {self.ped[j][0]}')
-    #                    print(f'    ERROR: {fmap[bold[j][1]*2]} {self.ped_fmap[bold[j][1]][0]}')
-    #                    print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
-    #                    continue
-    #                if self.dim[j] != self.dim_fmap[bold[j][1]]:
-    #                    print(f'    ERROR: {bold[j][0]} {self.dim[j]}')
-    #                    print(f'    ERROR: {fmap[bold[j][1]*2]} {self.dim_fmap[bold[j][1]]}')
-    #                    print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
-    #                    ynq = input('    Would like to resample the field maps? y, n, q').casefold()
-    #                    if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
-    #                    if ynq=='n' or ynq=='no': continue
-    #                    for i in bold[j][1]*2,bold[j][1]*2+1:
-    #                        fmap0 = pathlib.Path(fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-    #                        junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {fmap[i]} {bold[j][0]} CUBIC {fmap0}')
-    #                        self.dim_fmap[bold[j][1]] = self.dim[j]
-    #                        fmap[i] = fmap0
-    #                self.bbold_fmap[j]=True
-    #
-    #                #START240615
-    #                self.fmap_bold[bold[j][1]*2].append(j)
-    #                self.fmap_bold[bold[j][1]*2+1].append(j)
-    #
-    #    #print(f'here1 bbold_fmap={self.bbold_fmap}')
-    #    #print(f'here1 fmap_bold={self.fmap_bold}')
-    #START240705
     def check_ped_dims(self):
         self.bbold_fmap=[False]*len(self.ped)
         if any(self.bfmap):

@@ -303,7 +303,7 @@ if __name__ == "__main__":
                 d0 = str(pathlib.Path(i).resolve().parent) + '/'
             else:
                 d0 = i[:idx]
-        print(f'd0={d0}') 
+        #print(f'd0={d0}') 
         dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
         bids = d0 + 'derivatives/preprocessed/${s0}'
         dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
@@ -484,11 +484,40 @@ if __name__ == "__main__":
             if feat: F0f[0].write('${FEAT}\n\n')
 
             #START240713
+            #if args.fslmo:
+            #    F0f[0].write('mkdir -p ${bids}/regressors\n\n')
+            #    F0f[0].write(f'OPTIONS="{args.fslmo}"\n')
+            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+            #    F0f[0].write('    if [ ! -f "${i}" ];then\n')
+            #    F0f[0].write('        echo ${i} not found.\n')
+            #    F0f[0].write('        continue\n')
+            #    F0f[0].write('    fi\n')
+            #    F0f[0].write('    root=${i##*/}\n')
+            #    F0f[0].write('    root=${root%.nii*}\n')
+            #    F0f[0].write('    fsl_motion_outliers ${i} -i ${bids}/regressors/${root}_fmovalues.txt -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS\n')
+            #    F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
+            #    F0f[0].write('done\n\n')
+            #else:
+            #    #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
+            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+            #    F0f[0].write('    root=${i##*/}\n')
+            #    F0f[0].write('    root=${root%.nii*}\n')
+            #    F0f[0].write('    mcpar=${bids}/regressors/${root}_mc.par\n')
+            #    F0f[0].write('    if [ ! -f "${mcpar}" ];then\n')
+            #    F0f[0].write('        echo ${mcpar} not found.\n')
+            #    F0f[0].write('        continue\n')
+            #    F0f[0].write('    fi\n')
+            #    F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+            #    F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+            #    F0f[0].write('        echo ${fmospikes} not found.\n')
+            #    F0f[0].write('        fmospikes=\n')
+            #    F0f[0].write('    fi\n')
+            #    F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
+            #    F0f[0].write('done\n\n')
+            #START240714
             if args.fslmo:
                 F0f[0].write('mkdir -p ${bids}/regressors\n\n')
-
-                F0f[0].write(f'OPTIONS="{args.fslmo}"\n')
-
+                F0f[0].write(f'OPTIONS="-v {args.fslmo}"\n')
                 F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
                 F0f[0].write('    if [ ! -f "${i}" ];then\n')
                 F0f[0].write('        echo ${i} not found.\n')
@@ -496,8 +525,17 @@ if __name__ == "__main__":
                 F0f[0].write('    fi\n')
                 F0f[0].write('    root=${i##*/}\n')
                 F0f[0].write('    root=${root%.nii*}\n')
-                F0f[0].write('    fsl_motion_outliers ${i} ${bids}/regressors/${root}_fmovalues.txt -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS\n')
-                F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+                #cmd='fsl_motion_outliers -i ${i} -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS'
+                cmd='fsl_motion_outliers -i ${i} -o ${fmospikes} $OPTIONS'
+                F0f[0].write(f'    echo Running {cmd}\n')
+                F0f[0].write(f'    {cmd}\n')
+                F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+                F0f[0].write('        echo ${fmospikes} not found.\n')
+                F0f[0].write('        fmospikes=\n')
+                F0f[0].write('    fi\n')
+                #F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
                 F0f[0].write('done\n\n')
             else:
                 #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
@@ -516,6 +554,7 @@ if __name__ == "__main__":
                 F0f[0].write('    fi\n')
                 F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
                 F0f[0].write('done\n\n')
+
 
 
 
