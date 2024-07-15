@@ -5,6 +5,7 @@ from datetime import datetime
 import glob
 import os
 import pathlib
+#import re
 import sys
 
 import opl
@@ -140,35 +141,24 @@ if __name__ == "__main__":
 
     hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
     mfwhm='FWHM'
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm,type=int)
     parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
-    #START240502
-    #parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='extend',nargs='+',help=hfwhm)
 
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
     parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
 
-    hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
-    parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
+    #START240713
+    #hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
+    #parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
 
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
-
-    #hfsf1='Locator .txt with fsf files for first-level FEAT analysis. An OGREmakeregdir call is created for each fsf.'
-    #parser.add_argument('-o','-fsf1','--fsf1',dest='fsf1',metavar='*.fsf',action='extend',nargs='+',help=hfsf1)
-    #hfsf2='Locator .txt with fsf files for second-level FEAT analysis. Only runs if -o ran first'
-    #parser.add_argument('-t','-fsf2','--fsf2',dest='fsf2',metavar='*.fsf',action='extend',nargs='+',help=hfsf2)
-    #START240628
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
-    #parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or .fsf',action='extend', \
-    #    nargs='+',help=hfeat,default='')
     parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
         nargs='+',help=hfeat)
-
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
@@ -186,15 +176,20 @@ if __name__ == "__main__":
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
-    #hd='Top level directory (i.e. study dir; contains raw_data). Overrides path read from scanlist.csv; required if those paths don\'t contain raw_data'
-    #parser.add_argument('-d','--outdir','-outdir',dest='dir0',metavar='Top level directory',help=hd)
-    #START240626
     hd='Pipeline directory. Optional. BIDS directories are assumed to be at the same level on the directory tree.\n' \
         +'Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/pipeline7.4.1\n' \
         +'        BIDS directories are /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/anat\n' \
         +'                             /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/func\n'
-    hd='Pipeline directory. Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-2051/pipeline7.4.1\n'
     parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+
+    #START240712
+    hfslmo='Run fsl_motion_outliers on raw data, with optional comma-separated arguments.\n' \
+        +'Ex. -fslmo "--fd,--thresh=2"\n' \
+        +'Ex. -fslmo --fd,--thresh=2\n'
+    #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='fsl_motion_outliers',nargs='?',const=True,help=hfslmo)
+    #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='options',nargs='?',const=True,help=hfslmo)
+    parser.add_argument('-fslmo','--fslmo',dest='fslmo',action='store_true',help=hfslmo)
+
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -203,7 +198,14 @@ if __name__ == "__main__":
         # parser.print_usage() # for just the usage line
         parser.exit()
 
-    args=parser.parse_args()
+
+    #args=parser.parse_args()
+    #START240712
+    args, unknown = parser.parse_known_args()
+
+    print(f'unknown={unknown}')
+    print(f'args.fslmo={args.fslmo}')
+    print(f'args.bs={args.bs}')
 
     if args.dat:
         if args.dat0:
@@ -226,15 +228,7 @@ if __name__ == "__main__":
             args.fwhm = sum(args.fwhm,[])
         if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
 
-
-    #if args.fsf1: feat1 = Feat(args.fsf1)
-    #if args.fsf2: feat2 = Feat(args.fsf2)
-    #START240629
-    #if args.feat: feat = Feat(args.feat)
-    #START240701
-    #print(f'args.feat={args.feat}')
     feat = get_feat(args.feat)
-
 
     datestr = ''
     if args.lcdate > 0:
@@ -256,15 +250,30 @@ if __name__ == "__main__":
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
-
-            #args.bs = os.path.abspath(args.bs)
             args.bs = pathlib.Path(args.bs).resolve()
 
-            if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
-            bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
-            #print(f'bs_fileout={bs_fileout}')
+            #if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+            #bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
+            #START240712
+            if "/" in str(args.bs): os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+            bs_fileout = str(args.bs).split('.sh')[0] + '_fileout.sh'
+
             batchscriptf = open_files([args.bs,bs_fileout],'w') 
-            for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
+
+            #for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
+            #START240712
+            for i in batchscriptf: i.write(f'{gev.SHEBANG}\n\n')          
+
+    #START240712
+    if args.fslmo:
+        if unknown:
+            #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
+            #args.fslmo = ' '.join(re.findall(r'[^,\s]+',' '.join(str(i) for i in unknown)))
+            #args.fslmo = ' '+' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
+            args.fslmo = ' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
+        print(f'args.fslmo={args.fslmo}')
+
+
 
     for i in args.dat:
 
@@ -294,7 +303,7 @@ if __name__ == "__main__":
                 d0 = str(pathlib.Path(i).resolve().parent) + '/'
             else:
                 d0 = i[:idx]
-        print(f'd0={d0}') 
+        #print(f'd0={d0}') 
         dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
         bids = d0 + 'derivatives/preprocessed/${s0}'
         dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
@@ -333,7 +342,11 @@ if __name__ == "__main__":
 
         if not args.lcfeatadapter:
             par.check_phase_dims()
-            if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+            #if not args.lcsmoothonly and not args.lct1copymaskonly: 
+            #START240713
+            if not args.lcsmoothonly: 
+
                 par.check_phase_dims_fmap()
                 par.check_ped_dims()
 
@@ -358,7 +371,11 @@ if __name__ == "__main__":
 
             if not feat:
                 if not args.lcfeatadapter:
-                    if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+
+                    #if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                    #START240713
+                    if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
             else:
                 feat.write_script(Ffeat,gev)
@@ -367,12 +384,19 @@ if __name__ == "__main__":
             if not args.lcfeatadapter:
                 F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
                 fi0+=1
-                if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+                #if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                #START240713
+                if not args.lcsmoothonly: 
+
                     F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
 
-                if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                #if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
+                #START240713
+                if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
             if not args.lcfeatadapter:
@@ -384,17 +408,30 @@ if __name__ == "__main__":
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
                 F0f[0].write(pathstr+'\n') # s0, bids and sf0
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
-                if not args.lcsmoothonly and not args.lct1copymaskonly: 
+
+                #if not args.lcsmoothonly and not args.lct1copymaskonly: 
+                #START240713
+                if not args.lcsmoothonly: 
+
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+
+                    #START240713
+                    F0f[0].write('\nRAW_BOLD=(\\\n')
+                    for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
+                    F0f[0].write(f'        {par.bold[j+1][0]})\n')
+
                     if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write('\n${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
                     F0f[0].write('    --runlocal \\\n')
-                    F0f[0].write('    --fMRITimeSeries="\\\n')
 
-                    for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
-                    F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
+                    #F0f[0].write('    --fMRITimeSeries="\\\n')
+                    #for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
+                    #F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
+                    #START240713
+                    F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[@]}"\n')
+
 
                     if par.sbref:
                         if any(par.bsbref):
@@ -436,12 +473,90 @@ if __name__ == "__main__":
                     if args.userefinement: F0f[0].write('    --userefinement \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                if par.taskidx and not args.lct1copymaskonly:
+                #if par.taskidx and not args.lct1copymaskonly:
+                #START240713
+                if par.taskidx:
+
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
                     par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
 
             if feat: F0f[0].write('${FEAT}\n\n')
+
+            #START240713
+            #if args.fslmo:
+            #    F0f[0].write('mkdir -p ${bids}/regressors\n\n')
+            #    F0f[0].write(f'OPTIONS="{args.fslmo}"\n')
+            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+            #    F0f[0].write('    if [ ! -f "${i}" ];then\n')
+            #    F0f[0].write('        echo ${i} not found.\n')
+            #    F0f[0].write('        continue\n')
+            #    F0f[0].write('    fi\n')
+            #    F0f[0].write('    root=${i##*/}\n')
+            #    F0f[0].write('    root=${root%.nii*}\n')
+            #    F0f[0].write('    fsl_motion_outliers ${i} -i ${bids}/regressors/${root}_fmovalues.txt -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS\n')
+            #    F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
+            #    F0f[0].write('done\n\n')
+            #else:
+            #    #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
+            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+            #    F0f[0].write('    root=${i##*/}\n')
+            #    F0f[0].write('    root=${root%.nii*}\n')
+            #    F0f[0].write('    mcpar=${bids}/regressors/${root}_mc.par\n')
+            #    F0f[0].write('    if [ ! -f "${mcpar}" ];then\n')
+            #    F0f[0].write('        echo ${mcpar} not found.\n')
+            #    F0f[0].write('        continue\n')
+            #    F0f[0].write('    fi\n')
+            #    F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+            #    F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+            #    F0f[0].write('        echo ${fmospikes} not found.\n')
+            #    F0f[0].write('        fmospikes=\n')
+            #    F0f[0].write('    fi\n')
+            #    F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
+            #    F0f[0].write('done\n\n')
+            #START240714
+            if args.fslmo:
+                F0f[0].write('mkdir -p ${bids}/regressors\n\n')
+                F0f[0].write(f'OPTIONS="-v {args.fslmo}"\n')
+                F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+                F0f[0].write('    if [ ! -f "${i}" ];then\n')
+                F0f[0].write('        echo ${i} not found.\n')
+                F0f[0].write('        continue\n')
+                F0f[0].write('    fi\n')
+                F0f[0].write('    root=${i##*/}\n')
+                F0f[0].write('    root=${root%.nii*}\n')
+                F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+                #cmd='fsl_motion_outliers -i ${i} -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS'
+                cmd='fsl_motion_outliers -i ${i} -o ${fmospikes} $OPTIONS'
+                F0f[0].write(f'    echo Running {cmd}\n')
+                F0f[0].write(f'    {cmd}\n')
+                F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+                F0f[0].write('        echo ${fmospikes} not found.\n')
+                F0f[0].write('        fmospikes=\n')
+                F0f[0].write('    fi\n')
+                #F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('done\n\n')
+            else:
+                #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
+                F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
+                F0f[0].write('    root=${i##*/}\n')
+                F0f[0].write('    root=${root%.nii*}\n')
+                F0f[0].write('    mcpar=${bids}/regressors/${root}_mc.par\n')
+                F0f[0].write('    if [ ! -f "${mcpar}" ];then\n')
+                F0f[0].write('        echo ${mcpar} not found.\n')
+                F0f[0].write('        continue\n')
+                F0f[0].write('    fi\n')
+                F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+                F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+                F0f[0].write('        echo ${fmospikes} not found.\n')
+                F0f[0].write('        fmospikes=\n')
+                F0f[0].write('    fi\n')
+                F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
+                F0f[0].write('done\n\n')
+
+
+
 
             if not pathlib.Path(F0[0]).is_file():
                 for j in F0: pathlib.Path.unlink(j) 
