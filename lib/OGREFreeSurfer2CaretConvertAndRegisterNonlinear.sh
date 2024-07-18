@@ -118,6 +118,9 @@ log_Msg "InflateExtraScale: ${InflateExtraScale}"
 #START240621
 erosion="${24}"
 log_Msg "erosion: ${erosion}"
+#START240716
+dilation="${25}"
+log_Msg "dilation: ${dilation}"
 
 
 LowResMeshes=${LowResMeshes//@/ }
@@ -190,8 +193,12 @@ done
 #fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD -ero -ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
 #START240621
 ero=;for((i=0;i<$erosion;++i));do ero+=" -ero";done
-echo fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
-fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+#START240716
+dil=;for((i=0;i<$dilation;++i));do dil+=" -dilD";done
+echo fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin $dil $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin $dil $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+#echo fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
+#fslmaths "$T1wFolder"/wmparc_1mm.nii.gz -bin -dilD -dilD -dilD $ero "$T1wFolder"/"$T1wImageBrainMask"_1mm.nii.gz
 
 
 

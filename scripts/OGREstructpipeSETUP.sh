@@ -74,7 +74,8 @@ helpmsg(){
     echo "    -e --erosion -erosion --ero -ero"
     echo "        Default is 2. For the brain mask, the number or erosions that follow the three dilations. Ex. -e 2, will result in two erosions"
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
-
+    echo "    -dil --dil -dilation --dilation"
+    echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
     echo "    -h --help -help"
     echo "        Echo this help message."
     exit
@@ -87,7 +88,7 @@ echo $0 $@
 
 #lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append= #do not set dat;unexpected
 #START240621
-lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2 #do not set dat;unexpected
+lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
 
 unset bs pipedir name
 
@@ -162,6 +163,10 @@ for((i=0;i<${#@};++i));do
         -e | --erosion | -erosion | --ero | -ero)
             erosion=${arg[((++i))]}
             echo "erosion=$erosion"
+            ;;
+        -dil | --dilation | -dilation | --dil)
+            dilation=${arg[((++i))]}
+            echo "dilation=$dilation"
             ;;
         -h | --help | -help)
             helpmsg
@@ -376,6 +381,7 @@ for((i=0;i<${#dat[@]};++i));do
     #START240621
     echo -e "Hires=${Hires}" >> ${F0}
     echo -e "erosion=${erosion}\n" >> ${F0}
+    echo -e "dilation=${dilation}\n" >> ${F0}
 
     #echo '${PRE} \' >> ${F0}
     #echo '    --StudyFolder=${sf0} \' >> ${F0}
@@ -424,6 +430,7 @@ for((i=0;i<${#dat[@]};++i));do
 
     #START240621
     echo '    --erosion=${erosion} \' >> ${F0}
+    echo '    --dilation=${dilation} \' >> ${F0}
 
     echo '    --EnvironmentScript=${SETUP}' >> ${F0}
 

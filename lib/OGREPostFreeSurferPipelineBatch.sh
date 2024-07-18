@@ -11,6 +11,8 @@ get_batch_options() {
 
     #START240621
     erosion=2
+    #START240716
+    dilation=3
 
     unset command_line_specified_EnvironmentScript
 
@@ -38,6 +40,11 @@ get_batch_options() {
            #START240621
             --erosion=*)
                 erosion=${argument#*=}
+                index=$(( index + 1 ))
+                ;;
+
+            --dilation=*)
+                dilation=${argument#*=}
                 index=$(( index + 1 ))
                 ;;
 
@@ -142,7 +149,8 @@ for Subject in $Subjlist ; do
       --freesurferlabels="$FreeSurferLabels" \
       --refmyelinmaps="$ReferenceMyelinMaps" \
       --regname="$RegName" \
-      --erosion="$erosion"
+      --erosion="$erosion" \
+      --dilation="$dilation"
 
   # The following lines are used for interactive debugging to set the positional parameters: $1 $2 $3 ...
   
@@ -157,6 +165,7 @@ for Subject in $Subjlist ; do
        --freesurferlabels="$FreeSurferLabels" \n\
        --refmyelinmaps="$ReferenceMyelinMaps" \n\
        --regname="$RegName" \n\
+       --dilation="$dilation" \n\
        --erosion="$erosion"" #second " matches one before set
       
    echo ". ${EnvironmentScript}"
