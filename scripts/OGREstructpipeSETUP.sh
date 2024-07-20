@@ -14,6 +14,12 @@ FREE=OGREFreeSurferPipelineBatch.sh
 POST=OGREPostFreeSurferPipelineBatch.sh
 SETUP=OGRESetUpHCPPipeline.sh
 
+
+#START240719
+MASKS=OGRESplitFreeSurferMasks.sh
+
+
+
 #Resolution. options: 1, 0.7 or 0.8
 Hires=1
 
@@ -372,28 +378,24 @@ for((i=0;i<${#dat[@]};++i));do
     echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
     echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
     echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
-    echo -e SETUP='${OGREDIR}'/lib/${SETUP}"\n" >> ${F0}
+
+    #echo -e SETUP='${OGREDIR}'/lib/${SETUP}"\n" >> ${F0}
+    #START240719
+    echo SETUP='${OGREDIR}'/lib/${SETUP} >> ${F0}
+    echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
+
 
     echo "s0=${s0}" >> ${F0}
-    echo "sf0=${dir1}" >> ${F0}
+    #echo "sf0=${dir1}" >> ${F0}
+    echo -e "sf0=${dir1}\n" >> ${F0}
 
-    #echo -e "Hires=${Hires}\n" >> ${F0}
-    #START240621
     echo -e "Hires=${Hires}" >> ${F0}
-    echo -e "erosion=${erosion}\n" >> ${F0}
+
+    #echo -e "erosion=${erosion}\n" >> ${F0}
+    echo "erosion=${erosion}" >> ${F0}
+
     echo -e "dilation=${dilation}\n" >> ${F0}
 
-    #echo '${PRE} \' >> ${F0}
-    #echo '    --StudyFolder=${sf0} \' >> ${F0}
-    #echo '    --Subject=${s0} \' >> ${F0}
-    #echo '    --runlocal \' >> ${F0}
-    #echo '    --T1='${T1f}' \' >> ${F0}
-    #echo '    --T2='${T2f}' \' >> ${F0}
-    #echo '    --GREfieldmapMag="NONE" \' >> ${F0}
-    #echo '    --GREfieldmapPhase="NONE" \' >> ${F0}
-    #echo '    --Hires=${Hires} \' >> ${F0}
-    #echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
-    #START240504
     echo 'freesurferdir=${sf0}/T1w/${s0}' >> ${F0}
     echo 'if [ ! -d "$freesurferdir" ];then' >> ${F0}
     echo '    ${PRE} \' >> ${F0}
@@ -427,12 +429,17 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    --StudyFolder=${sf0} \' >> ${F0}
     echo '    --Subject=${s0} \' >> ${F0}
     echo '    --runlocal \' >> ${F0}
-
-    #START240621
     echo '    --erosion=${erosion} \' >> ${F0}
     echo '    --dilation=${dilation} \' >> ${F0}
 
-    echo '    --EnvironmentScript=${SETUP}' >> ${F0}
+    #echo '    --EnvironmentScript=${SETUP}' >> ${F0}
+    #START0719
+    echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
+
+    echo '${MASKS} ${sf0}' >> ${F0}
+
+
+
 
     echo -e "$shebang\nset -e\n" > ${F1} 
     echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
