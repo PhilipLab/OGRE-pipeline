@@ -430,7 +430,9 @@ if __name__ == "__main__":
                     #for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
                     #F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
                     #START240713
-                    F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[@]}"\n')
+                    #F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[@]}"\n')
+                    #START240720
+                    F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[*]}" \\\n')
 
 
                     if par.sbref:

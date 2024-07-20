@@ -160,25 +160,21 @@ if [ -n "${command_line_specified_subj}" ]; then
     Subjlist="${command_line_specified_subj}"
 fi
 
-#START181211
 if [ -n "${command_line_specified_fMRITimeSeries}" ]; then
-    arr=($command_line_specified_fMRITimeSeries)
-    #echo "arr = ${arr[@]}"
+    #arr=($command_line_specified_fMRITimeSeries)
+    fMRITimeSeries=($command_line_specified_fMRITimeSeries)
 fi
 
-#START190711
 if [ -n "${command_line_specified_fMRISBRef}" ]; then
     arr1=($command_line_specified_fMRISBRef)
     #echo "arr1 = ${arr1[@]}"
 fi
 
-#START190723
 if [ -n "${command_line_specified_EchoSpacing}" ]; then
     arr2=($command_line_specified_EchoSpacing)
     #echo "arr2 = ${arr2[@]}"
 fi
 
-#START190722
 if [ -n "${command_line_specified_SpinEchoPhaseEncodeNegative}" ]; then
     arr3=($command_line_specified_SpinEchoPhaseEncodeNegative)
     #echo "arr3 = ${arr3[@]}"
@@ -188,12 +184,6 @@ if [ -n "${command_line_specified_SpinEchoPhaseEncodePositive}" ]; then
     #echo "arr4 = ${arr4[@]}"
 fi
 
-#START190724
-#if [ -n "${command_line_specified_PhaseEncodingDirection}" ]; then
-#    arr5=($command_line_specified_PhaseEncodingDirection)
-#    #echo "arr5 = ${arr5[@]}"
-#fi
-#START191030
 if [ -n "${command_line_specified_UnwarpDirection}" ]; then
     arr6=($command_line_specified_UnwarpDirection)
 fi
@@ -303,173 +293,62 @@ PRINTCOM=""
 SCRIPT_NAME=`basename ${0}`
 echo $SCRIPT_NAME
 
-#TaskList=""
-#TaskList+=" rfMRI_REST1_RL"  #Include space as first character
-#TaskList+=" rfMRI_REST1_LR"
-#TaskList+=" rfMRI_REST2_RL"
-#TaskList+=" rfMRI_REST2_LR"
-#TaskList+=" tfMRI_EMOTION_RL"
-#TaskList+=" tfMRI_EMOTION_LR"
-#TaskList+=" tfMRI_GAMBLING_RL"
-#TaskList+=" tfMRI_GAMBLING_LR"
-#TaskList+=" tfMRI_LANGUAGE_RL"
-#TaskList+=" tfMRI_LANGUAGE_LR"
-#TaskList+=" tfMRI_MOTOR_RL"
-#TaskList+=" tfMRI_MOTOR_LR"
-#TaskList+=" tfMRI_RELATIONAL_RL"
-#TaskList+=" tfMRI_RELATIONAL_LR"
-#TaskList+=" tfMRI_SOCIAL_RL"
-#TaskList+=" tfMRI_SOCIAL_LR"
-#TaskList+=" tfMRI_WM_RL"
-#TaskList+=" tfMRI_WM_LR"
-#START181210
+
+
+
+#if [ -n "${command_line_specified_TaskList}" ]; then
+#    TaskList=(${command_line_specified_TaskList})
+#else
+#    if [ -n "${command_line_specified_fMRITimeSeries}" ]; then
+#        TaskList=(${command_line_specified_fMRITimeSeries})
+#        for i in ${!TaskList[@]};do
+#            j=${TaskList[i]%%.*}
+#            TaskList[i]=${j##*/}
+#        done 
+#    else
+#        echo "Error: Need to specify --TaskList or --fMRITimeSeries"
+#        exit 1
+#    fi
+#fi
+#echo "TaskList = ${TaskList[@]}"
 if [ -n "${command_line_specified_TaskList}" ]; then
-
-    #TaskList="${command_line_specified_TaskList}"
-    #START190724
-    TaskList=(${command_line_specified_TaskList})
-
-    #echo "TaskList = ${TaskList[@]}"
+    fMRIName=(${command_line_specified_TaskList})
 else
-    #TaskList=""
-    #TaskList+=" rfMRI_REST1_RL"  #Include space as first character
-    #TaskList+=" rfMRI_REST1_LR"
-    #TaskList+=" rfMRI_REST2_RL"
-    #TaskList+=" rfMRI_REST2_LR"
-    #TaskList+=" tfMRI_EMOTION_RL"
-    #TaskList+=" tfMRI_EMOTION_LR"
-    #TaskList+=" tfMRI_GAMBLING_RL"
-    #TaskList+=" tfMRI_GAMBLING_LR"
-    #TaskList+=" tfMRI_LANGUAGE_RL"
-    #TaskList+=" tfMRI_LANGUAGE_LR"
-    #TaskList+=" tfMRI_MOTOR_RL"
-    #TaskList+=" tfMRI_MOTOR_LR"
-    #TaskList+=" tfMRI_RELATIONAL_RL"
-    #TaskList+=" tfMRI_RELATIONAL_LR"
-    #TaskList+=" tfMRI_SOCIAL_RL"
-    #TaskList+=" tfMRI_SOCIAL_LR"
-    #TaskList+=" tfMRI_WM_RL"
-    #TaskList+=" tfMRI_WM_LR"
-    #START190724
     if [ -n "${command_line_specified_fMRITimeSeries}" ]; then
-        TaskList=(${command_line_specified_fMRITimeSeries})
-        for i in ${!TaskList[@]};do
-            j=${TaskList[i]%%.*}
-            TaskList[i]=${j##*/}
-        done 
+        fMRIName=(${command_line_specified_fMRITimeSeries})
+        for i in ${!fMRIName[@]};do
+            j=${fMRIName[i]%%.*}
+            fMRIName[i]=${j##*/}
+        done
     else
         echo "Error: Need to specify --TaskList or --fMRITimeSeries"
         exit 1
     fi
 fi
-echo "TaskList = ${TaskList[@]}"
+echo "fMRIName = ${fMRIName[@]}"
+
+
+
+
+
+
 
 # Start or launch pipeline processing for each subject
 for Subject in $Subjlist ; do
   echo "${SCRIPT_NAME}: Processing Subject: ${Subject}"
 
-  #i=1
-  #START181211
   i=0
 
-  #for fMRIName in $TaskList ; do
-  #START190724
-  for fMRIName in ${TaskList[@]} ; do
+  #for fMRIName in ${TaskList[@]} ; do
+  #  echo -e "\n${SCRIPT_NAME}: Processing Scan: ${fMRIName}"
+  #  fMRITimeSeries=${arr[$i]}
+  #  echo "    fMRITimeSeries = ${fMRITimeSeries}"
+  #START240720
+  for((i=0;i<${#fMRIName[@]};++i));do
+    echo -e "\n${SCRIPT_NAME}: Processing Scan: ${fMRIName[i]}"
+    echo "    fMRITimeSeries = ${fMRITimeSeries[i]}"
+    continue
 
-    #echo "  ${SCRIPT_NAME}: Processing Scan: ${fMRIName}"
-    #START191112
-    echo -e "\n${SCRIPT_NAME}: Processing Scan: ${fMRIName}"
-	  
-	#TaskName=`echo ${fMRIName} | sed 's/_[APLR]\+$//'`
-	#echo "  ${SCRIPT_NAME}: TaskName: ${TaskName}"
-        #
-	#len=${#fMRIName}
-	#echo "  ${SCRIPT_NAME}: len: $len"
-	#start=$(( len - 2 ))
-	#	
-	#PhaseEncodingDir=${fMRIName:start:2}
-	#echo "  ${SCRIPT_NAME}: PhaseEncodingDir: ${PhaseEncodingDir}"
-	#	
-	#case ${PhaseEncodingDir} in
-	#  "PA")
-	#	UnwarpDir="y"
-	#	;;
-	#  "AP")
-	#	UnwarpDir="y-"
-	#	;;
-	#  "RL")
-	#	UnwarpDir="x"
-	#	;;
-	#  "LR")
-	#	UnwarpDir="x-"
-	#	;;
-	#  *)
-	#	echo "${SCRIPT_NAME}: Unrecognized Phase Encoding Direction: ${PhaseEncodingDir}"
-	#	exit 1
-	#esac
-        #	
-        #echo "  ${SCRIPT_NAME}: UnwarpDir: ${UnwarpDir}"
-        #START181212
-	#UnwarpDir="y-"
-        #START190724
-    #fMRITimeSeries="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName}/${Subject}_3T_${fMRIName}.nii.gz"
-    #START181210
-    if [ -n "${command_line_specified_fMRITimeSeries}" ]; then
-        fMRITimeSeries=${arr[$i]}
-        echo "fMRITimeSeries = ${fMRITimeSeries}"
-    else
-        fMRITimeSeries="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName}/${Subject}_3T_${fMRIName}.nii.gz"
-    fi
-
-
-
-
-    #if [ -n "${command_line_specified_UnwarpDirection}" ]; then
-    #    UnwarpDir=${arr6[$i]}
-    #    case ${UnwarpDir} in
-    #      "y")
-    #           ;;
-    #      "y-")
-    #           ;;
-    #      "x")
-    #           ;;
-    #      "x-")
-    #           ;;
-    #      *)
-    #           echo "${SCRIPT_NAME}: Unrecognized Phase Encoding (=UnwarpDir) Direction: ${PhaseEncodingDir}"
-    #           exit 1
-    #    esac
-    #else
-    #    if [ -n "${command_line_specified_json}" ]; then
-    #        json=${arr5[$i]}
-    #    else
-    #        json=${fMRITimeSeries%%.*}.json
-    #    fi
-    #    mapfile -t PhaseEncodingDirection < <( grep PhaseEncodingDirection $json )
-    #    IFS=$' ,' read -ra line0 <<< ${PhaseEncodingDirection}
-    #    IFS=$'"' read -ra line <<< ${line0[1]}
-    #    PhaseEncodingDir=${line[1]}
-    #    echo "PhaseEncodingDir = ${PhaseEncodingDir}"
-    #    case ${PhaseEncodingDir} in
-    #      "j")
-    #           UnwarpDir="y"
-    #           ;;
-    #      "j-")
-    #           UnwarpDir="y-"
-    #           ;;
-    #      "i")
-    #           UnwarpDir="x"
-    #           ;;
-    #      "i-")
-    #           UnwarpDir="x-"
-    #           ;;
-    #      *)
-    #           echo "${SCRIPT_NAME}: Unrecognized Phase Encoding Direction: ${PhaseEncodingDir}"
-    #           exit 1
-    #    esac
-    #fi
-    #echo "UnwarpDir = ${UnwarpDir}"
-    #START191112
         # Susceptibility distortion correction method (required for accurate processing)
         # Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap
     DistortionCorrection=NONE
@@ -499,7 +378,8 @@ for Subject in $Subjlist ; do
             if [ -n "${command_line_specified_json}" ]; then
                 json=${arr5[$i]}
             else
-                json=${fMRITimeSeries%%.*}.json
+                #json=${fMRITimeSeries%%.*}.json
+                json=${fMRITimeSeries[i]%%.*}.json
             fi
             mapfile -t PhaseEncodingDirection < <( grep PhaseEncodingDirection $json )
             IFS=$' ,' read -ra line0 <<< ${PhaseEncodingDirection}
@@ -540,7 +420,8 @@ for Subject in $Subjlist ; do
             if [ -n "${command_line_specified_json}" ]; then
                 json=${arr5[$i]}
             else
-                json=${fMRITimeSeries%%.*}.json
+                #json=${fMRITimeSeries%%.*}.json
+                json=${fMRITimeSeries[i]%%.*}.json
             fi
             mapfile -t EffectiveEchoSpacing < <( grep EffectiveEchoSpacing $json )
             IFS=$' ,' read -ra line <<< ${EffectiveEchoSpacing}
@@ -549,16 +430,8 @@ for Subject in $Subjlist ; do
         echo "EchoSpacing = ${EchoSpacing}"
     fi
 
-
-
-
-
 	# A single band reference image (SBRef) is recommended if available
 	# Set to NONE if you want to use the first volume of the timeseries for motion correction
-    #fMRISBRef="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName}/${Subject}_3T_${fMRIName}_SBRef.nii.gz"
-    #START181210
-    #fMRISBRef="NONE"
-    #START190711
     if [ -n "${command_line_specified_fMRISBRef}" ]; then
         fMRISBRef=${arr1[$i]}
         echo "fMRISBRef = ${fMRISBRef}"
@@ -571,10 +444,6 @@ for Subject in $Subjlist ; do
 	# Values: NONE, LEGACY, or SEBASED
 	#   SEBASED calculates bias field from spin echo images (which requires TOPUP distortion correction)
 	#   LEGACY uses the T1w bias field (method used for 3T HCP-YA data, but non-optimal; no longer recommended).
-    #BiasCorrection="SEBASED"
-    #START181210
-    #BiasCorrection="NONE"
-    #START190723
     BiasCorrection="NONE" 
     if [ -n "${command_line_specified_SpinEchoPhaseEncodeNegative}" ] && [ -n "${command_line_specified_SpinEchoPhaseEncodePositive}" ]; then
         BiasCorrection="SEBASED"
@@ -584,10 +453,6 @@ for Subject in $Subjlist ; do
 	# For the spin echo field map volume with a 'negative' phase encoding direction
 	# (LR in HCP-YA data; AP in 7T HCP-YA and HCP-D/A data)
 	# Set to NONE if using regular FIELDMAP
-    #SpinEchoPhaseEncodeNegative="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName}/${Subject}_3T_SpinEchoFieldMap_LR.nii.gz"
-    #START181210
-    #SpinEchoPhaseEncodeNegative="NONE"
-    #START190723
     SpinEchoPhaseEncodeNegative="NONE"
     if [ -n "${command_line_specified_SpinEchoPhaseEncodeNegative}" ]; then
         SpinEchoPhaseEncodeNegative=${arr3[$i]}
@@ -597,10 +462,6 @@ for Subject in $Subjlist ; do
 	# For the spin echo field map volume with a 'positive' phase encoding direction
 	# (RL in HCP-YA data; PA in 7T HCP-YA and HCP-D/A data)
 	# Set to NONE if using regular FIELDMAP
-    #SpinEchoPhaseEncodePositive="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName}/${Subject}_3T_SpinEchoFieldMap_RL.nii.gz"
-    #START181210
-    #SpinEchoPhaseEncodePositive="NONE"
-    #START190723
     SpinEchoPhaseEncodePositive="NONE"
     if [ -n "${command_line_specified_SpinEchoPhaseEncodePositive}" ]; then
         SpinEchoPhaseEncodePositive=${arr4[$i]}
@@ -609,10 +470,6 @@ for Subject in $Subjlist ; do
 
 	# Topup configuration file (if using TOPUP)
 	# Set to NONE if using regular FIELDMAP
-    #TopUpConfig="${HCPPIPEDIR_Config}/b02b0.cnf"
-    #START181210
-    #TopUpConfig="NONE"
-    #START190723
     TopUpConfig="NONE"
     if [ -n "${command_line_specified_SpinEchoPhaseEncodeNegative}" ] && [ -n "${command_line_specified_SpinEchoPhaseEncodePositive}" ]; then
         TopUpConfig="${HCPPIPEDIR_Config}/b02b0.cnf"
@@ -621,23 +478,6 @@ for Subject in $Subjlist ; do
 
 	# Not using Siemens Gradient Echo Field Maps for susceptibility distortion correction
 	# Set following to NONE if using TOPUP
-    #MagnitudeInputName="NONE" #Expects 4D Magnitude volume with two 3D volumes (differing echo times)
-    #PhaseInputName="NONE" #Expects a 3D Phase difference volume (Siemen's style)
-    #DeltaTE="NONE" #2.46ms for 3T, 1.02ms for 7T
-    #START181212
-    #if [ -n "${command_line_specified_MagnitudeInputName}" ] && [ -n "${command_line_specified_PhaseInputName}" ]; then
-    #    MagnitudeInputName=${command_line_specified_MagnitudeInputName}
-    #    PhaseInputName=${command_line_specified_PhaseInputName}
-    #    DeltaTE=2.46 #2.46ms for 3T, 1.02ms for 7T
-    #    echo "MagnitudeInputName = ${MagnitudeInputName}" 
-    #    echo "PhaseInputName = ${PhaseInputName}" 
-    #    echo "DeltaTE = ${DeltaTE}"
-    #else
-    #    MagnitudeInputName="NONE" #Expects 4D Magnitude volume with two 3D volumes (differing echo times)
-    #    PhaseInputName="NONE" #Expects a 3D Phase difference volume (Siemen's style)
-    #    DeltaTE="NONE" #2.46ms for 3T, 1.02ms for 7T
-    #fi
-    #START190723
     MagnitudeInputName="NONE" #Expects 4D Magnitude volume with two 3D volumes (differing echo times)
     PhaseInputName="NONE" #Expects a 3D Phase difference volume (Siemen's style)
     DeltaTE="NONE" #2.46ms for 3T, 1.02ms for 7T
@@ -657,21 +497,12 @@ for Subject in $Subjlist ; do
     #
     # Example Value: 
     #  GEB0InputName="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName}/${Subject}_3T_GradientEchoFieldMap.nii.gz" 
+    #  GEB0InputName="${StudyFolder}/${Subject}/unprocessed/3T/${fMRIName[i]}/${Subject}_3T_GradientEchoFieldMap.nii.gz" 
     GEB0InputName="NONE"
 
 	# Target final resolution of fMRI data
 	# 2mm is recommended for 3T HCP data, 1.6mm for 7T HCP data (i.e. should match acquisition resolution)
 	# Use 2.0 or 1.0 to avoid standard FSL templates
-    #FinalFMRIResolution="2"
-    #START190628
-    #if [ -n "${command_line_specified_native}" ] ; then
-    #    FinalFMRIResolution="0.7"
-    #    Analysis="NATIVE"
-    #else
-    #    FinalFMRIResolution="2"
-    #    Analysis="MNI"
-    #fi
-    #START190723
     if [ -n "${command_line_specified_native}" ] ; then
         Analysis="NATIVE"
     else
@@ -697,42 +528,12 @@ for Subject in $Subjlist ; do
     MCType="MCFLIRT"
 		
     if [ -n "${command_line_specified_run_local}" ] ; then
-
-        #echo "About to run ${HCPPIPEDIR}/fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh"
         echo "About to run ${P0}"
-
         queuing_command=""
     else
-
-        #echo "About to use fsl_sub to queue or run ${HCPPIPEDIR}/fMRIVolume/GenericfMRIVolumeProcessingPipeline.sh"
-        #START190723
         echo "About to use fsl_sub to queue or run ${P0}"
-
         queuing_command="${FSLDIR}/bin/fsl_sub ${QUEUE}"
     fi
-
-    #${queuing_command} ${P0} \
-    #  --path=$StudyFolder \
-    #  --subject=$Subject \
-    #  --fmriname=$fMRIName \
-    #  --fmritcs=$fMRITimeSeries \
-    #  --fmriscout=$fMRISBRef \
-    #  --SEPhaseNeg=$SpinEchoPhaseEncodeNegative \
-    #  --SEPhasePos=$SpinEchoPhaseEncodePositive \
-    #  --fmapmag=$MagnitudeInputName \
-    #  --fmapphase=$PhaseInputName \
-    #  --fmapgeneralelectric=$GEB0InputName \
-    #  --echospacing=$EchoSpacing \
-    #  --echodiff=$DeltaTE \
-    #  --unwarpdir=$UnwarpDir \
-    #  --fmrires=$FinalFMRIResolution \
-    #  --dcmethod=$DistortionCorrection \
-    #  --gdcoeffs=$GradientDistortionCoeffs \
-    #  --topupconfig=$TopUpConfig \
-    #  --printcom=$PRINTCOM \
-    #  --biascorrection=$BiasCorrection \
-    #  --mctype=${MCType} \
-    #  --analysis=$Analysis
 
     echo "cls_startOneStepResampling = $cls_startOneStepResampling"
     echo "cls_startIntensityNormalization = $cls_startIntensityNormalization"
@@ -741,8 +542,8 @@ for Subject in $Subjlist ; do
     ${queuing_command} ${P0} \
       --path=$StudyFolder \
       --subject=$Subject \
-      --fmriname=$fMRIName \
-      --fmritcs=$fMRITimeSeries \
+      --fmriname=${fMRIName[i]} \
+      --fmritcs=${fMRITimeSeries[i]} \
       --fmriscout=$fMRISBRef \
       --SEPhaseNeg=$SpinEchoPhaseEncodeNegative \
       --SEPhasePos=$SpinEchoPhaseEncodePositive \
@@ -769,8 +570,8 @@ for Subject in $Subjlist ; do
 
   echo -e "--path=$StudyFolder\n \
       --subject=$Subject\n \
-      --fmriname=$fMRIName\n \
-      --fmritcs=$fMRITimeSeries\n \
+      --fmriname=${fMRIName[i]}\n \
+      --fmritcs=${fMRITimeSeries[i]}\n \
       --fmriscout=$fMRISBRef\n \
       --SEPhaseNeg=$SpinEchoPhaseEncodeNegative\n \
       --SEPhasePos=$SpinEchoPhaseEncodePositive\n \
@@ -793,7 +594,7 @@ for Subject in $Subjlist ; do
       --startOneStepResampling=$cls_startOneStepResampling\n \
       --startIntensityNormalization=$cls_startIntensityNormalization\n"
 
-    i=$(($i+1))
+    #i=$(($i+1))
   done
 done
 echo "**** Exiting $0 ****"
