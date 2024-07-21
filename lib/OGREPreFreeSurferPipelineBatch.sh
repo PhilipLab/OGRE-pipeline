@@ -107,13 +107,8 @@ get_batch_options() {
         unset command_line_specified_EnvironmentScript
         unset command_line_specified_Hires
 
-        #START200305
         cls_startT2="FALSE"
-        #cls_AtlasRegistrationToMNI152="FALSE"
-        #START220502
         cls_startAtlasRegistrationToMNI152="FALSE"
-
-        #START201105
         unset cls_BrainSize
 
 	local index=0
@@ -542,36 +537,24 @@ main()
 		# Templates
 
 		# Hires T1w MNI template
-		#T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_0.7mm.nii.gz"
-                #START190313
 		T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
 
 		# Hires brain extracted MNI template
-		#T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_0.7mm_brain.nii.gz"
-                #START190313
 		T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
 
 		# Lowres T1w MNI template
 		T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
 
 		# Hires T2w MNI Template
-		#T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_0.7mm.nii.gz"
-                #START190313
 		T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
 
 		# Hires T2w brain extracted MNI Template
-		#T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_0.7mm_brain.nii.gz"
-                #START190313
 		T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
 
 		# Lowres T2w MNI Template
 		T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
 
 		# Hires MNI brain mask template
-		#TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_0.7mm_brain_mask.nii.gz"
-                #START190313
-		#TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_0.8mm_brain_mask.nii.gz"
-                #START220502
 		TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
 
 		# Lowres MNI brain mask template

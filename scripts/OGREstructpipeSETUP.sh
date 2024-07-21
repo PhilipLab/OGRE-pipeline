@@ -66,8 +66,6 @@ helpmsg(){
     echo "        Flag. Add date (YYMMDD) to name of output script."
     echo "    -DL --DL --DATELONG -DATELONG --datelong -datelong"
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
-    echo "    -r  --hires"
-    echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
     echo "    -b --batchscript -batchscript"
     echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
@@ -75,13 +73,32 @@ helpmsg(){
     echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
     echo "    --append -append"
     echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug. Overridden by -d."
-
-    #START240621
     echo "    -e --erosion -erosion --ero -ero"
     echo "        Default is 2. For the brain mask, the number or erosions that follow the three dilations. Ex. -e 2, will result in two erosions"
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
     echo "    -dil --dil -dilation --dilation"
     echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
+
+    #START240720
+    echo "    -r  --hires"
+    echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
+    echo "    -T1 --T1 -t1 --t1" 
+    echo "        Default is MNI152_T1_${hires}mm.nii.gz"
+    echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
+    echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz"
+    echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
+    echo "        Default is MNI152_T1_2mm.nii.gz"
+    echo "    -T2 --T2 -t2 --t2" 
+    echo "        Default is MNI152_T2_${hires}mm.nii.gz"
+    echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
+    echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz"
+    echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
+    echo "        Default is MNI152_T2_2mm.nii.gz"
+    echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
+    echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz"
+    echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
+    echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz"
+
     echo "    -h --help -help"
     echo "        Echo this help message."
     exit
@@ -92,10 +109,7 @@ if((${#@}<1));then
 fi
 echo $0 $@
 
-#lcautorun=0;lcbids=0;lchostname=0;lcdate=0;append= #do not set dat;unexpected
-#START240621
 lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
-
 unset bs pipedir name
 
 arg=("$@")
@@ -126,7 +140,6 @@ for((i=0;i<${#@};++i));do
             FREESURFVER=${arg[((++i))]}
             echo "FREESURFVER=$FREESURFVER"
             ;;
-
         -p | --pipedir | -pipedir | -d | -directory | --directory)
             pipedir=${arg[((++i))]}
             #https://stackoverflow.com/questions/17542892/how-to-get-the-last-character-of-a-string-in-a-shell
@@ -138,7 +151,6 @@ for((i=0;i<${#@};++i));do
             name=${arg[((++i))]}
             echo "name=$name"
             ;;
-
         -m | --HOSTNAME)
             lchostname=1
             echo "lchostname=$lchostname"
@@ -151,10 +163,6 @@ for((i=0;i<${#@};++i));do
             lcdate=2
             echo "lcdate=$lcdate"
             ;;
-        -r | --hires)
-            Hires=${arg[((++i))]}
-            echo "Hires=$Hires"
-            ;;
         -b | --batchscript | -batchscript)
             bs=True
             ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
@@ -164,8 +172,6 @@ for((i=0;i<${#@};++i));do
             append=${arg[((++i))]}
             echo "append=$append"
             ;;
-
-        #START240621
         -e | --erosion | -erosion | --ero | -ero)
             erosion=${arg[((++i))]}
             echo "erosion=$erosion"
@@ -174,6 +180,40 @@ for((i=0;i<${#@};++i));do
             dilation=${arg[((++i))]}
             echo "dilation=$dilation"
             ;;
+
+        #START240720
+        -r | --hires)
+            Hires=${arg[((++i))]}
+            echo "Hires=$Hires"
+            ;;
+        -T1 | --T1 | -t1 | --t1)
+            t1=${arg[((++i))]}
+            ;;
+        -T1brain | --T1brain | -t1brain | --t1brain | -t1b | --t1b | -T1b | --T1b)
+            t1b=${arg[((++i))]}
+            ;;
+        -T1low | --T1low | -t1low | --t1low | -t1l | --t1l | -T1l | --T1l)
+            t1l=${arg[((++i))]}
+            ;;
+        -T2 | --T2 | -t2 | --t2)
+            t2=${arg[((++i))]}
+            ;;
+        -T2brain | --T2brain | -t2brain | --t2brain | -t2b | --t2b | -T2b | --T2b)
+            t2b=${arg[((++i))]}
+            ;;
+        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l)
+            t2l=${arg[((++i))]}
+            ;;
+        -T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm)
+            t1bm=${arg[((++i))]}
+            ;;
+        -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
+            t1bml=${arg[((++i))]}
+            ;;
+
+
+
+
         -h | --help | -help)
             helpmsg
             exit
