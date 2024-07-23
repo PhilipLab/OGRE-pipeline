@@ -111,6 +111,10 @@ get_batch_options() {
         cls_startAtlasRegistrationToMNI152="FALSE"
         unset cls_BrainSize
 
+        #START240721
+        unset T1wTemplate T1wTemplateBrain T1wTemplate2mm T2wTemplate T2wTemplateBrain T2wTemplate2mm TemplateMask Template2mmMask
+
+
 	local index=0
 	local numArgs=${#arguments[@]}
 	local argument
@@ -131,8 +135,6 @@ get_batch_options() {
 				command_line_specified_run_local="TRUE"
 				index=$(( index + 1 ))
 				;;
-
-                        #START181203
                         --T1=*)
                                 command_line_specified_T1=${argument#*=}
 				index=$(( index + 1 ))
@@ -141,8 +143,6 @@ get_batch_options() {
                                 command_line_specified_T2=${argument#*=}
 				index=$(( index + 1 ))
 				;;
-
-                        #START181205
                         --GREfieldmapMag=*)
                                 command_line_specified_GREfieldmapMag=${argument#*=}
 				index=$(( index + 1 ))
@@ -151,20 +151,14 @@ get_batch_options() {
                                 command_line_specified_GREfieldmapPhase=${argument#*=}
 				index=$(( index + 1 ))
 				;;
-
-                        #START190117
                         --EnvironmentScript=*)
                                 command_line_specified_EnvironmentScript=${argument#*=}
 				index=$(( index + 1 ))
 				;;
-
-                        #START190313
                         --Hires=*)
                                 command_line_specified_Hires=${argument#*=}
 				index=$(( index + 1 ))
 				;;
-
-                        #START200305
                         --startT2)
                             cls_startT2="TRUE"
                             index=$(( index + 1 ))
@@ -173,13 +167,44 @@ get_batch_options() {
                             cls_AtlasRegistrationToMNI152="TRUE"
                             index=$(( index + 1 ))
                             ;;
-
-                        #START201105
                         --BrainSize=*)
                             cls_BrainSize=${argument#*=}
                             index=$(( index + 1 ))
                             ;;
 
+                        #START240721
+                        --T1wTemplate=*)
+                            T1wTemplate=${argument#*=}
+                            ((++index))
+                            ;;
+                        --T1wTemplateBrain=*)
+                            T1wTemplateBrain=${argument#*=}
+                            ((++index))
+                            ;;
+                        --T1wTemplateLow=*)
+                            T1wTemplate2mm=${argument#*=}
+                            ((++index))
+                            ;;
+                        --T2wTemplate=*)
+                            T2wTemplate=${argument#*=}
+                            ((++index))
+                            ;;
+                        --T2wTemplateBrain=*)
+                            T2wTemplateBrain=${argument#*=}
+                            ((++index))
+                            ;;
+                        --T2wTemplateLow=*)
+                            T2wTemplate2mm=${argument#*=}
+                            ((++index))
+                            ;;
+                        --TemplateMask=*)
+                            TemplateMask=${argument#*=}
+                            ((++index))
+                            ;;
+                        --TemplateMaskLow=*)
+                            Template2mmMask=${argument#*=}
+                            ((++index))
+                            ;;
 
 
 			*)
@@ -536,29 +561,49 @@ main()
 
 		# Templates
 
-		# Hires T1w MNI template
-		T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+		## Hires T1w MNI template
+		#T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+		## Hires brain extracted MNI template
+		#T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+		## Lowres T1w MNI template
+		#T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+		## Hires T2w MNI Template
+		#T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+		## Hires T2w brain extracted MNI Template
+		#T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+		## Lowres T2w MNI Template
+		#T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+		## Hires MNI brain mask template
+		#TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+		## Lowres MNI brain mask template
+		#Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+                #START240721
+                # Hires T1w MNI template
+                [ -z "T1wTemplate" ] && T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+                # Hires brain extracted MNI template
+                [ -z "T1wTemplateBrain" ] && T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+                # Lowres T1w MNI template
+                [ -z "T1wTemplate2mm" ] && T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+                # Hires T2w MNI Template
+                [ -z "T2wTemplate" ] && T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+                # Hires T2w brain extracted MNI Template
+                [ -z "T2wTemplateBrain" ] && T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+                # Lowres T2w MNI Template
+                [ -z "T2wTemplate2mm" ] && T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+                # Hires MNI brain mask template
+                [ -z "TemplateMask" ] && TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+                # Lowres MNI brain mask template
+                [ -z "Template2mmMask" ] && Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+                echo T1wTemplate = $T1wTemplate
+                echo T1wTemplateBrain = $T1wTemplateBrain
+                echo T1wTemplate2mm = $T1wTemplate2mm
+                echo T2wTemplate = $T2wTemplate
+                echo T2wTemplateBrain = $T2wTemplateBrain
+                echo T2wTemplate2mm = $T2wTemplate2mm
+                echo TemplateMask = $TemplateMask
+                echo Template2mmMask = $Template2mmMask
+                
 
-		# Hires brain extracted MNI template
-		T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
-
-		# Lowres T1w MNI template
-		T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
-
-		# Hires T2w MNI Template
-		T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
-
-		# Hires T2w brain extracted MNI Template
-		T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
-
-		# Lowres T2w MNI Template
-		T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
-
-		# Hires MNI brain mask template
-		TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
-
-		# Lowres MNI brain mask template
-		Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
 
 		# Structural Scan Settings
 		#

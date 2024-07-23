@@ -13,14 +13,10 @@ PRE=OGREPreFreeSurferPipelineBatch.sh
 FREE=OGREFreeSurferPipelineBatch.sh
 POST=OGREPostFreeSurferPipelineBatch.sh
 SETUP=OGRESetUpHCPPipeline.sh
-
-
-#START240719
 MASKS=OGRESplitFreeSurferMasks.sh
 
-
-
-#Resolution. options: 1, 0.7 or 0.8
+#Resolution. MNI152  options: 1, 0.7 or 0.8
+             mni_sym options: 1, 0.7, 0.8 or 0.5
 Hires=1
 
 T1SEARCHSTR=T1w
@@ -80,7 +76,7 @@ helpmsg(){
     echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
 
     #START240720
-    echo "    -r  --hires"
+    echo "    -r --hires -hires"
     echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
     echo "    -T1 --T1 -t1 --t1" 
     echo "        Default is MNI152_T1_${hires}mm.nii.gz"
@@ -110,7 +106,11 @@ fi
 echo $0 $@
 
 lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
-unset bs pipedir name
+
+#unset bs pipedir name
+#START240721
+unset bs pipedir name t1 t1b t1l t2 t2b t2l t1bm t1bml
+
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -182,7 +182,7 @@ for((i=0;i<${#@};++i));do
             ;;
 
         #START240720
-        -r | --hires)
+        -r | --hires | -hires)
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
             ;;
@@ -243,33 +243,14 @@ fi
 #echo "dat[@]=${dat[@]}"
 #echo "#dat[@]=${#dat[@]}"
 
-#START240221
-#if [ -z "${bs}" ];then
-#    num_sub=0
-#    for((i=0;i<${#csv[@]};++i));do
-#        IFS=$'\r\n\t, ' read -ra line <<< ${csv[i]}
-#        if [[ "${line[0]:0:1}" = "#" ]];then
-#            #echo "Skipping line $((i+1))"
-#            continue
-#        fi
-#        ((num_sub++))
-#    done
-#    num_cores=$(sysctl -n hw.ncpu)
-#    ((num_sub>num_cores)) && echo "${num_sub} will be run, however $(hostname) only has ${num_cores}. Please consider -b <batchscript>."
-#fi    
-
 lcsinglereconall=0;lctworeconall=0
 
 if [[ "${FREESURFVER}" != "5.3.0-HCP" && "${FREESURFVER}" != "7.2.0" && "${FREESURFVER}" != "7.3.2" && "${FREESURFVER}" != "7.4.0" && "${FREESURFVER}" != "7.4.1" ]];then
     echo "Unknown version of freesurfer. FREESURFVER=${FREESURFVER}"
     exit
 fi
-
-#[[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" ]] && lctworeconall=1
-#START240329
 [[ "${FREESURFVER}" = "7.2.0" || "${FREESURFVER}" = "7.3.2" || "${FREESURFVER}" = "7.4.0" || "${FREESURFVER}" = "7.4.1" ]] && lctworeconall=1
 
-#START240301
 if [ -n "${bs}" ];then
     if [[ "${bs}" != True ]];then
         [[ $bs == *"/"* ]] && mkdir -p ${bs%/*}
@@ -418,22 +399,13 @@ for((i=0;i<${#dat[@]};++i));do
     echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
     echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
     echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
-
-    #echo -e SETUP='${OGREDIR}'/lib/${SETUP}"\n" >> ${F0}
-    #START240719
     echo SETUP='${OGREDIR}'/lib/${SETUP} >> ${F0}
     echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
 
-
     echo "s0=${s0}" >> ${F0}
-    #echo "sf0=${dir1}" >> ${F0}
     echo -e "sf0=${dir1}\n" >> ${F0}
-
     echo -e "Hires=${Hires}" >> ${F0}
-
-    #echo -e "erosion=${erosion}\n" >> ${F0}
     echo "erosion=${erosion}" >> ${F0}
-
     echo -e "dilation=${dilation}\n" >> ${F0}
 
     echo 'freesurferdir=${sf0}/T1w/${s0}' >> ${F0}
@@ -447,6 +419,17 @@ for((i=0;i<${#dat[@]};++i));do
     echo '        --GREfieldmapMag="NONE" \' >> ${F0}
     echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
     echo '        --Hires=${Hires} \' >> ${F0}
+
+    #START240721
+    [ -n "${t1}" ] && echo '        --T1wTemplate='${t1}' \' >> ${F0}
+    [ -n "${t1b}" ] && echo '        --T1wTemplateBrain='${t1b}' \' >> ${F0}
+    [ -n "${t1l}" ] && echo '        --T1wTemplateLow='${t1l}' \' >> ${F0}
+    [ -n "${t2}" ] && echo '        --T2wTemplate='${t2}' \' >> ${F0}
+    [ -n "${t2b}" ] && echo '        --T2wTemplateBrain='${t2b}' \' >> ${F0}
+    [ -n "${t2l}" ] && echo '        --T2wTemplateLow='${t1l}' \' >> ${F0}
+    [ -n "${t1bm}" ] && echo '        --TemplateMask='${t1bm}' \' >> ${F0}
+    [ -n "${t1bml}" ] && echo '        --TemplateMaskLow='${t1bml}' \' >> ${F0}
+
     echo '        --EnvironmentScript=${SETUP}' >> ${F0}
     echo 'else' >> ${F0}
     echo '    dirdate=$(date -r $freesurferdir)' >> ${F0}
@@ -454,6 +437,9 @@ for((i=0;i<${#dat[@]};++i));do
     echo '    mv "$freesurferdir" "$newname"' >> ${F0}
     echo '    echo "$freesurferdir renamed to $newname"' >> ${F0}
     echo -e 'fi\n' >> ${F0}
+
+
+
 
     echo '${FREE} \' >> ${F0}
     echo '    --StudyFolder=${sf0} \' >> ${F0}
