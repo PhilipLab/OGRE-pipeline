@@ -537,3 +537,4 @@ fi
 
 # added by Ben 240707
 cp -f ${dat} ${dir0}
+echo "OGRE structural pipeline completed."
