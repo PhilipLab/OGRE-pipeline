@@ -56,6 +56,7 @@ if [ -z "${SUBJECT}" ];then
         echo "OGRESplitFreeSurferMasks.sh determined subject to be ${SUBJECT}"
     else
         echo "Error in OGRESplitFreeSurferMasks.sh: PIPEDIR contains no /sub-X/, and subject not set externally"
+        exit
     fi
 fi
 
