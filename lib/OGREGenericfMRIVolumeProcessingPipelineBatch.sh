@@ -347,7 +347,7 @@ for Subject in $Subjlist ; do
   for((i=0;i<${#fMRIName[@]};++i));do
     echo -e "\n${SCRIPT_NAME}: Processing Scan: ${fMRIName[i]}"
     echo "    fMRITimeSeries = ${fMRITimeSeries[i]}"
-    continue
+    #continue
 
         # Susceptibility distortion correction method (required for accurate processing)
         # Values: TOPUP, SiemensFieldMap (same as FIELDMAP), GeneralElectricFieldMap
