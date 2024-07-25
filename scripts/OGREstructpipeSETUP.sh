@@ -16,7 +16,7 @@ SETUP=OGRESetUpHCPPipeline.sh
 MASKS=OGRESplitFreeSurferMasks.sh
 
 #Resolution. MNI152  options: 1, 0.7 or 0.8
-             mni_sym options: 1, 0.7, 0.8 or 0.5
+#            mni_sym options: 1, 0.7, 0.8 or 0.5
 Hires=1
 
 T1SEARCHSTR=T1w
@@ -75,42 +75,53 @@ helpmsg(){
     echo "    -dil --dil -dilation --dilation"
     echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
 
-    #START240720
-    echo "    -r --hires -hires"
-    echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
-    echo "    -T1 --T1 -t1 --t1" 
-    echo "        Default is MNI152_T1_${hires}mm.nii.gz"
-    echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
-    echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz"
-    echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
-    echo "        Default is MNI152_T1_2mm.nii.gz"
-    echo "    -T2 --T2 -t2 --t2" 
-    echo "        Default is MNI152_T2_${hires}mm.nii.gz"
-    echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
-    echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz"
-    echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
-    echo "        Default is MNI152_T2_2mm.nii.gz"
-    echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
-    echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz"
-    echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
-    echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz"
+    #START240723
+    echo "    -ht --ht --highres-template -highres-template"
+    echo "        Optional. Template for structural registration. Default is MNI152 1mm asymmetric (HCP/FSL version)"
+    echo "        Full path of a folder containing 4 files: T1w, T1w_brain, T2w, T2w_brain (brain_mask may be used instead of _brain)"
+    echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_1mm/"
+    echo "    -lt --lt --lowres-template -lowres-template"
+    echo "        Optional. Template for functional registration. Default is MNI152 2mm asymmetric (HCP/FSL version)"
+    echo "        Full path of a folder containing 4 files: T1w, T1w_brain, T2w, T2w_brain (brain_mask may be used instead of _brain)"
+    echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm/"
+
+
+
+    if [ -z "$1" ];then
+        echo "    --hidden -hidden"
+        echo "        Show hidden options."
+    else
+        echo "    -r --hires -hires"
+        echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
+        echo "    -T1 --T1 -t1 --t1" 
+        echo "        Default is MNI152_T1_${hires}mm.nii.gz"
+        echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
+        echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz"
+        echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
+        echo "        Default is MNI152_T1_2mm.nii.gz"
+        echo "    -T2 --T2 -t2 --t2" 
+        echo "        Default is MNI152_T2_${hires}mm.nii.gz"
+        echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
+        echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz"
+        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
+        echo "        Default is MNI152_T2_2mm.nii.gz"
+        echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
+        echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz"
+        echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
+        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz"
+    fi
 
     echo "    -h --help -help"
     echo "        Echo this help message."
-    exit
+    #exit
     }
 if((${#@}<1));then
     helpmsg
     exit
 fi
-echo $0 $@
 
 lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
-
-#unset bs pipedir name
-#START240721
-unset bs pipedir name t1 t1b t1l t2 t2b t2l t1bm t1bml
-
+unset bs pipedir name hidden help t1 t1b t1l t2 t2b t2l t1bm t1bml
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -180,8 +191,18 @@ for((i=0;i<${#@};++i));do
             dilation=${arg[((++i))]}
             echo "dilation=$dilation"
             ;;
-
-        #START240720
+        -ht | --ht | --highres-template | -highres-template)
+            ht=${arg[((++i))]}
+            echo "ht=$ht"
+            ;;
+        -lt | --lt | --lowres-template | -lowres-template)
+            lt=${arg[((++i))]}
+            echo "lt=$lt"
+            ;;
+        --hidden | -hidden)
+            hidden=True
+            #echo "hidden=$hidden"
+            ;;
         -r | --hires | -hires)
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
@@ -210,18 +231,21 @@ for((i=0;i<${#@};++i));do
         -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
             t1bml=${arg[((++i))]}
             ;;
-
-
-
-
         -h | --help | -help)
-            helpmsg
-            exit
+            #helpmsg
+            #exit
+            help=True
             ;;
         *) unexpected+=(${arg[i]})
             ;;
     esac
 done
+if [[ -n "$help" || -n "$hidden" ]];then
+    helpmsg $hidden
+    exit
+fi
+
+echo $0 $@
 
 if [ -z "${OGREDIR}" ];then
     echo "OGREDIR not set. Abort!"
