@@ -16,7 +16,7 @@ SETUP=OGRESetUpHCPPipeline.sh
 MASKS=OGRESplitFreeSurferMasks.sh
 
 #Resolution. MNI152  options: 1, 0.7 or 0.8
-#            mni_sym options: 1, 0.7, 0.8 or 0.5
+#            mni_sym options: 1, 0.7, 0.8 #or 0.5
 Hires=1
 
 T1SEARCHSTR=T1w
@@ -88,8 +88,8 @@ helpmsg(){
 
 
     if [ -z "$1" ];then
-        echo "    --hidden -hidden"
-        echo "        Show hidden options."
+        echo "    --helpall -helpall"
+        echo "        Show all options."
     else
         echo "    -r --hires -hires"
         echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
@@ -121,11 +121,14 @@ if((${#@}<1));then
 fi
 
 lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
-unset bs pipedir name hidden help t1 t1b t1l t2 t2b t2l t1bm t1bml
+
+#unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml
+#START240724
+unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
-    #echo "i=$i ${arg[i]}"
+    echo "i=$i ${arg[i]}"
     case "${arg[i]}" in
         -s | --scanlist | -scanlist)
             dat+=(${arg[((++i))]})
@@ -199,9 +202,9 @@ for((i=0;i<${#@};++i));do
             lt=${arg[((++i))]}
             echo "lt=$lt"
             ;;
-        --hidden | -hidden)
-            hidden=True
-            #echo "hidden=$hidden"
+        --helpall | -helpall)
+            helpall=True
+            #echo "helpall=$helpall"
             ;;
         -r | --hires | -hires)
             Hires=${arg[((++i))]}
@@ -240,8 +243,8 @@ for((i=0;i<${#@};++i));do
             ;;
     esac
 done
-if [[ -n "$help" || -n "$hidden" ]];then
-    helpmsg $hidden
+if [[ -n "$help" || -n "$helpall" ]];then
+    helpmsg $helpall
     exit
 fi
 
@@ -287,7 +290,46 @@ if [ -n "${bs}" ];then
     fi
 fi
 
-wd0=$(pwd) 
+#START240724
+if [[ -n "$ht" || -n "$lt" ]];then
+    if [[ -z "$ht" ]];then
+        echo You have only provided -lt. -ht is also required. Abort!
+        exit
+    fi
+    if [[ -z "$lt" ]];then
+        echo You have only provided -ht. -lt is also required. Abort!
+        exit
+    fi
+    for i in $ht/*;do
+        echo $i
+#STARTHERE
+        if [[ "$i" == *"T1w.nii.gz" ]];then
+
+        elif [[ "$i" == *"T1w_brain.nii.gz" ]];then
+
+        elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
+
+        elif [[ "$i" == *"T2w.nii.gz" ]];then
+
+        elif [[ "$i" == *"T2w_brain.nii.gz" ]];then
+
+        else
+
+        fi
+    done
+fi 
+exit
+
+#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T1w.nii.gz
+#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T1w_brain.nii.gz
+#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T1w_brain_mask.nii.gz
+#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T2w.nii.gz
+#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T2w_brain.nii.gz
+
+
+
+
+
 
 for((i=0;i<${#dat[@]};++i));do
 
