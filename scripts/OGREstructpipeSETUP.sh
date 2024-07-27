@@ -109,6 +109,7 @@ helpmsg(){
         echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz"
         echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
         echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz"
+        echo "        Mask is dilated by default."
     fi
 
     echo "    -h --help -help"
@@ -321,7 +322,8 @@ if [[ -n "$ht" || -n "$lt" ]];then
         if [[ "$i" == *"T1w.nii.gz" ]];then
             T1wTemplateLow=$i
         elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
-            TemplateMaskLow=$i
+            #TemplateMaskLow=$i
+            TemplateMaskLowUndil=$i
         elif [[ "$i" == *"T2w.nii.gz" ]];then
             T2wTemplateLow=$i
         else
@@ -338,10 +340,53 @@ if [[ -n "$ht" || -n "$lt" ]];then
     fi
     if [[ -z "$T1wTemplateBrain" ]];then
         #fslmaths HEAD -mas MASK BRAIN
+#STARTHERE
+#change code so it only runs on a single dat        
     fi
     if [[ -z "$TemplateMask" ]];then
         #fslmaths BRAIN -bin MASK
     fi 
+    if [[ -z "$TemplateMaskLow" ]];then
+        echo TemplateMaskLow no provided. Abort!
+        exit
+    fi
+    echo Dilating $TemplateMaskLow
+    # https://neurostars.org/t/how-to-dilate-a-binary-mask-using-fsl/29033
+    TemplateMaskLow=${TemplateMaskLowUndil##*/}
+    TemplateMaskLow=${TemplateMaskLow%%.nii.gz}_dil.nii.gz
+    echo TemplateMaskLow = $TemplateMaskLow
+    echo EXIT here0
+    eixt
+    fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
+
+else
+    source ${OGREDIR}/lib/${SETUP} 
+
+    # Hires T1w MNI template
+    T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+
+    # Hires brain extracted MNI template
+    T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+
+    # Lowres T1w MNI template
+    #T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+    T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+
+    # Hires T2w MNI Template
+    T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+
+    # Hires T2w brain extracted MNI Template
+    T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+
+    # Lowres T2w MNI Template
+    T2wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+
+    # Hires MNI brain mask template
+    TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+
+    # Lowres MNI brain mask template
+    #Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+    TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
 fi 
 exit
 #need error message if T2 is included but no templates
@@ -401,20 +446,6 @@ for((i=0;i<${#dat[@]};++i));do
         T1f=${T1f//${s0}/'${s0}'}
         T2f=${T2f//${s0}/'${s0}'}
 
-
-        #if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
-        #    dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
-        #    dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
-        #else
-        #    for j in "${!subj[@]}";do
-        #        if [[ "${subj[j]}" = "raw_data" ]];then
-        #            dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}
-        #            dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'
-        #            break
-        #        fi
-        #    done
-        #fi
-        #START240302
         if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
             dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
             dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append

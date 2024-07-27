@@ -578,22 +578,64 @@ main()
 		## Lowres MNI brain mask template
 		#Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
                 #START240721
+                ## Hires T1w MNI template
+                #[ -z "T1wTemplate" ] && T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+                ## Hires brain extracted MNI template
+                #[ -z "T1wTemplateBrain" ] && T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+                ## Lowres T1w MNI template
+                #[ -z "T1wTemplate2mm" ] && T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+                ## Hires T2w MNI Template
+                #[ -z "T2wTemplate" ] && T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+                ## Hires T2w brain extracted MNI Template
+                #[ -z "T2wTemplateBrain" ] && T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+                ## Lowres T2w MNI Template
+                #[ -z "T2wTemplate2mm" ] && T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+                ## Hires MNI brain mask template
+                #[ -z "TemplateMask" ] && TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+                ## Lowres MNI brain mask template
+                #[ -z "Template2mmMask" ] && Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+                #START240726
                 # Hires T1w MNI template
-                [ -z "T1wTemplate" ] && T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+                if [ -z "T1wTemplate" ];then
+                    echo No value for T1wTemplate. Abort!
+                    exit
+                fi
                 # Hires brain extracted MNI template
-                [ -z "T1wTemplateBrain" ] && T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+                if [ -z "T1wTemplateBrain" ];then
+                    echo No value for T1wTemplateBrain. Abort!
+                    exit
+                fi
                 # Lowres T1w MNI template
-                [ -z "T1wTemplate2mm" ] && T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+                if [ -z "T1wTemplate2mm" ];then
+                    echo No value for T1wTemplate2mm. Abort!
+                    exit
+                fi
                 # Hires T2w MNI Template
-                [ -z "T2wTemplate" ] && T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+                if [ -z "T2wTemplate" ];then
+                    echo No value for T2wTemplate. Abort!
+                    exit
+                fi
                 # Hires T2w brain extracted MNI Template
-                [ -z "T2wTemplateBrain" ] && T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+                if [ -z "T2wTemplateBrain" ];then
+                    echo No value for T2wTemplateBrain. Abort!
+                    exit
+                fi
                 # Lowres T2w MNI Template
-                [ -z "T2wTemplate2mm" ] && T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+                if [ -z "T2wTemplate2mm" ];then
+                    echo No value for T2wTemplate2mm. Abort!
+                    exit
+                fi
                 # Hires MNI brain mask template
-                [ -z "TemplateMask" ] && TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+                if [ -z "TemplateMask" ];then
+                    echo No value for TemplateMask. Abort!
+                    exit
+                fi 
                 # Lowres MNI brain mask template
-                [ -z "Template2mmMask" ] && Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+                if [ -z "Template2mmMask" ];then
+                    echo No value fo Template2mmMask. Abort!
+                    exit
+                fi 
+
                 echo T1wTemplate = $T1wTemplate
                 echo T1wTemplateBrain = $T1wTemplateBrain
                 echo T1wTemplate2mm = $T1wTemplate2mm
