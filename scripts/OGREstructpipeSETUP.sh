@@ -302,32 +302,49 @@ if [[ -n "$ht" || -n "$lt" ]];then
     fi
     for i in $ht/*;do
         echo $i
-#STARTHERE
         if [[ "$i" == *"T1w.nii.gz" ]];then
-
+            T1wTemplate=$i
         elif [[ "$i" == *"T1w_brain.nii.gz" ]];then
-
+            T1wTemplateBrain=$i
         elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
-
+            TemplateMask=$i
         elif [[ "$i" == *"T2w.nii.gz" ]];then
-
+            T2wTemplate=$i
         elif [[ "$i" == *"T2w_brain.nii.gz" ]];then
-
+            T2wTemplateBrain=$i
         else
-
+            echo Ignoring $i
         fi
     done
+    for i in $lt/*;do
+        echo $i
+        if [[ "$i" == *"T1w.nii.gz" ]];then
+            T1wTemplateLow=$i
+        elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
+            TemplateMaskLow=$i
+        elif [[ "$i" == *"T2w.nii.gz" ]];then
+            T2wTemplateLow=$i
+        else
+            echo Ignoring $i
+        fi
+    done
+    if [[ -z "$T1wTemplate" ]];then
+        echo T1wTemplate not provided. Abort!
+        exit
+    fi
+    if [[ -z "$T1wTemplateBrain" && -z "$TemplateMask" ]];then
+        echo T1wTemplateBrain and TemplateMask not provided. One is needed to compute the other. Abort!
+        exit
+    fi
+    if [[ -z "$T1wTemplateBrain" ]];then
+        #fslmaths HEAD -mas MASK BRAIN
+    fi
+    if [[ -z "$TemplateMask" ]];then
+        #fslmaths BRAIN -bin MASK
+    fi 
 fi 
 exit
-
-#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T1w.nii.gz
-#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T1w_brain.nii.gz
-#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T1w_brain_mask.nii.gz
-#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T2w.nii.gz
-#/Users/mcavoy/repo2/OGRE-pipeline/lib/templates/mni-2009_sym_1mm/mni-2009_sym_1mm_T2w_brain.nii.gz
-
-
-
+#need error message if T2 is included but no templates
 
 
 
