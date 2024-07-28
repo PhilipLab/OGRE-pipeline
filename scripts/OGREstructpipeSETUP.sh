@@ -74,19 +74,15 @@ helpmsg(){
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
     echo "    -dil --dil -dilation --dilation"
     echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
-
-    #START240723
     echo "    -ht --ht --highres-template -highres-template"
-    echo "        Optional. Template for structural registration. Default is MNI152 1mm asymmetric (HCP/FSL version)"
-    echo "        Full path of a folder containing 4 files: T1w, T1w_brain, T2w, T2w_brain (brain_mask may be used instead of _brain)"
+    echo "        Optional. High resolution registration templates. Default is MNI152 1mm asymmetric (HCP/FSL version)"
+    echo "        Full path of a folder containing 4 files: T1w, T1w_brain and/or T1_brain_mask, T2w, T2w_brain (brain_mask may be used instead of _brain)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_1mm/"
     echo "    -lt --lt --lowres-template -lowres-template"
-    echo "        Optional. Template for functional registration. Default is MNI152 2mm asymmetric (HCP/FSL version)"
-    echo "        Full path of a folder containing 4 files: T1w, T1w_brain, T2w, T2w_brain (brain_mask may be used instead of _brain)"
+    echo "        Optional. Low resolution registration templates. Default is MNI152 2mm asymmetric (HCP/FSL version)"
+    echo "        Full path of a folder containing 4 files: T1w, T1w_brain or T1w_brain_mask, T2w (brain_mask may be used instead of _brain)"
+    echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm/"
-
-
-
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
         echo "        Show all options."
@@ -94,27 +90,25 @@ helpmsg(){
         echo "    -r --hires -hires"
         echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
         echo "    -T1 --T1 -t1 --t1" 
-        echo "        Default is MNI152_T1_${hires}mm.nii.gz"
+        echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
         echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
-        echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz"
+        echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz. This will overwrite -ht."
         echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
-        echo "        Default is MNI152_T1_2mm.nii.gz"
+        echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
         echo "    -T2 --T2 -t2 --t2" 
-        echo "        Default is MNI152_T2_${hires}mm.nii.gz"
+        echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
         echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
-        echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz"
+        echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
         echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
-        echo "        Default is MNI152_T2_2mm.nii.gz"
+        echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
         echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
-        echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz"
+        echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz. This will overwrite -ht."
         echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
-        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz"
-        echo "        Mask is dilated by default."
+        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
+        echo '        Mask is dilated if name does not include "dil".'
     fi
-
     echo "    -h --help -help"
     echo "        Echo this help message."
-    #exit
     }
 if((${#@}<1));then
     helpmsg
@@ -123,9 +117,8 @@ fi
 
 lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
 
-#unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml
-#START240724
 unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
+unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow 
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -268,6 +261,12 @@ if [ -z "${dat}" ];then
     exit
 fi
 
+#START240727
+if((${#dat[@]}>1));then
+    echo Only a single scanlist.csv file is accepted. Abort!
+    exit
+fi
+
 #echo "dat[@]=${dat[@]}"
 #echo "#dat[@]=${#dat[@]}"
 
@@ -291,7 +290,92 @@ if [ -n "${bs}" ];then
     fi
 fi
 
-#START240724
+echo "Reading ${dat}"
+sed -i '' $'s/\r$//' ${dat}
+unset T1f T2f
+cnt=0
+#https://stackoverflow.com/questions/24537483/bash-loop-to-get-lines-in-a-file-skipping-comments-and-blank-lines
+#https://mywiki.wooledge.org/BashFAQ/024
+while IFS=$'\t, ' read -ra line; do
+    if [[ "${line[1]}" == *"${T1SEARCHSTR}"* ]];then
+        T1f=${line[1]}
+        ((cnt++))
+    elif [[ "${line[1]}" == *"${T2SEARCHSTR}"* ]];then
+        T2f=${line[1]}
+        ((cnt++))
+    fi
+    ((cnt==2)) && break
+done < <(grep -vE '^(\s*$|#)' ${dat})
+
+if [ -z "${T1f}" ];then
+    echo -e "    T1 not found with searchstr = \"${T1SEARCHSTR}\" Abort!"
+    exit 
+else
+    T1f+=.nii.gz 
+    if [ ! -f "$T1f" ];then
+        echo "    ${T1f} not found. Abort!"
+        exit
+    fi
+fi
+if [ -z "${T2f}" ];then 
+    echo -e "    WARNING: T2 not found with searchstr = \"${T2SEARCHSTR}\""
+else
+    T2f+=.nii.gz 
+    if [ ! -f "$T2f" ];then
+        echo "    WARNING: ${T2f} not found."
+        unset T2f
+    fi
+fi
+
+if [ -z "$pipedir" ];then
+    datf=$(realpath ${dat[0]})
+    dir0=${datf%/*}
+    IFS='/' read -ra subj <<< "${dir0}"
+    s0=${subj[${#subj[@]}-1]}
+    T1f=${T1f//${s0}/'${s0}'}
+    T2f=${T2f//${s0}/'${s0}'}
+    if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
+        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
+        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append
+    else
+        for j in "${!subj[@]}";do
+            if [[ "${subj[j]}" = "raw_data" ]];then
+                dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}$append
+                dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'$append
+                break
+            fi
+        done
+    fi
+else
+    dir0=${pipedir}/pipeline${FREESURFVER}
+    dir1=${pipedir}/pipeline'${FREESURFVER}'
+fi
+
+[ -n "$name" ] && s0=$name
+if((lchostname==1));then
+    dir0+=_$(hostname)
+    dir1+=_'$(hostname)'
+fi
+mkdir -p ${dir0}
+datestr=''
+if((lcdate==1));then
+    datestr=_$(date +%y%m%d)
+elif((lcdate==2));then
+    datestr=_$(date +%y%m%d%H%M%S)
+fi
+F0stem=${dir0}/${s0}_OGREstruct${datestr} 
+F0=${F0stem}.sh
+F1=${F0stem}_fileout.sh
+F0name='${s0}'_OGREstruct${datestr}.sh
+
+if [ -n "${bs}" ];then
+    bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
+    bs0=${bs0stem}.sh
+    echo -e "$shebang\nset -e\n" > ${bs0} 
+    bs1=${bs0stem}_fileout.sh
+    echo -e "$shebang\nset -e\n" > ${bs1} 
+fi
+
 if [[ -n "$ht" || -n "$lt" ]];then
     if [[ -z "$ht" ]];then
         echo You have only provided -lt. -ht is also required. Abort!
@@ -307,12 +391,14 @@ if [[ -n "$ht" || -n "$lt" ]];then
             T1wTemplate=$i
         elif [[ "$i" == *"T1w_brain.nii.gz" ]];then
             T1wTemplateBrain=$i
-        elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
+        elif [[ "$i" == *"T1w_brain_mask"* ]];then # .nii.gz excluded to allow "dil" at end
             TemplateMask=$i
         elif [[ "$i" == *"T2w.nii.gz" ]];then
             T2wTemplate=$i
         elif [[ "$i" == *"T2w_brain.nii.gz" ]];then
             T2wTemplateBrain=$i
+        elif [[ "$i" == *"T2w_brain_mask.nii.gz" ]];then
+            T2wTemplateMask=$i
         else
             echo Ignoring $i
         fi
@@ -322,8 +408,8 @@ if [[ -n "$ht" || -n "$lt" ]];then
         if [[ "$i" == *"T1w.nii.gz" ]];then
             T1wTemplateLow=$i
         elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
-            #TemplateMaskLow=$i
-            TemplateMaskLowUndil=$i
+            TemplateMaskLow=$i
+            #TemplateMaskLowUndil=$i
         elif [[ "$i" == *"T2w.nii.gz" ]];then
             T2wTemplateLow=$i
         else
@@ -339,307 +425,189 @@ if [[ -n "$ht" || -n "$lt" ]];then
         exit
     fi
     if [[ -z "$T1wTemplateBrain" ]];then
+        mkdir -p ${dir0}/templates
+        T1wTemplateBrain=${T1wTemplate##*/}
+        T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain%%.nii.gz}_brain.nii.gz
         #fslmaths HEAD -mas MASK BRAIN
-#STARTHERE
-#change code so it only runs on a single dat        
+        fslmaths $T1wTemplate -mas $TemplateMask $T1wTemplateBrain
     fi
     if [[ -z "$TemplateMask" ]];then
+        mkdir -p ${dir0}/templates
+        TemplateMask=${T1wTemplate##*/}
+        TemplateMask=${dir0}/templates/${T1wTemplateMask%%.nii.gz}_brain_mask.nii.gz
         #fslmaths BRAIN -bin MASK
-    fi 
+        fslmaths $T1wTemplateBrain -bin $TemplateMask
+    fi
+    if [[ -z "$T2wTemplateBrain" ]];then
+        if [[ -z "$T2wTemplateMask" ]];then
+            echo T2wTemplateMask is needed to create T2wTemplateBrain. Abort!
+            exit
+        fi
+        mkdir -p ${dir0}/templates
+        T2wTemplateBrain=${T2wTemplate##*/}
+        T2wTemplateBrain=${dir0}/templates/${T2wTemplate%%.nii.gz}_brain.nii.gz
+        #fslmaths HEAD -mas MASK BRAIN
+        fslmaths $T2wTemplate -mas $T2wTemplateMask $T2wTemplateBrain
+    fi
     if [[ -z "$TemplateMaskLow" ]];then
-        echo TemplateMaskLow no provided. Abort!
+        echo TemplateMaskLow not provided. Abort!
         exit
     fi
-    echo Dilating $TemplateMaskLow
+fi
+
+[ -n "${t1}" ] && T1wTemplate=${t1}
+[ -n "${t1b}" ] && T1wTemplateBrain=${t1b}
+[ -n "${t1l}" ] && T1wTemplateLow=${t1l}
+[ -n "${t2}" ] && T2wTemplate=${t2}
+[ -n "${t2b}" ] && T2wTemplateBrain=${t2b}
+[ -n "${t2l}" ] && T2wTemplateLow=${t2l}
+[ -n "${t1bm}" ] && TemplateMask=${t1bm}
+[ -n "${t1bml}" ] && TemplateMaskLow=${t1bml}
+
+if [[ "$TemplateMaskLow" != *"dil"* ]];then
+    TemplateMaskLowUndil=$TemplateMaskLow
+    echo Dilating $TemplateMaskLowUndil
+    mkdir -p ${dir0}/templates
+    TemplateMaskLow=${TemplateMaskLow##*/}
+    TemplateMaskLow=${dir0}/templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
     # https://neurostars.org/t/how-to-dilate-a-binary-mask-using-fsl/29033
-    TemplateMaskLow=${TemplateMaskLowUndil##*/}
-    TemplateMaskLow=${TemplateMaskLow%%.nii.gz}_dil.nii.gz
-    echo TemplateMaskLow = $TemplateMaskLow
-    echo EXIT here0
-    eixt
     fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
+fi
 
-else
-    source ${OGREDIR}/lib/${SETUP} 
-
-    # Hires T1w MNI template
-    T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
-
-    # Hires brain extracted MNI template
-    T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
-
-    # Lowres T1w MNI template
-    #T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
-    T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
-
-    # Hires T2w MNI Template
-    T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
-
-    # Hires T2w brain extracted MNI Template
-    T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
-
-    # Lowres T2w MNI Template
-    T2wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
-
-    # Hires MNI brain mask template
-    TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
-
-    # Lowres MNI brain mask template
-    #Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
-    TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
-fi 
-exit
-#need error message if T2 is included but no templates
+#source ${OGREDIR}/lib/${SETUP}
+HCPPIPEDIR_Templates=${OGREDIR}/lib/HCP/HCPpipelines-3.27.0/global/templates
+# Hires T1w MNI template
+[ -z "T1wTemplate" ] && T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+# Hires brain extracted MNI template
+[ -z "T1wTemplateBrain" ] && T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+# Lowres T1w MNI template
+[ -z "T1wTemplateLow" ] && T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+# Hires T2w MNI Template
+[ -z "T2wTemplate" ] && T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+# Hires T2w brain extracted MNI Template
+[ -z "T2wTemplateBrain" ] && T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+# Lowres T2w MNI Template
+[ -z "T2wTemplateLow" ] && T2wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+# Hires MNI brain mask template
+[ -z "TemplateMask" ] && TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+# Lowres MNI brain mask template
+[ -z "TemplateMaskLow" ] && TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
 
 
+echo -e "$shebang\nset -e\n" > ${F0} 
+echo -e "#$0 $@\n" >> ${F0}
+echo "FREESURFVER=${FREESURFVER}" >> ${F0}
+echo -e export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}'"\n" >> ${F0}
 
-for((i=0;i<${#dat[@]};++i));do
+echo -e "export HCPDIR=${HCPDIR}\n" >> ${F0}
 
-    echo "Reading ${dat[i]}"
+echo export OGREDIR=${OGREDIR} >> ${F0}
+echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
+echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
+echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
+echo SETUP='${OGREDIR}'/lib/${SETUP} >> ${F0}
+echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
 
-    sed -i '' $'s/\r$//' ${dat[i]}
+echo "s0=${s0}" >> ${F0}
+echo -e "sf0=${dir1}\n" >> ${F0}
+echo -e "Hires=${Hires}" >> ${F0}
+echo "erosion=${erosion}" >> ${F0}
+echo -e "dilation=${dilation}\n" >> ${F0}
 
-    unset T1f T2f
-    cnt=0
+echo 'freesurferdir=${sf0}/T1w/${s0}' >> ${F0}
+echo 'if [ ! -d "$freesurferdir" ];then' >> ${F0}
+echo '    ${PRE} \' >> ${F0}
+echo '        --StudyFolder=${sf0} \' >> ${F0}
+echo '        --Subject=${s0} \' >> ${F0}
+echo '        --runlocal \' >> ${F0}
+echo '        --T1='${T1f}' \' >> ${F0}
+echo '        --T2='${T2f}' \' >> ${F0}
+echo '        --GREfieldmapMag="NONE" \' >> ${F0}
+echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
+echo '        --Hires=${Hires} \' >> ${F0}
 
-    #https://stackoverflow.com/questions/24537483/bash-loop-to-get-lines-in-a-file-skipping-comments-and-blank-lines
-    #https://mywiki.wooledge.org/BashFAQ/024
-    while IFS=$'\t, ' read -ra line; do
-        if [[ "${line[1]}" == *"${T1SEARCHSTR}"* ]];then
-            T1f=${line[1]}
-            ((cnt++))
-        elif [[ "${line[1]}" == *"${T2SEARCHSTR}"* ]];then
-            T2f=${line[1]}
-            ((cnt++))
-        fi
-        ((cnt==2)) && break
-    done < <(grep -vE '^(\s*$|#)' ${dat[i]})
+#[ -n "${t1}" ] && echo '        --T1wTemplate='${t1}' \' >> ${F0}
+#[ -n "${t1b}" ] && echo '        --T1wTemplateBrain='${t1b}' \' >> ${F0}
+#[ -n "${t1l}" ] && echo '        --T1wTemplateLow='${t1l}' \' >> ${F0}
+#[ -n "${t2}" ] && echo '        --T2wTemplate='${t2}' \' >> ${F0}
+#[ -n "${t2b}" ] && echo '        --T2wTemplateBrain='${t2b}' \' >> ${F0}
+#[ -n "${t2l}" ] && echo '        --T2wTemplateLow='${t1l}' \' >> ${F0}
+#[ -n "${t1bm}" ] && echo '        --TemplateMask='${t1bm}' \' >> ${F0}
+#[ -n "${t1bml}" ] && echo '        --TemplateMaskLow='${t1bml}' \' >> ${F0}
+echo '        --T1wTemplate='${T1wTemplate}' \' >> ${F0}
+echo '        --T1wTemplateBrain='${T1wTemplateBrain}' \' >> ${F0}
+echo '        --T1wTemplateLow='${T1wTemplateLow}' \' >> ${F0}
+echo '        --T2wTemplate='${T2wTemplate}' \' >> ${F0}
+echo '        --T2wTemplateBrain='${T2wTemplateBrain}' \' >> ${F0}
+echo '        --T2wTemplateLow='${T2wTemplateLow}' \' >> ${F0}
+echo '        --TemplateMask='${TemplateMask}' \' >> ${F0}
+echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
 
-    if [ -z "${T1f}" ];then
-        echo -e "    T1 not found with searchstr = \"${T1SEARCHSTR}\" Abort!"
-        continue 
-    else
-        T1f+=.nii.gz 
-        if [ ! -f "$T1f" ];then
-            echo "    ${T1f} not found. Abort!"
-            continue
-        fi
-    fi
-    #echo "T1f = ${T1f}"
-    if [ -z "${T2f}" ];then 
-        echo -e "    WARNING: T2 not found with searchstr = \"${T2SEARCHSTR}\""
-    else
-        T2f+=.nii.gz 
-        if [ ! -f "$T2f" ];then
-            echo "    WARNING: ${T2f} not found."
-            unset T2f
-        fi
-    fi
-    #[ -n "${T2f}" ] && echo "T2f = ${T2f}"
+echo '        --EnvironmentScript=${SETUP}' >> ${F0}
+echo 'else' >> ${F0}
+echo '    dirdate=$(date -r $freesurferdir)' >> ${F0}
+echo '    newname=${freesurferdir}_${dirdate// /_}' >> ${F0}
+echo '    mv "$freesurferdir" "$newname"' >> ${F0}
+echo '    echo "$freesurferdir renamed to $newname"' >> ${F0}
+echo -e 'fi\n' >> ${F0}
 
-    if [ -z "$pipedir" ];then
-        #datf=$(readlink -f ${dat[i]})
-        datf=$(realpath ${dat[i]})
-        dir0=${datf%/*}
-        IFS='/' read -ra subj <<< "${dir0}"
-        s0=${subj[${#subj[@]}-1]}
-        T1f=${T1f//${s0}/'${s0}'}
-        T2f=${T2f//${s0}/'${s0}'}
+echo '${FREE} \' >> ${F0}
+echo '    --StudyFolder=${sf0} \' >> ${F0}
+echo '    --Subject=${s0} \' >> ${F0}
+echo '    --runlocal \' >> ${F0}
+echo '    --Hires=${Hires} \' >> ${F0}
+echo '    --freesurferVersion=${FREESURFVER} \' >> ${F0}
+((lcsinglereconall)) && echo '    --singlereconall \' >> ${F0}
+((lctworeconall)) && echo '    --tworeconall \' >> ${F0}
+echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
 
-        if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
-            dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
-            dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append
-        else
-            for j in "${!subj[@]}";do
-                if [[ "${subj[j]}" = "raw_data" ]];then
-                    dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}$append
-                    dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'$append
-                    break
-                fi
-            done
-        fi
+echo '${POST} \' >> ${F0}
+echo '    --StudyFolder=${sf0} \' >> ${F0}
+echo '    --Subject=${s0} \' >> ${F0}
+echo '    --runlocal \' >> ${F0}
+echo '    --erosion=${erosion} \' >> ${F0}
+echo '    --dilation=${dilation} \' >> ${F0}
+echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
+echo '${MASKS} ${sf0}' >> ${F0}
 
+echo -e "$shebang\nset -e\n" > ${F1} 
+echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
+echo 'if [ -f "${out}" ];then' >> ${F1}
+echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
+echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
+echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
+echo "fi" >> ${F1}
 
-    else
-        dir0=${pipedir}/pipeline${FREESURFVER}
-        dir1=${pipedir}/pipeline'${FREESURFVER}'
-    fi
-    #echo "s0=${s0}"
-    #echo "dir0=${dir0}"
-    #echo "dir1=${dir1}"
+echo 'cd ${sf0}' >> ${F1}
+echo '${F0} >> ${out} 2>&1 &' >> ${F1}
 
-    [ -n "$name" ] && s0=$name
+chmod +x ${F0}
+chmod +x ${F1}
+echo "    Output written to ${F0}"
+echo "    Output written to ${F1}"
 
-    if((lchostname==1));then
-        dir0+=_$(hostname)
-        dir1+=_'$(hostname)'
-    fi
+if [ -n "${bs}" ];then
+    echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${bs0}
+    echo 'if [ -f "${out}" ];then' >> ${bs0}
+    echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${bs0}
+    echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${bs0}
+    echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${bs0}
+    echo "fi" >> ${bs0}
+    echo 'cd ${sf0}' >> ${bs0}
+    echo '${F0} >> ${out} 2>&1' >> ${bs0} #no ampersand at end
 
-    mkdir -p ${dir0}
+    echo "${bs0} > ${bs0}.txt 2>&1 &" >> ${bs1}
+    chmod +x ${bs0}
+    chmod +x ${bs1}
+    echo "    Output written to ${bs0}"
+    echo "    Output written to ${bs1}"
+    [[ ${bs} != True ]] && echo ${bs0} >> ${bs}
+fi
+if((lcautorun==1));then
+    ${F1}
+    echo "    ${F1} has been executed"
+fi
 
-    datestr=''
-    if((lcdate==1));then
-        datestr=_$(date +%y%m%d)
-    elif((lcdate==2));then
-        datestr=_$(date +%y%m%d%H%M%S)
-    fi
-    F0stem=${dir0}/${s0}_OGREstruct${datestr} 
-
-    F0=${F0stem}.sh
-    F1=${F0stem}_fileout.sh
-    #echo  "F0=${F0}"
-    #echo  "F1=${F1}"
-
-    F0name='${s0}'_OGREstruct${datestr}.sh
-    
-
-    if [ -n "${bs}" ];then
-        bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
-        bs0=${bs0stem}.sh
-        echo -e "$shebang\nset -e\n" > ${bs0} 
-        bs1=${bs0stem}_fileout.sh
-        echo -e "$shebang\nset -e\n" > ${bs1} 
-    fi
-
-    echo -e "$shebang\nset -e\n" > ${F0} 
-
-    echo -e "#$0 $@\n" >> ${F0}
-    echo "FREESURFVER=${FREESURFVER}" >> ${F0}
-    echo -e export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}'"\n" >> ${F0}
-
-    echo -e "export HCPDIR=${HCPDIR}\n" >> ${F0}
-
-    echo export OGREDIR=${OGREDIR} >> ${F0}
-    echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
-    echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
-    echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
-    echo SETUP='${OGREDIR}'/lib/${SETUP} >> ${F0}
-    echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
-
-    echo "s0=${s0}" >> ${F0}
-    echo -e "sf0=${dir1}\n" >> ${F0}
-    echo -e "Hires=${Hires}" >> ${F0}
-    echo "erosion=${erosion}" >> ${F0}
-    echo -e "dilation=${dilation}\n" >> ${F0}
-
-    echo 'freesurferdir=${sf0}/T1w/${s0}' >> ${F0}
-    echo 'if [ ! -d "$freesurferdir" ];then' >> ${F0}
-    echo '    ${PRE} \' >> ${F0}
-    echo '        --StudyFolder=${sf0} \' >> ${F0}
-    echo '        --Subject=${s0} \' >> ${F0}
-    echo '        --runlocal \' >> ${F0}
-    echo '        --T1='${T1f}' \' >> ${F0}
-    echo '        --T2='${T2f}' \' >> ${F0}
-    echo '        --GREfieldmapMag="NONE" \' >> ${F0}
-    echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
-    echo '        --Hires=${Hires} \' >> ${F0}
-
-    #START240721
-    [ -n "${t1}" ] && echo '        --T1wTemplate='${t1}' \' >> ${F0}
-    [ -n "${t1b}" ] && echo '        --T1wTemplateBrain='${t1b}' \' >> ${F0}
-    [ -n "${t1l}" ] && echo '        --T1wTemplateLow='${t1l}' \' >> ${F0}
-    [ -n "${t2}" ] && echo '        --T2wTemplate='${t2}' \' >> ${F0}
-    [ -n "${t2b}" ] && echo '        --T2wTemplateBrain='${t2b}' \' >> ${F0}
-    [ -n "${t2l}" ] && echo '        --T2wTemplateLow='${t1l}' \' >> ${F0}
-    [ -n "${t1bm}" ] && echo '        --TemplateMask='${t1bm}' \' >> ${F0}
-    [ -n "${t1bml}" ] && echo '        --TemplateMaskLow='${t1bml}' \' >> ${F0}
-
-    echo '        --EnvironmentScript=${SETUP}' >> ${F0}
-    echo 'else' >> ${F0}
-    echo '    dirdate=$(date -r $freesurferdir)' >> ${F0}
-    echo '    newname=${freesurferdir}_${dirdate// /_}' >> ${F0}
-    echo '    mv "$freesurferdir" "$newname"' >> ${F0}
-    echo '    echo "$freesurferdir renamed to $newname"' >> ${F0}
-    echo -e 'fi\n' >> ${F0}
-
-
-
-
-    echo '${FREE} \' >> ${F0}
-    echo '    --StudyFolder=${sf0} \' >> ${F0}
-    echo '    --Subject=${s0} \' >> ${F0}
-    echo '    --runlocal \' >> ${F0}
-    echo '    --Hires=${Hires} \' >> ${F0}
-    echo '    --freesurferVersion=${FREESURFVER} \' >> ${F0}
-    ((lcsinglereconall)) && echo '    --singlereconall \' >> ${F0}
-    ((lctworeconall)) && echo '    --tworeconall \' >> ${F0}
-    echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
-
-    echo '${POST} \' >> ${F0}
-    echo '    --StudyFolder=${sf0} \' >> ${F0}
-    echo '    --Subject=${s0} \' >> ${F0}
-    echo '    --runlocal \' >> ${F0}
-    echo '    --erosion=${erosion} \' >> ${F0}
-    echo '    --dilation=${dilation} \' >> ${F0}
-
-    #echo '    --EnvironmentScript=${SETUP}' >> ${F0}
-    #START0719
-    echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
-
-    echo '${MASKS} ${sf0}' >> ${F0}
-
-
-
-
-    echo -e "$shebang\nset -e\n" > ${F1} 
-    echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
-    echo 'if [ -f "${out}" ];then' >> ${F1}
-    echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
-    echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
-    echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${F1}
-    echo "fi" >> ${F1}
-
-    echo 'cd ${sf0}' >> ${F1}
-    echo '${F0} >> ${out} 2>&1 &' >> ${F1}
-
-
-    chmod +x ${F0}
-    chmod +x ${F1}
-    echo "    Output written to ${F0}"
-    echo "    Output written to ${F1}"
-
-    if [ -n "${bs}" ];then
-
-        #echo -e "${F1}\n" >> $bs0
-        #START240302
-        echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${bs0}
-        echo 'if [ -f "${out}" ];then' >> ${bs0}
-        echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${bs0}
-        echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${bs0}
-        echo '    echo -e "**********************************************************************\n\n" >> ${out}' >> ${bs0}
-        echo "fi" >> ${bs0}
-        echo 'cd ${sf0}' >> ${bs0}
-        echo '${F0} >> ${out} 2>&1' >> ${bs0} #no ampersand at end
-
-
-        echo "${bs0} > ${bs0}.txt 2>&1 &" >> ${bs1}
-        chmod +x ${bs0}
-        chmod +x ${bs1}
-        echo "    Output written to ${bs0}"
-        echo "    Output written to ${bs1}"
-
-        #START240301
-        #[[ ${bs} != True ]] && echo ${bs1} >> ${bs}
-        [[ ${bs} != True ]] && echo ${bs0} >> ${bs}
-
-    fi
-    if((lcautorun==1));then
-        ${F1}
-        echo "    ${F1} has been executed"
-    fi
-done
-
-#START240221
-#if [ -n "${bs}" ];then
-#    [[ $bs != *"/"* ]] && bs=$(pwd)/${bs}
-#    bs2=${bs%.*}_fileout.sh
-#    echo -e "$shebang\n" > $bs2
-#    echo "${bs} > ${bs}.txt 2>&1 &" >> ${bs2}
-#    chmod +x $bs $bs2
-#    echo "Output written to $bs"
-#    echo "Output written to $bs2"
-#fi
-#START240301
 if [ -n "${bs}" ];then
     if [[ ${bs} != True ]];then
         echo "${bs} > ${bs}.txt 2>&1 &" >> ${bs_fileout}
@@ -650,5 +618,8 @@ if [ -n "${bs}" ];then
 fi
 
 # added by Ben 240707
-cp -f ${dat} ${dir0}
+#cp -f ${dat} ${dir0}
+#START240727
+cp -p -f ${dat} ${dir0}
+
 echo "OGRE structural pipeline completed."
