@@ -28,6 +28,9 @@ get_batch_options() {
     cls_startOneStepResampling="FALSE"
     cls_startIntensityNormalization="FALSE"
 
+    #START240730
+    dilation=0
+
     local index=0
     local numArgs=${#arguments[@]}
     local argument
@@ -134,6 +137,12 @@ get_batch_options() {
                 cls_startIntensityNormalization="TRUE"
                 index=$(( index + 1 ))
                 ;;
+
+            --dilation=*)
+                dilation=${argument#*=}
+                index=$(( index + 1 ))
+                ;;
+
 	    *)
 		echo ""
 		echo "ERROR: Unrecognized Option: ${argument}"
@@ -564,35 +573,36 @@ for Subject in $Subjlist ; do
       --freesurferVersion=$cls_freesurferVersion \
       --userefinement=$cls_userefinement \
       --startOneStepResampling=$cls_startOneStepResampling \
-      --startIntensityNormalization=$cls_startIntensityNormalization
+      --startIntensityNormalization=$cls_startIntensityNormalization \
+      --dilation="$dilation"
 
   # The following lines are used for interactive debugging to set the positional parameters: $1 $2 $3 ...
 
-  echo -e "--path=$StudyFolder\n \
-      --subject=$Subject\n \
-      --fmriname=${fMRIName[i]}\n \
-      --fmritcs=${fMRITimeSeries[i]}\n \
-      --fmriscout=$fMRISBRef\n \
-      --SEPhaseNeg=$SpinEchoPhaseEncodeNegative\n \
-      --SEPhasePos=$SpinEchoPhaseEncodePositive\n \
-      --fmapmag=$MagnitudeInputName\n \
-      --fmapphase=$PhaseInputName\n \
-      --fmapgeneralelectric=$GEB0InputName\n \
-      --echospacing=$EchoSpacing\n \
-      --echodiff=$DeltaTE\n \
-      --unwarpdir=$UnwarpDir\n \
-      --fmrires=$FinalFMRIResolution\n \
-      --dcmethod=$DistortionCorrection\n \
-      --gdcoeffs=$GradientDistortionCoeffs\n \
-      --topupconfig=$TopUpConfig\n \
-      --printcom=$PRINTCOM\n \
-      --biascorrection=$BiasCorrection\n \
-      --mctype=${MCType}\n \
-      --analysis=$Analysis\n \
-      --freesurferVersion=$cls_freesurferVersion\n \
-      --userefinement=$cls_userefinement\n \
-      --startOneStepResampling=$cls_startOneStepResampling\n \
-      --startIntensityNormalization=$cls_startIntensityNormalization\n"
+  #echo -e "--path=$StudyFolder\n \
+  #    --subject=$Subject\n \
+  #    --fmriname=${fMRIName[i]}\n \
+  #    --fmritcs=${fMRITimeSeries[i]}\n \
+  #    --fmriscout=$fMRISBRef\n \
+  #    --SEPhaseNeg=$SpinEchoPhaseEncodeNegative\n \
+  #    --SEPhasePos=$SpinEchoPhaseEncodePositive\n \
+  #    --fmapmag=$MagnitudeInputName\n \
+  #    --fmapphase=$PhaseInputName\n \
+  #    --fmapgeneralelectric=$GEB0InputName\n \
+  #    --echospacing=$EchoSpacing\n \
+  #    --echodiff=$DeltaTE\n \
+  #    --unwarpdir=$UnwarpDir\n \
+  #    --fmrires=$FinalFMRIResolution\n \
+  #    --dcmethod=$DistortionCorrection\n \
+  #    --gdcoeffs=$GradientDistortionCoeffs\n \
+  #    --topupconfig=$TopUpConfig\n \
+  #    --printcom=$PRINTCOM\n \
+  #    --biascorrection=$BiasCorrection\n \
+  #    --mctype=${MCType}\n \
+  #    --analysis=$Analysis\n \
+  #    --freesurferVersion=$cls_freesurferVersion\n \
+  #    --userefinement=$cls_userefinement\n \
+  #    --startOneStepResampling=$cls_startOneStepResampling\n \
+  #    --startIntensityNormalization=$cls_startIntensityNormalization\n"
 
     #i=$(($i+1))
   done

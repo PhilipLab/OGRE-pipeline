@@ -76,14 +76,15 @@ BrainMask=`getopt1 "--brainmask" $@`  # "$4"
 OutputfMRI=`getopt1 "--ofmri" $@`  # "$5"
 ScoutInput=`getopt1 "--inscout" $@`  # "$6"
 ScoutOutput=`getopt1 "--oscout" $@`  # "$7"
-UseJacobian=`getopt1 "--usejacobian" $@`  # 
+UseJacobian=`getopt1 "--usejacobian" $@`  #8
+
+#START240730
+dilation=`getopt1 "--dilation" $@`  # "$9"
+
 
 # default parameters
 
-#START240224
 OutputfMRI=`$FSLDIR/bin/remove_ext $OutputfMRI`
-#START240217
-#OutputfMRI=$($FSLDIR/bin/remove_ext $OutputfMRI)_OGRE
 
 WD=`defaultopt $WD ${OutputfMRI}.wdir`
 
@@ -129,10 +130,34 @@ echo " " >> $WD/log.txt
 #   ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 -ing 10000 ${ScoutOutput} -odt float
 #fi
 #START181220
-${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 ${OutputfMRI} -odt float
-if [ X${ScoutInput} != X ] ; then
-   ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 ${ScoutOutput} -odt float
+#${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 ${OutputfMRI} -odt float
+#if [ X${ScoutInput} != X ] ; then
+#   ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 ${ScoutOutput} -odt float
+#fi
+#START240730
+InputfMRImask=${InputfMRI}_mask
+dil=;for((i=0;i<$dilation;++i));do dil+=" -dilM";done
+if((dil>0));then
+    BrainMaskUndil=$BrainMask
+    echo Dilating $BrainMaskUndil
+    BrainMask=${BrainMaskUndil##*/}
+    BrainMask=${WD}/${BrainMask%%.nii.gz}_dil.nii.gz
+    echo fslmaths $BrainMaskUndil $dil -bin $BrainMask
+    fslmaths $BrainMaskUndil $dil -bin $BrainMask
+
+    InputfMRImaskUndil=$InputfMRImask
+    echo Dilating $InputfMRImaskUndil
+    InputfMRImask=${InputfMRImaskUndil##*/}
+    InputfMRImask=${WD}/${InputfMRImask%%.nii.gz}_dil.nii.gz
+    echo fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
+    fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
 fi
+${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${OutputfMRI} -odt float
+if [ X${ScoutInput} != X ] ; then
+   ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${ScoutOutput} -odt float
+fi
+
+
 
 #Basic Cleanup
 rm ${InputfMRI}.nii.*

@@ -114,11 +114,8 @@ log_Msg "RegName: ${RegName}"
 InflateExtraScale="${23}"
 log_Msg "InflateExtraScale: ${InflateExtraScale}"
 
-
-#START240621
 erosion="${24}"
 log_Msg "erosion: ${erosion}"
-#START240716
 dilation="${25}"
 log_Msg "dilation: ${dilation}"
 

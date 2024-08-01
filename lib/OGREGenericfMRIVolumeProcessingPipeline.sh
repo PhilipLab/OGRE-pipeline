@@ -1,11 +1,6 @@
 #!/usr/bin/env bash 
 set -e
 
-#P0=${HCPMOD}/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
-#P1=${HCPMOD}/OGREOneStepResampling.sh
-#P2=${HCPMOD}/OGREIntensityNormalization.sh
-#P3=${HCPMOD}/OGREMotionCorrection.sh
-#START240111
 P0=${OGREDIR}/lib/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
 P1=${OGREDIR}/lib/OGREOneStepResampling.sh
 P2=${OGREDIR}/lib/OGREIntensityNormalization.sh
@@ -157,6 +152,13 @@ startOneStepResampling=`opts_GetOpt1 "--startOneStepResampling" $@`
 log_Msg "startOneStepResampling: ${startOneStepResampling}"
 startIntensityNormalization=`opts_GetOpt1 "--startIntensityNormalization" $@`
 log_Msg "startIntensityNormalization: ${startIntensityNormalization}"
+
+
+#START240730
+dilation=`opts_GetOpt1 "--dilation" $@`
+
+
+
 
 echo "startOneStepResampling = $startOneStepResampling"
 echo "startIntensityNormalization = $startIntensityNormalization"
@@ -629,20 +631,6 @@ if [[ ${DistortionCorrection} == "TOPUP" && "${Analysis}" != "NATIVE" ]]; then
     fi
 fi
 
-##Intensity Normalization and Bias Removal
-#log_Msg "Intensity Normalization and Bias Removal"
-#${RUN} ${PipelineScripts}/IntensityNormalization.sh \
-#START190726
-#${RUN} ${P2} \
-#       --infmri=${fMRIFolder}/${NameOffMRI}_nonlin \
-#       --biasfield=${UseBiasFieldMNI} \
-#       --jacobian=${fMRIFolder}/${JacobianOut}_MNI.${FinalfMRIResolution} \
-#       --brainmask=${fMRIFolder}/${FreeSurferBrainMask}.${FinalfMRIResolution} \
-#       --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin_norm \
-#       --inscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
-#       --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm \
-#       --usejacobian=${UseJacobian}
-#START190807
 #Intensity Normalization and Bias Removal
 if [ "${Analysis}" != "NATIVE" ]; then
     jacobian0=${JacobianOut}_MNI.${FinalfMRIResolution}    
@@ -652,6 +640,17 @@ fi
 
 if [ "$do_P2" -eq "1" ];then
     log_Msg "Intensity Normalization and Bias Removal"
+
+    #${RUN} ${P2} \
+    #       --infmri=${fMRIFolder}/${NameOffMRI}_nonlin \
+    #       --biasfield=${UseBiasFieldMNI} \
+    #       --jacobian=${fMRIFolder}/${jacobian0} \
+    #       --brainmask=${fMRIFolder}/${FreeSurferBrainMask}.${FinalfMRIResolution} \
+    #       --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin_norm \
+    #       --inscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
+    #       --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm \
+    #       --usejacobian=${UseJacobian}
+    #START240730
     ${RUN} ${P2} \
            --infmri=${fMRIFolder}/${NameOffMRI}_nonlin \
            --biasfield=${UseBiasFieldMNI} \
@@ -660,7 +659,13 @@ if [ "$do_P2" -eq "1" ];then
            --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin_norm \
            --inscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
            --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm \
-           --usejacobian=${UseJacobian}
+           --usejacobian=${UseJacobian} \
+           --dilation=${dilation}
+
+
+
+
+
 fi
 
 
