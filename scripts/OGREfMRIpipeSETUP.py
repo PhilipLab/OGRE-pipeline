@@ -190,6 +190,10 @@ if __name__ == "__main__":
     #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='options',nargs='?',const=True,help=hfslmo)
     parser.add_argument('-fslmo','--fslmo',dest='fslmo',action='store_true',help=hfslmo)
 
+    #START240730
+    hdil='Dilate masks applied to fMRI at output.'
+    mdil='Dilate output masks'
+    parser.add_argument('-dil','--dil','-dilation','--dilation',dest='dilation',metavar=mdil,help=hdil,default=0)
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -371,11 +375,7 @@ if __name__ == "__main__":
 
             if not feat:
                 if not args.lcfeatadapter:
-
-                    #if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
-                    #START240713
                     if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
-
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
             else:
                 feat.write_script(Ffeat,gev)
@@ -393,10 +393,7 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly:
                     F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
 
-                #if par.taskidx and not args.lct1copymaskonly and (args.fwhm or args.paradigm_hp_sec):
-                #START240713
                 if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
-
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
             if not args.lcfeatadapter:
@@ -406,14 +403,19 @@ if __name__ == "__main__":
                     F0f[0].write('\n')
 
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
-                F0f[0].write(pathstr+'\n') # s0, bids and sf0
+
+                #F0f[0].write(pathstr+'\n') # s0, bids and sf0
+                #START240730
+                F0f[0].write(pathstr) # s0, bids and sf0
+
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
 
-                #if not args.lcsmoothonly and not args.lct1copymaskonly: 
-                #START240713
                 if not args.lcsmoothonly: 
 
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+
+                    #START240730
+                    F0f[0].write(f'dilation={args.dilation}\n')
 
                     #START240713
                     F0f[0].write('\nRAW_BOLD=(\\\n')
@@ -473,12 +475,14 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
                     if args.userefinement: F0f[0].write('    --userefinement \\\n')
+
+                    #START240730
+                    F0f[0].write('    --dilation=${dilation} \\\n')
+
+
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                #if par.taskidx and not args.lct1copymaskonly:
-                #START240713
                 if par.taskidx:
-
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
                     par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)

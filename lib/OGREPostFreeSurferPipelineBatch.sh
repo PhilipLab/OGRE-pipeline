@@ -9,9 +9,7 @@ get_batch_options() {
     unset command_line_specified_subj
     unset command_line_specified_run_local
 
-    #START240621
     erosion=2
-    #START240716
     dilation=3
 
     unset command_line_specified_EnvironmentScript
@@ -36,8 +34,6 @@ get_batch_options() {
                 command_line_specified_run_local="TRUE"
                 index=$(( index + 1 ))
                 ;;
-
-           #START240621
             --erosion=*)
                 erosion=${argument#*=}
                 index=$(( index + 1 ))
@@ -47,7 +43,6 @@ get_batch_options() {
                 dilation=${argument#*=}
                 index=$(( index + 1 ))
                 ;;
-
             --EnvironmentScript=*)
                 command_line_specified_EnvironmentScript=${argument#*=}
                 index=$(( index + 1 ))

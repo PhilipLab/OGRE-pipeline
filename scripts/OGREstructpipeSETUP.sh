@@ -453,6 +453,24 @@ if [[ -n "$ht" || -n "$lt" ]];then
         echo TemplateMaskLow not provided. Abort!
         exit
     fi
+else
+    ## Hires T1w MNI template
+    HCPPIPEDIR_Templates=${OGREDIR}/lib/HCP/HCPpipelines-3.27.0/global/templates
+    T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
+    ## Hires brain extracted MNI template
+    T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+    ## Lowres T1w MNI template
+    T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+    ## Hires T2w MNI Template
+    T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
+    ## Hires T2w brain extracted MNI Template
+    T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
+    ## Lowres T2w MNI Template
+    T2wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
+    ## Hires MNI brain mask template
+    TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+    ## Lowres MNI brain mask template
+    TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
 fi
 
 [ -n "${t1}" ] && T1wTemplate=${t1}
