@@ -136,8 +136,11 @@ echo " " >> $WD/log.txt
 #fi
 #START240730
 InputfMRImask=${InputfMRI}_mask
-dil=;for((i=0;i<$dilation;++i));do dil+=" -dilM";done
-if((dil>0));then
+#dil=;for((i=0;i<$dilation;++i));do dil+=" -dilM";done
+#if((dil>0));then
+#START240731
+unset dil;for((i=0;i<$dilation;++i));do dil+=" -dilM";done
+if [[ -n $dil ]];then
     BrainMaskUndil=$BrainMask
     echo Dilating $BrainMaskUndil
     BrainMask=${BrainMaskUndil##*/}
@@ -160,7 +163,9 @@ fi
 
 
 #Basic Cleanup
-rm ${InputfMRI}.nii.*
+#START240731 COMMENTED OUT FOR DEBUGGING
+#rm ${InputfMRI}.nii.*
+
 
 echo " END: `date`" >> $WD/log.txt
 ########################################## QA STUFF ########################################## 
