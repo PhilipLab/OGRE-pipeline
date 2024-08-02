@@ -144,14 +144,14 @@ if [[ -n $dil ]];then
     BrainMaskUndil=$BrainMask
     echo Dilating $BrainMaskUndil
     BrainMask=${BrainMaskUndil##*/}
-    BrainMask=${WD}/${BrainMask%%.nii.gz}_dil.nii.gz
+    BrainMask=${WD}/${BrainMask%%.nii.gz}_dil${dilation}.nii.gz
     echo fslmaths $BrainMaskUndil $dil -bin $BrainMask
     fslmaths $BrainMaskUndil $dil -bin $BrainMask
 
     InputfMRImaskUndil=$InputfMRImask
     echo Dilating $InputfMRImaskUndil
     InputfMRImask=${InputfMRImaskUndil##*/}
-    InputfMRImask=${WD}/${InputfMRImask%%.nii.gz}_dil.nii.gz
+    InputfMRImask=${WD}/${InputfMRImask%%.nii.gz}_dil${dilation}.nii.gz
     echo fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
     fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
 fi
