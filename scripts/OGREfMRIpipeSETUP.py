@@ -594,7 +594,11 @@ if __name__ == "__main__":
 
                 if args.bs: 
                     if mode0=='wt': bs0f.write(f'{gev.SHEBANG}\nset -e\n')
-                    bs0f.write(f'\nFREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+
+                    #bs0f.write(f'\nFREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n')
+                    #START240802
+                    bs0f.write(f'\nFREESURFVER={gev.FREESURFVER}\n{pathstr}')
+
                     bs0f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                     bs0f.write('if [ -f "${out}" ];then\n')
                     bs0f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
