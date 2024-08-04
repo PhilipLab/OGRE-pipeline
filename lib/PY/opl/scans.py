@@ -66,8 +66,8 @@ class Scans:
         #print(f'self.bold={self.bold}')
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
-        print(f'self.dwifmap={self.dwifmap}')
-        print(f'self.dwi={self.dwi}')
+        #print(f'self.dwifmap={self.dwifmap}')
+        #print(f'self.dwi={self.dwi}')
 
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
         with open(file,'w') as f0:

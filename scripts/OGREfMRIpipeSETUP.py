@@ -195,6 +195,10 @@ if __name__ == "__main__":
     mdil='Dilate output masks'
     parser.add_argument('-dil','--dil','-dilation','--dilation',dest='dilation',metavar=mdil,help=hdil,default=0)
 
+    #START240803
+    hstartIntensityNormalization='Flag. Start at IntensityNormalization. Defaut is to run the whole script.\n'
+    parser.add_argument('-startIntensityNormalization','--startIntensityNormalization','-sin','--sin',dest='startIntensityNormalization',action='store_true',help=hstartIntensityNormalization)
+
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     if len(sys.argv)==1:
@@ -478,6 +482,8 @@ if __name__ == "__main__":
 
                     #START240730
                     F0f[0].write('    --dilation=${dilation} \\\n')
+                    #START240730
+                    if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
 
 
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
@@ -489,38 +495,6 @@ if __name__ == "__main__":
 
             if feat: F0f[0].write('${FEAT}\n\n')
 
-            #START240713
-            #if args.fslmo:
-            #    F0f[0].write('mkdir -p ${bids}/regressors\n\n')
-            #    F0f[0].write(f'OPTIONS="{args.fslmo}"\n')
-            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
-            #    F0f[0].write('    if [ ! -f "${i}" ];then\n')
-            #    F0f[0].write('        echo ${i} not found.\n')
-            #    F0f[0].write('        continue\n')
-            #    F0f[0].write('    fi\n')
-            #    F0f[0].write('    root=${i##*/}\n')
-            #    F0f[0].write('    root=${root%.nii*}\n')
-            #    F0f[0].write('    fsl_motion_outliers ${i} -i ${bids}/regressors/${root}_fmovalues.txt -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS\n')
-            #    F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${bids}/regressors/${root}_fmospikes.txt > ${bids}/regressors/${root}_confoundevs.txt\n')
-            #    F0f[0].write('done\n\n')
-            #else:
-            #    #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
-            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
-            #    F0f[0].write('    root=${i##*/}\n')
-            #    F0f[0].write('    root=${root%.nii*}\n')
-            #    F0f[0].write('    mcpar=${bids}/regressors/${root}_mc.par\n')
-            #    F0f[0].write('    if [ ! -f "${mcpar}" ];then\n')
-            #    F0f[0].write('        echo ${mcpar} not found.\n')
-            #    F0f[0].write('        continue\n')
-            #    F0f[0].write('    fi\n')
-            #    F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-            #    F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
-            #    F0f[0].write('        echo ${fmospikes} not found.\n')
-            #    F0f[0].write('        fmospikes=\n')
-            #    F0f[0].write('    fi\n')
-            #    F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
-            #    F0f[0].write('done\n\n')
-            #START240714
             if args.fslmo:
                 F0f[0].write('mkdir -p ${bids}/regressors\n\n')
                 F0f[0].write(f'OPTIONS="-v {args.fslmo}"\n')
@@ -532,11 +506,7 @@ if __name__ == "__main__":
                 F0f[0].write('    root=${i##*/}\n')
                 F0f[0].write('    root=${root%.nii*}\n')
                 F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-
-                #cmd='fsl_motion_outliers -i ${i} -o ${bids}/regressors/${root}_fmospikes.txt $OPTIONS'
-                #START240716
                 cmd='fsl_motion_outliers -i ${i} -s ${bids}/regressors/${root}_fmovalues.txt -o ${fmospikes} $OPTIONS'
-
                 F0f[0].write(f'    echo Running {cmd}\n')
                 F0f[0].write(f'    {cmd}\n')
                 F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
