@@ -533,7 +533,8 @@ if __name__ == "__main__":
                 F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
                 F0f[0].write('done\n\n')
 
-
+            #START240806
+            F0f[0].write('echo -e "Finshed $0\\nOGRE functional pipeline completed."')
 
 
             if not pathlib.Path(F0[0]).is_file():
@@ -603,3 +604,6 @@ if __name__ == "__main__":
         batchscriptf[1].write(f'{args.bs} >> {args.bs}.txt 2>&1 &\n')
         opl.rou.make_executable(bs_fileout)
         print(f'    Output written to {bs_fileout}')
+
+    print('OGRE functional pipeline setup completed.')
+

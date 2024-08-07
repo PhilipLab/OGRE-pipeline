@@ -434,25 +434,42 @@ if [[ -n "$ht" || -n "$lt" ]];then
     if [[ -z "$TemplateMask" ]];then
         mkdir -p ${dir0}/templates
         TemplateMask=${T1wTemplate##*/}
-        TemplateMask=${dir0}/templates/${T1wTemplateMask%%.nii.gz}_brain_mask.nii.gz
+        TemplateMask=${dir0}/templates/${TemplateMask%%.nii.gz}_brain_mask.nii.gz
         #fslmaths BRAIN -bin MASK
         fslmaths $T1wTemplateBrain -bin $TemplateMask
     fi
-    if [[ -z "$T2wTemplateBrain" ]];then
-        if [[ -z "$T2wTemplateMask" ]];then
-            echo T2wTemplateMask is needed to create T2wTemplateBrain. Abort!
-            exit
-        fi
-        mkdir -p ${dir0}/templates
-        T2wTemplateBrain=${T2wTemplate##*/}
-        T2wTemplateBrain=${dir0}/templates/${T2wTemplate%%.nii.gz}_brain.nii.gz
-        #fslmaths HEAD -mas MASK BRAIN
-        fslmaths $T2wTemplate -mas $T2wTemplateMask $T2wTemplateBrain
+
+    if [[ -z "$T1wTemplateLow" ]];then
+        echo T1wTemplateLow not provided. Abort!
+        exit
     fi
     if [[ -z "$TemplateMaskLow" ]];then
         echo TemplateMaskLow not provided. Abort!
         exit
     fi
+
+    if [ -n "${T2f}" ];then
+        if [[ -z "$T2wTemplate" ]];then
+            echo T2wTemplate not provided. Abort!
+            exit
+        fi
+        if [[ -z "$T2wTemplateBrain" ]];then
+            if [[ -z "$T2wTemplateMask" ]];then
+                echo T2wTemplateMask is needed to create T2wTemplateBrain. Abort!
+                exit
+            fi
+            mkdir -p ${dir0}/templates
+            T2wTemplateBrain=${T2wTemplate##*/}
+            T2wTemplateBrain=${dir0}/templates/${T2wTemplate%%.nii.gz}_brain.nii.gz
+            #fslmaths HEAD -mas MASK BRAIN
+            fslmaths $T2wTemplate -mas $T2wTemplateMask $T2wTemplateBrain
+        fi
+        if [[ -z "$T2wTemplateLow" ]];then
+            echo T2wTemplateLow not provided. Abort!
+            exit
+        fi
+    fi
+
 else
     ## Hires T1w MNI template
     HCPPIPEDIR_Templates=${OGREDIR}/lib/HCP/HCPpipelines-3.27.0/global/templates
@@ -492,24 +509,45 @@ if [[ "$TemplateMaskLow" != *"dil"* ]];then
     fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
 fi
 
-#source ${OGREDIR}/lib/${SETUP}
-HCPPIPEDIR_Templates=${OGREDIR}/lib/HCP/HCPpipelines-3.27.0/global/templates
-# Hires T1w MNI template
-[ -z "T1wTemplate" ] && T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
-# Hires brain extracted MNI template
-[ -z "T1wTemplateBrain" ] && T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
-# Lowres T1w MNI template
-[ -z "T1wTemplateLow" ] && T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
-# Hires T2w MNI Template
-[ -z "T2wTemplate" ] && T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
-# Hires T2w brain extracted MNI Template
-[ -z "T2wTemplateBrain" ] && T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
-# Lowres T2w MNI Template
-[ -z "T2wTemplateLow" ] && T2wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
-# Hires MNI brain mask template
-[ -z "TemplateMask" ] && TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
-# Lowres MNI brain mask template
-[ -z "TemplateMaskLow" ] && TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+#START240806
+#lcexit=0
+#if [ -z "$T1wTemplate" ];then
+#    echo T1wTemplate is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$T1wTemplateBrain" ];then
+#    echo T1wTemplateBrain is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$T1wTemplateLow" ];then
+#    echo T1wTemplateLow is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$T2wTemplate" ];then
+#    echo T2wTemplate is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$T2wTemplateBrain" ];then
+#    echo T2wTemplateBrain is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$T2wTemplateLow" ];then
+#    echo T2wTemplateLow is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$TemplateMask" ];then
+#    echo TemplateMask is not set.
+#    lcexit=1 
+#fi
+#if [ -z "$TemplateMaskLow" ];then
+#    echo TemplateMaskLow is not set.
+#    lcexit=1 
+#fi
+#if((lcexit>0));then
+#    echo Abort!
+#    exit
+#fi
+
 
 
 echo -e "$shebang\nset -e\n" > ${F0} 
@@ -588,6 +626,9 @@ echo '    --dilation=${dilation} \' >> ${F0}
 echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
 echo '${MASKS} ${sf0}' >> ${F0}
 
+#START240806
+echo -e '\necho -e "Finshed $0\\nOGRE structural pipeline completed."' >> ${F0}
+
 echo -e "$shebang\nset -e\n" > ${F1} 
 echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
 echo 'if [ -f "${out}" ];then' >> ${F1}
@@ -640,4 +681,4 @@ fi
 #START240727
 cp -p -f ${dat} ${dir0}
 
-echo "OGRE structural pipeline completed."
+echo "OGRE structural pipeline setup completed."
