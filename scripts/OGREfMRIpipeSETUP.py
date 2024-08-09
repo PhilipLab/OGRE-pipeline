@@ -43,11 +43,18 @@ class Feat:
                 continue 
             if p0.is_dir():
                 fsf0 = p0.glob('*.fsf') 
-                if fsf0:
-                    for j in fsf0: __grep_fsf(self,j.as_posix())
+                #if fsf0: for j in fsf0: self.__grep_fsf(j.as_posix())
+                if fsf0: 
+                    for j in fsf0: 
+                        #print(f'j.as_posix()={j.as_posix()}')
+                        self.__grep_fsf(j.as_posix())
+
             elif p0.is_file():
                 if p0.suffix=='.fsf': 
-                    __grep_fsf(self,p0.as_posix())
+
+                    #print(f'p0.as_posix()={p0.as_posix()}')
+
+                    self.__grep_fsf(p0.as_posix())
                 else:
                     with open(p0,encoding="utf8",errors='ignore') as f0:
                         for line0 in f0:
@@ -61,10 +68,11 @@ class Feat:
                             if p0.is_dir():
                                 fsf0 = p0.glob('*.fsf')
                                 if fsf0:
-                                    for j in fsf0: __grep_fsf(self,j.as_posix())
+                                    #for j in fsf0: __grep_fsf(self,j.as_posix())
+                                    for j in fsf0: self.__grep_fsf(j.as_posix())
                             elif p0.is_file():
                                 if p0.suffix=='.fsf':
-                                    __grep_fsf(self,p0.as_posix())
+                                    self.__grep_fsf(p0.as_posix())
                             else:
                                 print(f'{i} is neither a directory of file. Skipping!')
             else:
@@ -73,11 +81,17 @@ class Feat:
         print(f'self.level = {self.level}') 
         print(f'self.fsf = {self.fsf}') 
 
-    def ___grep_fsf(self,fsf):
+    def __grep_fsf(self,fsf):
         line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf}')
         self.outputdir.append(line0.split('"')[1])
         line0 = opl.rou.run_cmd(f'grep "set fmri(level)" {fsf}')
-        self.level.append(line0.split('"')[1])
+
+        #print(f'line0 = {line0}')
+        #junk=line0.split('"')
+        #print(f'junk = {junk}')
+
+        #self.level.append(line0.split('"')[1])
+        self.level.append(line0.split()[2])
         self.fsf.append(fsf)
 
     def write_script(self,filename,gev):
@@ -93,13 +107,24 @@ class Feat:
             f0.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
 
             # https://favtutor.com/blogs/get-list-index-python
-            index = [i for i ,e in enumerate(self.level) if e == 1]
+            #index = [i for i ,e in enumerate(self.level) if e == 1]
+            index = [i for i ,e in enumerate(self.level) if e == '1']
+
+            #print(f'index={index}')
+
             if index:
                 f0.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
-                for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i]+'\n${MAKEREGDIR} '+self.outdir[i])
-            index = [i for i ,e in enumerate(self.level) if e == 2]
+                for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i]+'\n${MAKEREGDIR} '+self.outputdir[i])
+
+            #index = [i for i ,e in enumerate(self.level) if e == 2]
+            index = [i for i ,e in enumerate(self.level) if e == '2']
+
+            #print(f'index={index}')
+
             if index:
                 for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i])
+
+        opl.rou.make_executable(filename)
 
 if __name__ == "__main__":
 
@@ -146,10 +171,6 @@ if __name__ == "__main__":
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
     parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
-
-    #START240713
-    #hlct1copymaskonly='Flag. Only copy the T1w_restore.2 and mask to create T1w_restore_brain.2'
-    #parser.add_argument('-T','--T1COPYMASKONLY',dest='lct1copymaskonly',action='store_true',help=hlct1copymaskonly)
 
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
@@ -402,9 +423,18 @@ if __name__ == "__main__":
 
             if not args.lcfeatadapter:
                 if not args.lcsmoothonly: 
-                    F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
-                else:
-                    F0f[0].write('\n')
+
+                    #F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
+                    #START240808
+                    #F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n')
+                    #F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+                    #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
+                    F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n')
+
+                #else:
+                #    F0f[0].write('\n')
+                #START240808
+                F0f[0].write('\n')
 
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
 
@@ -417,8 +447,7 @@ if __name__ == "__main__":
                 if not args.lcsmoothonly: 
 
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
-
-                    #START240730
+                    if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write(f'dilation={args.dilation}\n')
 
                     #START240713
@@ -426,7 +455,7 @@ if __name__ == "__main__":
                     for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
                     F0f[0].write(f'        {par.bold[j+1][0]})\n')
 
-                    if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
+                    #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write('\n${P0} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
