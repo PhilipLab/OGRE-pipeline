@@ -11,7 +11,10 @@ import sys
 import opl
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
-P1='OGRET1w_restore.sh'
+
+#START240809
+#P1='OGRET1w_restore.sh'
+
 P2='OGRESmoothingProcess.sh'
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
@@ -190,35 +193,37 @@ if __name__ == "__main__":
         + 'This permits multiple subjects to be run sequentially and seamlessly.\n'
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
 
-    happend='Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug'
-    parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
 
     huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
 
-    hd='Pipeline directory. Optional. BIDS directories are assumed to be at the same level on the directory tree.\n' \
-        +'Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/pipeline7.4.1\n' \
-        +'        BIDS directories are /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/anat\n' \
-        +'                             /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/func\n'
-    parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
 
-    #START240712
     hfslmo='Run fsl_motion_outliers on raw data, with optional comma-separated arguments.\n' \
         +'Ex. -fslmo "--fd,--thresh=2"\n' \
         +'Ex. -fslmo --fd,--thresh=2\n'
-    #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='fsl_motion_outliers',nargs='?',const=True,help=hfslmo)
-    #parser.add_argument('-fslmo','--fslmo',dest='fslmo',metavar='options',nargs='?',const=True,help=hfslmo)
     parser.add_argument('-fslmo','--fslmo',dest='fslmo',action='store_true',help=hfslmo)
 
-    #START240730
     hdil='Dilate masks applied to fMRI at output.'
     mdil='Dilate output masks'
     parser.add_argument('-dil','--dil','-dilation','--dilation',dest='dilation',metavar=mdil,help=hdil,default=0)
 
-    #START240803
     hstartIntensityNormalization='Flag. Start at IntensityNormalization. Defaut is to run the whole script.\n'
     parser.add_argument('-startIntensityNormalization','--startIntensityNormalization','-sin','--sin',dest='startIntensityNormalization',action='store_true',help=hstartIntensityNormalization)
+
+
+    #hd='Pipeline directory. Optional. BIDS directories are assumed to be at the same level on the directory tree.\n' \
+    #    +'Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/pipeline7.4.1\n' \
+    #    +'        BIDS directories are /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/anat\n' \
+    #    +'                             /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/func\n'
+    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+    #happend='Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug'
+    #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
+    #START240813    
+    hd='Archaic. Use --container_directory instead.'
+    parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+    happend='Archaic. Use --container_directory instead.'
+    parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -226,15 +231,22 @@ if __name__ == "__main__":
         parser.print_help()
         # parser.print_usage() # for just the usage line
         parser.exit()
-
-
-    #args=parser.parse_args()
-    #START240712
     args, unknown = parser.parse_known_args()
 
-    print(f'unknown={unknown}')
-    print(f'args.fslmo={args.fslmo}')
-    print(f'args.bs={args.bs}')
+    #print(f'unknown={unknown}')
+    #print(f'args.fslmo={args.fslmo}')
+    #print(f'args.bs={args.bs}')
+
+#STARTHERE
+    if args.dir:
+        print(f'sys.argv={sys.argv}')
+        exit()
+    if args.append:
+        print(f'sys.argv={sys.argv}')
+        exit()
+
+
+
 
     if args.dat:
         if args.dat0:
@@ -414,9 +426,14 @@ if __name__ == "__main__":
                 #START240713
                 if not args.lcsmoothonly: 
 
-                    F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
-                if not args.lcsmoothonly:
-                    F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
+                    #F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
+                    #START240809
+                    F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
+
+                #START240809
+                #if not args.lcsmoothonly:
+                #    F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
+
 
                 if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
@@ -456,7 +473,11 @@ if __name__ == "__main__":
                     F0f[0].write(f'        {par.bold[j+1][0]})\n')
 
                     #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
-                    F0f[0].write('\n${P0} \\\n')
+
+                    #F0f[0].write('\n${P0} \\\n')
+                    #START240809
+                    F0f[0].write('\n${VOLPROC} \\\n')
+
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
                     F0f[0].write('    --runlocal \\\n')

@@ -51,11 +51,6 @@ helpmsg(){
     echo "        HCP directory. Optional; default location is OGREDIR/lib/HCP"
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
-    echo "    -d -p -directory --directory --pipedir -pipedir"
-    echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
-    echo "        Optional. Default is <scanlist.csv path>."
-    echo "    -n --name -name"
-    echo "        Use with -pipedir to provide the subject name. Default is root of scanlist.csv."
     echo "    -m --HOSTNAME"
     echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003"
     echo "    -D --DATE -DATE --date -date"
@@ -67,8 +62,6 @@ helpmsg(){
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
     echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename (an across-subjects script)."
     echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
-    echo "    --append -append"
-    echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug. Overridden by -d."
     echo "    -e --erosion -erosion --ero -ero"
     echo "        Default is 2. For the brain mask, the number or erosions that follow the three dilations. Ex. -e 2, will result in two erosions"
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
@@ -83,6 +76,21 @@ helpmsg(){
     echo "        Full path of a folder containing 4 files: T1w, T1w_brain or T1w_brain_mask, T2w (brain_mask may be used instead of _brain)"
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm/"
+
+    #echo "    -n --name -name"
+    #echo "        Use with -pipedir to provide the subject name. Default is root of scanlist.csv."
+    #echo "    -d -p -directory --directory --pipedir -pipedir"
+    #echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
+    #echo "        Optional. Default is <scanlist.csv path>."
+    #echo "    --append -append"
+    #echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug. Overridden by -d."
+    #START240813
+    echo "    --container_directory -container_directory --cd -cd"
+    echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019"
+    echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
+    echo "    -n --name -name"
+    echo "        Use with --container_directory to provide the subject name. Default is root of scanlist.csv."
+
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
         echo "        Show all options."
@@ -115,14 +123,17 @@ if((${#@}<1));then
     exit
 fi
 
-lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
+#lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
+#unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
+#START240813
+lcautorun=0;lchostname=0;lcdate=0;erosion=2;dilation=3 #do not set dat;unexpected
+unset bs cd0 name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
 
-unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
 unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow 
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
-    echo "i=$i ${arg[i]}"
+    #echo "i=$i ${arg[i]}"
     case "${arg[i]}" in
         -s | --scanlist | -scanlist)
             dat+=(${arg[((++i))]})
@@ -148,24 +159,13 @@ for((i=0;i<${#@};++i));do
             FREESURFVER=${arg[((++i))]}
             echo "FREESURFVER=$FREESURFVER"
             ;;
-        -p | --pipedir | -pipedir | -d | -directory | --directory)
-            pipedir=${arg[((++i))]}
-            #https://stackoverflow.com/questions/17542892/how-to-get-the-last-character-of-a-string-in-a-shell
-            #https://stackoverflow.com/questions/27658675/how-to-remove-last-n-characters-from-a-string-in-bash
-            [[ ${pipedir: -1} == "/" ]] && pipedir=${pipedir::-1}
-            echo "pipedir=$pipedir"
-            ;;
-        -n | --name | -name)
-            name=${arg[((++i))]}
-            echo "name=$name"
-            ;;
         -m | --HOSTNAME)
             lchostname=1
             echo "lchostname=$lchostname"
             ;;
         -D | --DATE | -DATE | --date | -date)
             lcdate=1
-            echo "lcdate=$lcdate"
+            #echo "lcdate=$lcdate"
             ;;
         -DL | --DL | --DATELONG | -DATELONG | --datelong | -datelong)
             lcdate=2
@@ -175,10 +175,6 @@ for((i=0;i<${#@};++i));do
             bs=True
             ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
             #echo "bs=$bs"
-            ;;
-        --append | -append)
-            append=${arg[((++i))]}
-            echo "append=$append"
             ;;
         -e | --erosion | -erosion | --ero | -ero)
             erosion=${arg[((++i))]}
@@ -228,6 +224,41 @@ for((i=0;i<${#@};++i));do
         -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
             t1bml=${arg[((++i))]}
             ;;
+
+        #-p | --pipedir | -pipedir | -d | -directory | --directory)
+        #    pipedir=${arg[((++i))]}
+        #    #https://stackoverflow.com/questions/17542892/how-to-get-the-last-character-of-a-string-in-a-shell
+        #    #https://stackoverflow.com/questions/27658675/how-to-remove-last-n-characters-from-a-string-in-bash
+        #    [[ ${pipedir: -1} == "/" ]] && pipedir=${pipedir::-1}
+        #    echo "pipedir=$pipedir"
+        #    ;;
+        #--append | -append)
+        #    append=${arg[((++i))]}
+        #    echo "append=$append"
+        #    ;;
+        #-n | --name | -name)
+        #    name=${arg[((++i))]}
+        #    echo "name=$name"
+        #    ;;
+        #START240813
+        -p | --pipedir | -pipedir | -d | -directory | --directory)
+            echo ${arg[i]} is archaic. Use --container_directory instead.
+            exit
+            ;;
+        --append | -append)
+            echo ${arg[i]} is archaic. Use --container_directory instead.
+            exit
+            ;;
+        --container_directory | -container_directory | --cd | -cd)
+            cd0=${arg[((++i))]}
+            echo cd0=${cd0}
+            ;;
+        -n | --name | -name)
+            name=${arg[((++i))]}
+            echo "name=$name"
+            ;;
+
+
         -h | --help | -help)
             #helpmsg
             #exit
@@ -327,29 +358,59 @@ else
     fi
 fi
 
-if [ -z "$pipedir" ];then
-    datf=$(realpath ${dat[0]})
-    dir0=${datf%/*}
-    IFS='/' read -ra subj <<< "${dir0}"
-    s0=${subj[${#subj[@]}-1]}
+
+
+#if [ -z "$pipedir" ];then
+#    datf=$(realpath ${dat[0]})
+#    dir0=${datf%/*}
+#    IFS='/' read -ra subj <<< "${dir0}"
+#    s0=${subj[${#subj[@]}-1]}
+#    T1f=${T1f//${s0}/'${s0}'}
+#    T2f=${T2f//${s0}/'${s0}'}
+#    if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
+#        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
+#        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append
+#    else
+#        for j in "${!subj[@]}";do
+#            if [[ "${subj[j]}" = "raw_data" ]];then
+#                dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}$append
+#                dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'$append
+#                break
+#            fi
+#        done
+#    fi
+#else
+#    dir0=${pipedir}/pipeline${FREESURFVER}
+#    dir1=${pipedir}/pipeline'${FREESURFVER}'
+#fi
+#START240813
+datf=$(realpath ${dat[0]})
+dir0=${datf%/*}
+IFS='/' read -ra subj <<< "${dir0}"
+s0=${subj[${#subj[@]}-1]}
+if [ -z "${cd0}" ];then
     T1f=${T1f//${s0}/'${s0}'}
     T2f=${T2f//${s0}/'${s0}'}
     if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
-        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
-        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append
+        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}
+        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'
     else
         for j in "${!subj[@]}";do
             if [[ "${subj[j]}" = "raw_data" ]];then
-                dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}$append
-                dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'$append
+                dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}
+                dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'
                 break
             fi
         done
     fi
 else
-    dir0=${pipedir}/pipeline${FREESURFVER}
-    dir1=${pipedir}/pipeline'${FREESURFVER}'
+    echo here0 cd0=${cd0}
+    dir0=${cd0}/pipeline${FREESURFVER}
+    dir1=${cd0}/pipeline'${FREESURFVER}'
 fi
+
+
+
 
 [ -n "$name" ] && s0=$name
 if((lchostname==1));then
