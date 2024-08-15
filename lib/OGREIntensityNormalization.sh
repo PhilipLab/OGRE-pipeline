@@ -155,9 +155,17 @@ if [[ -n $dil ]];then
     echo fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
     fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
 fi
+
+#START240814
+echo ${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${OutputfMRI} -odt float
+
 ${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${OutputfMRI} -odt float
 if [ X${ScoutInput} != X ] ; then
-   ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${ScoutOutput} -odt float
+
+    #START240814
+    echo ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${ScoutOutput} -odt float
+
+    ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${ScoutOutput} -odt float
 fi
 
 
