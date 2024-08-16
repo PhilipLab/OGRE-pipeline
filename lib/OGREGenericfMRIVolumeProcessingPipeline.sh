@@ -697,7 +697,8 @@ ${RUN} cp -r ${fMRIFolder}/Movement_AbsoluteRMS_mean.txt ${ResultsFolder}/Moveme
 ###Add stuff for RMS###
 
 #Basic Cleanup
-rm ${fMRIFolder}/${NameOffMRI}_nonlin_norm.nii.gz
+#START240815
+#rm ${fMRIFolder}/${NameOffMRI}_nonlin_norm.nii.gz
 
 #Econ
 #rm "$fMRIFolder"/"$OrigTCSName".nii.gz
