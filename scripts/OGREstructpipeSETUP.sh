@@ -86,7 +86,7 @@ helpmsg(){
     #echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug. Overridden by -d."
     #START240813
     echo "    --container_directory -container_directory --cd -cd"
-    echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019"
+    echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
     echo "    -n --name -name"
     echo "        Use with --container_directory to provide the subject name. Default is root of scanlist.csv."

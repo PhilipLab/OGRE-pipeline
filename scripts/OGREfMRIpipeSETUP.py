@@ -129,6 +129,11 @@ class Feat:
 
         opl.rou.make_executable(filename)
 
+def abort(string):
+    hd='Archaic. Use --container_directory instead. Abort!'
+    print(f'{sys.argv}Your option list includes {string}\n{hd}')
+    exit()
+
 if __name__ == "__main__":
 
     parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
@@ -220,10 +225,22 @@ if __name__ == "__main__":
     #happend='Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug'
     #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
     #START240813    
+    #hd='Archaic. Use --container_directory instead.'
+    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd,type=abort)
+    #happend='Archaic. Use --container_directory instead.'
+    #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='',type=abort)
+
     hd='Archaic. Use --container_directory instead.'
     parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+    flagdsir=['-d','--dir','-dir']
+
     happend='Archaic. Use --container_directory instead.'
-    parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
+    parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
+    flagsappend=['-append','--append']
+
+    hcd0='Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
+        +'    func, anat, regressors, pipeline7.4.1 are created inside this directory'
+    parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -239,10 +256,16 @@ if __name__ == "__main__":
 
 #STARTHERE
     if args.dir:
-        print(f'sys.argv={sys.argv}')
+        #print(f'sys.argv={sys.argv}')
+        matches = [x for x in flagsdir if x in sys.argv]
+        #print(f'matches={matches}')
+        print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --container_directory instead. Abort!\n')
         exit()
     if args.append:
-        print(f'sys.argv={sys.argv}')
+        #print(f'sys.argv={sys.argv}')
+        matches = [x for x in flagsappend if x in sys.argv]
+        #print(f'matches={matches}')
+        print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --container_directory instead. Abort!\n')
         exit()
 
 
@@ -336,19 +359,39 @@ if __name__ == "__main__":
             #print(f's0={s0}')
             #print(f'{s0}')
         
-        if args.dir:
-            d0 = str(pathlib.Path(args.dir).resolve()).split("derivatives/preprocessed")[0]
+
+        #if args.dir:
+        #    d0 = str(pathlib.Path(args.dir).resolve()).split("derivatives/preprocessed")[0]
+        #else:
+        #    idx = i.find('raw_data')
+        #    if idx == -1:
+        #        d0 = str(pathlib.Path(i).resolve().parent) + '/'
+        #    else:
+        #        d0 = i[:idx]
+        #dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
+        #bids = d0 + 'derivatives/preprocessed/${s0}'
+        #dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
+        #dir2 = bids + '/pipeline${FREESURFVER}' + args.append
+        #START240818
+        if args.cd0:
+            d0 = str(pathlib.Path(args.cd0).resolve())
+            dir0 = d0 + '/pipeline' + gev.FREESURFVER
+            bids = d0 
+            dir1 = '${bids}/pipeline${FREESURFVER}'
+            dir2 = bids + '/pipeline${FREESURFVER}'
         else:
             idx = i.find('raw_data')
             if idx == -1:
                 d0 = str(pathlib.Path(i).resolve().parent) + '/'
             else:
                 d0 = i[:idx]
-        #print(f'd0={d0}') 
-        dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
-        bids = d0 + 'derivatives/preprocessed/${s0}'
-        dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
-        dir2 = bids + '/pipeline${FREESURFVER}' + args.append
+            dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER
+            bids = d0 + 'derivatives/preprocessed/${s0}'
+            dir1 = '${bids}/pipeline${FREESURFVER}'
+            dir2 = bids + '/pipeline${FREESURFVER}'
+
+
+
 
         if args.bhostname:
             hostname = opl.rou.run_cmd('hostname')
