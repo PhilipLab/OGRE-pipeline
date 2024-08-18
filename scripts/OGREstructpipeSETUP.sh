@@ -295,6 +295,7 @@ fi
 #START240727
 if((${#dat[@]}>1));then
     echo Only a single scanlist.csv file is accepted. Abort!
+    echo "    ${dat[@]}"
     exit
 fi
 
