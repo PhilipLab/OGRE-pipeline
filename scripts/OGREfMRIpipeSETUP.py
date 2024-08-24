@@ -600,12 +600,19 @@ if __name__ == "__main__":
                 F0f[0].write('    root=${root%.nii*}\n')
                 F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
                 cmd='fsl_motion_outliers -i ${i} -s ${bids}/regressors/${root}_fmovalues.txt -o ${fmospikes} $OPTIONS'
-                F0f[0].write(f'    echo Running {cmd}\n')
-                F0f[0].write(f'    {cmd}\n')
-                F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
-                F0f[0].write('        echo ${fmospikes} not found.\n')
-                F0f[0].write('        fmospikes=\n')
-                F0f[0].write('    fi\n')
+
+                #F0f[0].write(f'    echo Running {cmd}\n')
+                #START240823
+                F0f[0].write(f'    echo -e "\\nRunning {cmd}"\n')
+
+                #F0f[0].write(f'    {cmd}\n')
+                #F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+                #F0f[0].write('        echo ${fmospikes} not found.\n')
+                #F0f[0].write('        fmospikes=\n')
+                #F0f[0].write('    fi\n')
+                #START240823
+                F0f[0].write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
+
                 F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
                 F0f[0].write('done\n\n')
             else:
@@ -619,10 +626,15 @@ if __name__ == "__main__":
                 F0f[0].write('        continue\n')
                 F0f[0].write('    fi\n')
                 F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-                F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
-                F0f[0].write('        echo ${fmospikes} not found.\n')
-                F0f[0].write('        fmospikes=\n')
-                F0f[0].write('    fi\n')
+
+                #F0f[0].write('    if [ ! -f "${fmospikes}" ];then\n')
+                #F0f[0].write('        echo ${fmospikes} not found.\n')
+                #F0f[0].write('        fmospikes=\n')
+                #F0f[0].write('    fi\n')
+                #START240823
+                F0f[0].write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
+
+
                 F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
                 F0f[0].write('done\n\n')
 

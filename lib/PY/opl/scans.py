@@ -13,10 +13,11 @@ class Scans:
         self.bold = [] 
         self.taskidx = []
         self.restidx = []
-
-        #START240704
         self.dwifmap = []
         self.dwi = []
+
+        #START240823
+        self.T2 = []
 
         with open(file,encoding="utf8",errors='ignore') as f0:
             i,j = 0,0
@@ -34,15 +35,10 @@ class Scans:
 
                 line2=file0.split('/')
                 if line2[-2] == 'fmap':
-
-                    #if line2[-1].find('dbsi') == -1:
-                    #    self.fmap.append(file0)
-                    #START240704
                     if line2[-1].find('dbsi') == -1:
                         self.fmap.append(file0)
                     else:
                         self.dwifmap.append(file0)
-
                 elif line2[-2] == 'func':
                     if line2[-1].find('sbref') != -1:
                         self.sbref.append((file0,int(len(self.fmap)/2-1)))
@@ -53,10 +49,13 @@ class Scans:
                         else:
                             self.taskidx.append(j)
                         j+=1
-
-                #START240704
                 elif line2[-2] == 'dwi':
                     self.dwi.append((file0,int(len(self.dwifmap)-1))) #double parentheses for tuple
+                
+                #START240823
+                elif line2[-2] == 'anat':
+                    if line2[-1].find('T2w') != -1:
+                        self.T2.append(file0)
 
         if len(self.sbref) != len(self.bold):
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
@@ -96,8 +95,18 @@ class Scans:
             f0.write('    cp -f -p $file ${file1}\n')
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
-            f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-            f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
+
+            #f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
+            #f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
+            #START240823
+            print(f'self.T2={self.T2}')
+            if self.T2:
+                f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
+                f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
+            else:
+                f0.write('ANAT=(T1w_restore T1w_restore_brain)\n')
+                f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain)\n')
+
             f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
             f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
