@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#P0=OGREPreFreeSurferPipeline.sh
-#START240111
 P0=${OGREDIR}/lib/OGREPreFreeSurferPipeline.sh
 
 echo "**** Running $0 ****"
