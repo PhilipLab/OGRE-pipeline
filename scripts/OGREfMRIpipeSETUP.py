@@ -238,8 +238,9 @@ if __name__ == "__main__":
     parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
     flagsappend=['-append','--append']
 
-    hcd0='Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
-        +'    func, anat, regressors, pipeline7.4.1 are created inside this directory'
+    hcd0='Container directory\n' \
+        +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
+        +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
     parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
 
 
@@ -373,7 +374,36 @@ if __name__ == "__main__":
         #dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
         #dir2 = bids + '/pipeline${FREESURFVER}' + args.append
         #START240818
+        print(f'args.cd0={args.cd0}')
         if args.cd0:
+            #d0 = str(pathlib.Path(args.cd0).resolve())
+            #print(f'pathlib.Path(args.cd0)={pathlib.Path(args.cd0)}')
+            #print(f'pathlib.Path(args.cd0).resolve()={pathlib.Path(args.cd0).resolve()}')
+            #print(f'pathlib.Path(args.cd0).absolute()={pathlib.Path(args.cd0).absolute()}')
+            #p0=pathlib.Path(args.cd0)
+            #print(f'p0.resolve()={p0.resolve()}')
+            #print(f'pathlib.Path(args.cd0).is_absolute()={pathlib.Path(args.cd0).is_absolute()}')
+            #print(f'os.path.abspath(args.cd0)={os.path.abspath(args.cd0)}')
+            #print(f'pathlib.Path(args.cd0).root={pathlib.Path(args.cd0).root}')
+            #print(f'pathlib.Path(args.cd0).drive={pathlib.Path(args.cd0).drive}')
+            #print(f'd0={d0}')
+
+
+            #            ynq = input('    Would like to resample the field maps? y, n, q').casefold()
+            #            if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
+            #            if ynq=='n' or ynq=='no': continue
+            if not pathlib.Path(args.cd0).root:
+                ynq = input(f'    Your container directory is missing the root.\n        <root>{args.cd0}\n    The following root will be added:\n' \
+                    + f'        {os.getcwd()}\n' \
+                    + f'    New container directory: {pathlib.Path(args.cd0).resolve()}\n' \
+                    + f'    Is this what you want? y, n, q ').casefold()
+                if ynq=='q' or ynq=='quit' or ynq=='exit': 
+                    print('Exiting ...')
+                    exit()
+                if ynq=='n' or ynq=='no': 
+                    print('Please correct your container directory. Exiting ...')
+                    exit()
+                
             d0 = str(pathlib.Path(args.cd0).resolve())
             dir0 = d0 + '/pipeline' + gev.FREESURFVER
             bids = d0 
