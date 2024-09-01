@@ -129,10 +129,10 @@ class Feat:
 
         opl.rou.make_executable(filename)
 
-def abort(string):
-    hd='Archaic. Use --container_directory instead. Abort!'
-    print(f'{sys.argv}Your option list includes {string}\n{hd}')
-    exit()
+#def abort(string):
+#    hd='Archaic. Use --container_directory instead. Abort!'
+#    print(f'{sys.argv}Your option list includes {string}\n{hd}')
+#    exit()
 
 if __name__ == "__main__":
 
@@ -374,7 +374,7 @@ if __name__ == "__main__":
         #dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
         #dir2 = bids + '/pipeline${FREESURFVER}' + args.append
         #START240818
-        print(f'args.cd0={args.cd0}')
+        #print(f'args.cd0={args.cd0}')
         if args.cd0:
             #d0 = str(pathlib.Path(args.cd0).resolve())
             #print(f'pathlib.Path(args.cd0)={pathlib.Path(args.cd0)}')
@@ -389,20 +389,56 @@ if __name__ == "__main__":
             #print(f'd0={d0}')
 
 
-            #            ynq = input('    Would like to resample the field maps? y, n, q').casefold()
-            #            if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
-            #            if ynq=='n' or ynq=='no': continue
-            if not pathlib.Path(args.cd0).root:
-                ynq = input(f'    Your container directory is missing the root.\n        <root>{args.cd0}\n    The following root will be added:\n' \
-                    + f'        {os.getcwd()}\n' \
-                    + f'    New container directory: {pathlib.Path(args.cd0).resolve()}\n' \
-                    + f'    Is this what you want? y, n, q ').casefold()
-                if ynq=='q' or ynq=='quit' or ynq=='exit': 
-                    print('Exiting ...')
+            ##            ynq = input('    Would like to resample the field maps? y, n, q').casefold()
+            ##            if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
+            ##            if ynq=='n' or ynq=='no': continue
+            #if not pathlib.Path(args.cd0).root:
+            #    ynq = input(f'    Your container directory is missing the root.\n        <root>{args.cd0}\n    The following root will be added:\n' \
+            #        + f'        {os.getcwd()}\n' \
+            #        + f'    New container directory: {pathlib.Path(args.cd0).resolve()}\n' \
+            #        + f'    Is this what you want? y, n, q ').casefold()
+            #    if ynq=='q' or ynq=='quit' or ynq=='exit': 
+            #        print('Exiting ...')
+            #        exit()
+            #    if ynq=='n' or ynq=='no': 
+            #        print('Please correct your container directory. Exiting ...')
+            #        exit()
+            #START240901
+            p0=pathlib.Path(args.cd0) 
+            if p0.root:
+                #TRAP 1
+                if p0.exists():
+                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
+                        + ' Would you like to continue? y, n ').casefold()
+                    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+            else:
+                #TRAP 2
+                if p0.exists():
+                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
+                        + f'        {pathlib.Path(args.cd0).resolve()}\n    Directory exists. Contents will be overwritten.' 
+                        + ' Would you like to continue? y, n ').casefold()
+                    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                #TRAP 3
+                if pathlib.Path(f'/{p0}').exists():
+                    print(f'    \nContainer directory = {args.cd0}\n' \
+                        + '    Your container directory is missing the forward slash at the beginning.\n' \
+                        + '    However, the directory with the added forward slash already exists. Danger of overwrite! Please correct. Abort!')
                     exit()
-                if ynq=='n' or ynq=='no': 
-                    print('Please correct your container directory. Exiting ...')
+                #TRAP 4
+                if pathlib.Path(f'/{p0.parts[0]}').exists():
+                    print(f'    \nContainer directory = {args.cd0}\n' \
+                        + '    Your container directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
                     exit()
+                else:
+                    #TRAP 5
+                    ynq = input(f'    \nContainer directory = {args.cd0}\n' \
+                        + '    Your container directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
+                        + '    The following root will be added:\n' \
+                        + f'        {pathlib.Path.cwd()}\n' \
+                        + f'    New container directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
+                        + f'    Is this what you want? y, n ').casefold()
+                    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
                 
             d0 = str(pathlib.Path(args.cd0).resolve())
             dir0 = d0 + '/pipeline' + gev.FREESURFVER
