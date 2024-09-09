@@ -6,6 +6,13 @@ import json
 import pathlib
 import sys
 
+#https://stackoverflow.com/questions/60687577/trying-to-read-json-file-within-a-python-package
+#https://docs.python.org/3/library/importlib.resources.html
+import importlib.resources
+with importlib.resources.files("opl").joinpath("OGREdefault.json").open('r',encoding="utf8") as file:
+    dict0 = json.load(file)  
+
+
 if __name__ == "__main__":
 
     hp=f'Setup OGRE scripts from a json.  Required: OGREsetup.py <json>'
@@ -40,23 +47,35 @@ if __name__ == "__main__":
 
 
     for i in args.dat:
+
+        
+
         print(f'Reading {i}')
       
         try:
             with open(i,encoding="utf8",errors='ignore') as f0:
-                dict0 = json.load(f0)
+                #dict0 = json.load(f0)
 
                 #if dict0['OGREstructpipeSETUP']:
                 #    print(f"OGREstructpipeSETUP={dict0['OGREstructpipeSETUP']}")
                 #if dict0['fakekey']:
                 #    print(f"fakekey={dict0['fakekey']}")
 
-                if 'OGREstructpipeSETUP' in dict0:
-                    print(f"OGREstructpipeSETUP={dict0['OGREstructpipeSETUP']}")
-                if 'FWHM' in dict0:
-                    print(f"FWHM={dict0['FWHM']}")
+                #if 'OGREstructpipeSETUP' in dict0:
+                #    print(f"OGREstructpipeSETUP={dict0['OGREstructpipeSETUP']}")
+                #if 'FWHM' in dict0:
+                #    print(f"FWHM={dict0['FWHM']}")
 
+                #dict1 = json.load(f0)
 
+                #https://docs.python.org/3/library/stdtypes.html#dict.setdefault
+                dict1 = dict0
+                print(f'{dict1}\n')
+                dict1.update(json.load(f0))
+                print(dict1)
+
+                print(dict0 == dict1)
+                print(dict0.values() == dict1.values())
 
         except FileNotFoundError:
             print(f'    INFO: {i} does not exist.')
