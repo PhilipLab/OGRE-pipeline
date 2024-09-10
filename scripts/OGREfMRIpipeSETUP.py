@@ -359,21 +359,6 @@ if __name__ == "__main__":
             #print(f's0={s0}')
             #print(f'{s0}')
         
-
-        #if args.dir:
-        #    d0 = str(pathlib.Path(args.dir).resolve()).split("derivatives/preprocessed")[0]
-        #else:
-        #    idx = i.find('raw_data')
-        #    if idx == -1:
-        #        d0 = str(pathlib.Path(i).resolve().parent) + '/'
-        #    else:
-        #        d0 = i[:idx]
-        #dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER + args.append
-        #bids = d0 + 'derivatives/preprocessed/${s0}'
-        #dir1 = '${bids}/pipeline${FREESURFVER}' + args.append
-        #dir2 = bids + '/pipeline${FREESURFVER}' + args.append
-        #START240818
-        #print(f'args.cd0={args.cd0}')
         if args.cd0:
             #d0 = str(pathlib.Path(args.cd0).resolve())
             #print(f'pathlib.Path(args.cd0)={pathlib.Path(args.cd0)}')
@@ -387,29 +372,34 @@ if __name__ == "__main__":
             #print(f'pathlib.Path(args.cd0).drive={pathlib.Path(args.cd0).drive}')
             #print(f'd0={d0}')
 
-
-            ##            ynq = input('    Would like to resample the field maps? y, n, q').casefold()
-            ##            if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
-            ##            if ynq=='n' or ynq=='no': continue
-            #if not pathlib.Path(args.cd0).root:
-            #    ynq = input(f'    Your container directory is missing the root.\n        <root>{args.cd0}\n    The following root will be added:\n' \
-            #        + f'        {os.getcwd()}\n' \
-            #        + f'    New container directory: {pathlib.Path(args.cd0).resolve()}\n' \
-            #        + f'    Is this what you want? y, n, q ').casefold()
-            #    if ynq=='q' or ynq=='quit' or ynq=='exit': 
-            #        print('Exiting ...')
-            #        exit()
-            #    if ynq=='n' or ynq=='no': 
-            #        print('Please correct your container directory. Exiting ...')
-            #        exit()
-            #START240901
             p0=pathlib.Path(args.cd0) 
+
+            #START240909
+            d0 = str(p0.resolve())
+            dir0 = d0 + '/pipeline' + gev.FREESURFVER
+            bids = d0 
+            dir1 = '${bids}/pipeline${FREESURFVER}'
+            dir2 = bids + '/pipeline${FREESURFVER}'
+
             if p0.root:
                 #TRAP 1
                 if p0.exists():
-                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
-                        + ' Would you like to continue? y, n ').casefold()
-                    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
+                    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
+                    #    + ' Would you like to continue? y, n ').casefold()
+                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                    #START240909
+                    exists=False
+                    for j in par.bold:
+                        #print(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}')
+                        if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
+                            exists=True
+                            break
+                    if exists:
+                        ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
+                            + ' Would you like to continue? y, n ').casefold()
+                        if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
             else:
                 #TRAP 2
                 if p0.exists():
@@ -439,11 +429,13 @@ if __name__ == "__main__":
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
 
                 
-            d0 = str(pathlib.Path(args.cd0).resolve())
-            dir0 = d0 + '/pipeline' + gev.FREESURFVER
-            bids = d0 
-            dir1 = '${bids}/pipeline${FREESURFVER}'
-            dir2 = bids + '/pipeline${FREESURFVER}'
+            #START240909
+            #d0 = str(pathlib.Path(args.cd0).resolve())
+            #dir0 = d0 + '/pipeline' + gev.FREESURFVER
+            #bids = d0 
+            #dir1 = '${bids}/pipeline${FREESURFVER}'
+            #dir2 = bids + '/pipeline${FREESURFVER}'
+
         else:
             idx = i.find('raw_data')
             if idx == -1:
@@ -455,13 +447,12 @@ if __name__ == "__main__":
             dir1 = '${bids}/pipeline${FREESURFVER}'
             dir2 = bids + '/pipeline${FREESURFVER}'
 
-
-
-
         if args.bhostname:
             hostname = opl.rou.run_cmd('hostname')
             dir0 += '_' + hostname
             dir1 += '_$(hostname)'
+
+        #print(f'dir0={dir0}\ndir1={dir1}\ndir2={dir2}')
 
         stem0 = dir0 + '/' + s0
         str0 = stem0 + '_' + l0 + datestr
@@ -491,11 +482,7 @@ if __name__ == "__main__":
 
         if not args.lcfeatadapter:
             par.check_phase_dims()
-
-            #if not args.lcsmoothonly and not args.lct1copymaskonly: 
-            #START240713
             if not args.lcsmoothonly: 
-
                 par.check_phase_dims_fmap()
                 par.check_ped_dims()
 
@@ -529,42 +516,16 @@ if __name__ == "__main__":
             if not args.lcfeatadapter:
                 F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
                 fi0+=1
-
-                #if not args.lcsmoothonly and not args.lct1copymaskonly: 
-                #START240713
                 if not args.lcsmoothonly: 
-
-                    #F0f[0].write('P0=${OGREDIR}/lib/'+P0+'\n')
-                    #START240809
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
-
-                #START240809
-                #if not args.lcsmoothonly:
-                #    F0f[0].write('P1=${OGREDIR}/lib/'+P1+'\n')
-
-
                 if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
             if not args.lcfeatadapter:
                 if not args.lcsmoothonly: 
-
-                    #F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n\n')
-                    #START240808
-                    #F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n')
-                    #F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
-                    #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n')
-
-                #else:
-                #    F0f[0].write('\n')
-                #START240808
                 F0f[0].write('\n')
-
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
-
-                #F0f[0].write(pathstr+'\n') # s0, bids and sf0
-                #START240730
                 F0f[0].write(pathstr) # s0, bids and sf0
 
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
