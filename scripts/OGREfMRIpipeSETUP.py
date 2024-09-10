@@ -397,7 +397,7 @@ if __name__ == "__main__":
                             exists=True
                             break
                     if exists:
-                        ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
+                        ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
                             + ' Would you like to continue? y, n ').casefold()
                         if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
 
