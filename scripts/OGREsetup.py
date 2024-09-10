@@ -76,49 +76,16 @@ if __name__ == "__main__":
 
 
     for i in args.dat:
-    
-        print(f'Reading {i}')
-      
         try:
             with open(i,encoding="utf8",errors='ignore') as f0:
-                #dict0 = json.load(f0)
-        
-                #if dict0['OGREstructpipeSETUP']:
-                #    print(f"OGREstructpipeSETUP={dict0['OGREstructpipeSETUP']}")
-                #if dict0['fakekey']:
-                #    print(f"fakekey={dict0['fakekey']}")
-        
-                #if 'OGREstructpipeSETUP' in dict0:
-                #    print(f"OGREstructpipeSETUP={dict0['OGREstructpipeSETUP']}")
-                #if 'FWHM' in dict0:
-                #    print(f"FWHM={dict0['FWHM']}")
-        
-                #dict1 = json.load(f0)
-        
                 #https://docs.python.org/3/library/stdtypes.html#dict.setdefault
                 dict1 = dict0
-                #print(f'{dict1}\n')
+                print(f'Reading {i}')
                 dict1.update(json.load(f0))
-                print(dict1)
-        
-                #print(dict0 == dict1)
-                #print(dict0.values() == dict1.values())
-        
+                #print(dict1)
         except FileNotFoundError:
-            #print(f'    INFO: {i} does not exist.')
             print(f'    Error: {i} does not exist. Abort!')
             exit()
-
-
-    #START240908
-    #dict1 = dict0
-    #if args.json:
-    #    print(f'args.json={args.json}')
-    #    try:
-    #        with open(args.json,encoding="utf8",errors='ignore') as f0:
-    #            dict1.update(json.load(f0))
-    #    except FileNotFoundError:
-    #        print(f'    Error: {args.json} does not exist. Abort!')
-    #        exit()
-    #print(dict1)
-
+    
+        if dict1['container_directory']:
+            print(f"dict1['container_directory']={dict1['container_directory']}") 
