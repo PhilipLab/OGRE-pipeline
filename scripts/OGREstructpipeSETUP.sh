@@ -405,7 +405,6 @@ if [ -z "${cd0}" ];then
         done
     fi
 else
-    echo here0 cd0=${cd0}
     dir0=${cd0}/pipeline${FREESURFVER}
     dir1=${cd0}/pipeline'${FREESURFVER}'
 fi
@@ -448,7 +447,6 @@ if [[ -n "$ht" || -n "$lt" ]];then
         exit
     fi
     for i in $ht/*;do
-        echo $i
         if [[ "$i" == *"T1w.nii.gz" ]];then
             T1wTemplate=$i
         elif [[ "$i" == *"T1w_brain.nii.gz" ]];then
@@ -463,10 +461,11 @@ if [[ -n "$ht" || -n "$lt" ]];then
             T2wTemplateMask=$i
         else
             echo Ignoring $i
+            continue
         fi
+        echo Fetching $i
     done
     for i in $lt/*;do
-        echo $i
         if [[ "$i" == *"T1w.nii.gz" ]];then
             T1wTemplateLow=$i
         elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
@@ -476,7 +475,9 @@ if [[ -n "$ht" || -n "$lt" ]];then
             T2wTemplateLow=$i
         else
             echo Ignoring $i
+            continue
         fi
+        echo Fetching $i
     done
     if [[ -z "$T1wTemplate" ]];then
         echo T1wTemplate not provided. Abort!
