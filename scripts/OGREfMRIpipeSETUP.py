@@ -382,32 +382,52 @@ if __name__ == "__main__":
             dir1 = '${bids}/pipeline${FREESURFVER}'
             dir2 = bids + '/pipeline${FREESURFVER}'
 
+            #START240911
+            exists=False
+            if p0.exists():
+                for j in par.bold:
+                    #print(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}')
+                    if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
+                        exists=True
+                        break
+
             if p0.root:
                 #TRAP 1
-                if p0.exists():
 
-                    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
-                    #    + ' Would you like to continue? y, n ').casefold()
-                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                    #START240909
-                    exists=False
-                    for j in par.bold:
-                        #print(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}')
-                        if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
-                            exists=True
-                            break
-                    if exists:
-                        ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
-                            + ' Would you like to continue? y, n ').casefold()
-                        if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-
-            else:
-                #TRAP 2
-                if p0.exists():
-                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
-                        + f'        {pathlib.Path(args.cd0).resolve()}\n    Directory exists. Contents will be overwritten.' 
+                #if p0.exists():
+                #    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
+                #    #    + ' Would you like to continue? y, n ').casefold()
+                #    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                #    #START240909
+                #    #exists=False
+                #    #for j in par.bold:
+                #    #    #print(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}')
+                #    #    if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
+                #    #        exists=True
+                #    #        break
+                #START240911
+                if exists:
+                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
                         + ' Would you like to continue? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
+            else:
+
+                ##TRAP 2
+                #if p0.exists():
+                #    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
+                #        + f'        {pathlib.Path(args.cd0).resolve()}\n    Directory exists. Contents will be overwritten.' 
+                #        + ' Would you like to continue? y, n ').casefold()
+                #    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                #START240911
+                #TRAP 2
+                if exists:
+                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
+                        + f'        {d0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+                        + ' Would you like to continue? y, n ').casefold()
+                    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
+
                 #TRAP 3
                 if pathlib.Path(f'/{p0}').exists():
                     print(f'    \nContainer directory = {args.cd0}\n' \
