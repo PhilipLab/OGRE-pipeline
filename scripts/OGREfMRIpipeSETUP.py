@@ -80,9 +80,9 @@ class Feat:
                                 print(f'{i} is neither a directory of file. Skipping!')
             else:
                 print(f'{i} is neither a directory of file. Skipping!')
-        print(f'self.outputdir = {self.outputdir}') 
-        print(f'self.level = {self.level}') 
-        print(f'self.fsf = {self.fsf}') 
+        #print(f'self.outputdir = {self.outputdir}') 
+        #print(f'self.level = {self.level}') 
+        #print(f'self.fsf = {self.fsf}') 
 
     def __grep_fsf(self,fsf):
         line0 = opl.rou.run_cmd(f'grep "set fmri(outputdir)" {fsf}')
@@ -268,7 +268,9 @@ if __name__ == "__main__":
         print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --container_directory instead. Abort!\n')
         exit()
 
-
+  
+    #START240914
+    print(f'{' '.join(sys.argv)}')          
 
 
     if args.dat:
@@ -315,28 +317,18 @@ if __name__ == "__main__":
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
             args.bs = pathlib.Path(args.bs).resolve()
-
-            #if "/" in args.bs: os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
-            #bs_fileout = args.bs.split('.sh')[0] + '_fileout.sh'
-            #START240712
             if "/" in str(args.bs): os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
             bs_fileout = str(args.bs).split('.sh')[0] + '_fileout.sh'
-
             batchscriptf = open_files([args.bs,bs_fileout],'w') 
-
-            #for i in batchscriptf: i.write(f'{SHEBANG}\n\n')          
-            #START240712
             for i in batchscriptf: i.write(f'{gev.SHEBANG}\n\n')          
 
-    #START240712
     if args.fslmo:
         if unknown:
             #https://stackoverflow.com/questions/44785374/python-re-split-string-by-commas-and-space
             #args.fslmo = ' '.join(re.findall(r'[^,\s]+',' '.join(str(i) for i in unknown)))
             #args.fslmo = ' '+' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
             args.fslmo = ' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
-        print(f'args.fslmo={args.fslmo}')
-
+        #print(f'args.fslmo={args.fslmo}')
 
 
     for i in args.dat:

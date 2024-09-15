@@ -157,7 +157,7 @@ for((i=0;i<${#@};++i));do
             ;;
         -V | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion)
             FREESURFVER=${arg[((++i))]}
-            echo "FREESURFVER=$FREESURFVER"
+            #echo "FREESURFVER=$FREESURFVER"
             ;;
         -m | --HOSTNAME)
             lchostname=1
@@ -251,7 +251,7 @@ for((i=0;i<${#@};++i));do
             ;;
         --container_directory | -container_directory | --cd | -cd)
             cd0=${arg[((++i))]}
-            echo cd0=${cd0}
+            #echo cd0=${cd0}
             ;;
         -n | --name | -name)
             name=${arg[((++i))]}
@@ -281,7 +281,7 @@ if [ -z "${OGREDIR}" ];then
     echo "or via an option to this script: -OGREDIR <OGRE directory>"
     exit
 fi
-echo "OGREDIR=$OGREDIR"
+#echo "OGREDIR=$OGREDIR"
 
 #if HCPDIR unset, use default location (this is down here b/c needs $OGREDIR)
 [ -z ${HCPDIR+x} ] && HCPDIR=$OGREDIR/lib/HCP
