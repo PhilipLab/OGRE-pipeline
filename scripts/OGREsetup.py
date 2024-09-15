@@ -82,10 +82,49 @@ if __name__ == "__main__":
                 dict1 = dict0
                 print(f'Reading {i}')
                 dict1.update(json.load(f0))
-                #print(dict1)
+                print(dict1)
         except FileNotFoundError:
             print(f'    Error: {i} does not exist. Abort!')
             exit()
-    
-        if dict1['container_directory']:
-            print(f"dict1['container_directory']={dict1['container_directory']}") 
+
+        if dict1["ScanList"]:
+            str_both=''
+            if dict1["AutoRun"]: str_both+=' -A' 
+            if dict1["OGREDIR"]: str_both+=' -O ' + dict1["OGREDIR"]
+            if dict1["HCPDIR"]: str_both+=' -H ' + dict1["HCPDIR"] 
+            if dict1["FreeSurferVersion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
+            if dict1["HostName"]: str_both+=' -m'
+            if dict1["Date"]: str_both+=' -D'
+            if dict1["DateLong"]: str_both+=' -DL'
+            if dict1["BatchScript"]: str_both+=' -b'                    
+                if dict1["BatchScript"]!=True: str_both+=' ' +  dict1["BatchScript"]
+            if dict1["ContainerDirectory"]: str_both+=' -cd ' + dict1["ContainerDirectory"] 
+            if dict1["Name"]: str_both+=' -n ' + dict1["Name"] 
+
+            str_stru=''
+            if dict1["OGREstructpipeSETUP"]:
+                if dict1["Erosion"]: str_stru+=' -e ' + dict1["Erosion"] 
+                if dict1["Dilation"]: str_stru+=' -dil ' + dict1["Dilation"] 
+                if dict1["HighResolutionTemplateDirectory"]: str_stru+=' -ht ' + dict1["HighResolutionTemplateDirectory"] 
+                if dict1["LowResolutionTemplateDirectory"]: str_stru+=' -lt ' + dict1["LowResolutionTemplateDirectory"] 
+                if dict1["Resolution"]: str_stru+=' -r ' + dict1["Resolution"]
+                if dict1["T1Template"]: str_stru+=' -t1 ' + dict1["T1Template"] 
+                if dict1["T1BrainTemplate"]: str_stru+=' -t1b ' + dict1["T1BrainTemplate"] 
+                if dict1["T1LowResolutionTemplate"]: ' -t1l ' + dict1["T1LowResolutionTemplate"]
+                if dict1["T2Template"]: str_stru+=' -t2 ' + dict1["T2Template"] 
+                if dict1["T2BrainTemplate"]: str_stru+=' -t2b ' + dict1["T2BrainTemplate"] 
+                if dict1["T2LowResolutionTemplate"]: str_stru+=' -t2l ' + dict1["T2LowResolutionTemplate"]
+                if dict1["T1BrainMaskTemplate"]: str_stru+=' -t1bm ' + dict1["T1BrainMaskTemplate"] 
+                if dict1["T1BrainMaskLowTemplate"]: str_stru+=' -t1bml ' + dict1["T1BrainMaskLowTemplate"] 
+
+            str_func=''
+            if dict1["OGREfMRIpipeSETUP"]:
+                if dict1["FWHM"]: str_func+=' -f ' + dict1["FWHM"]
+                if dict1["HPFcutoff"]: str_func+=' -p ' + dict1["HPFcutoff"]
+                if dict1["SmoothOnly"]: str_func+=' -smoothonly'
+                if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
+                if dict1["FeatAdapter"]: str_func+=' -F'
+                if dict1["UseRefinement"]: str_func+=' -userefinement'
+                if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
+                if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
+
