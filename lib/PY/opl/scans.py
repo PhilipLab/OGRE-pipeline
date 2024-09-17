@@ -163,10 +163,13 @@ class Scans:
             f0.write('        --TR="${TR[i]}" \n')
         f0.write('done\n\n')
 
-    #START240608
     def write_bold_bash(self,f0,s0,bolds):
         bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
         f0.write('BOLD=(\\\n')
+
+        #START240916
+        j=-1 #default value needed for single bold
+
         for j in range(len(bold_bash)-1):
             str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
             f0.write(f'    {str0} \\\n')
