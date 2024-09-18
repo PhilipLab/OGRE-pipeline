@@ -5,19 +5,15 @@ from datetime import datetime
 import glob
 import os
 import pathlib
-#import re
 import sys
 
 import opl
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
-
-#START240809
-#P1='OGRET1w_restore.sh'
-
 P2='OGRESmoothingProcess.sh'
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
+P4='OGRESplitFreeSurferMasks.sh'
 
 from contextlib import ExitStack
 def open_files(filenames,mode):
@@ -530,6 +526,11 @@ if __name__ == "__main__":
                 fi0+=1
                 if not args.lcsmoothonly: 
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
+
+                    #START240917
+                    F0f[0].write('GM_WM_CSF=${OGREDIR}/lib/'+P4+'\n')
+
+
                 if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
 
@@ -543,7 +544,6 @@ if __name__ == "__main__":
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
 
                 if not args.lcsmoothonly: 
-
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
                     if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write(f'dilation={args.dilation}\n')
@@ -556,26 +556,11 @@ if __name__ == "__main__":
                     F0f[0].write(f'    {par.bold[j+1][0]})\n')
 
 
-
-                    #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
-
-                    #F0f[0].write('\n${P0} \\\n')
-                    #START240809
                     F0f[0].write('\n${VOLPROC} \\\n')
-
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')
                     F0f[0].write('    --Subject=${s0} \\\n')
                     F0f[0].write('    --runlocal \\\n')
-
-                    #F0f[0].write('    --fMRITimeSeries="\\\n')
-                    #for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
-                    #F0f[0].write(f'        {par.bold[j+1][0]}" \\\n')
-                    #START240713
-                    #F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[@]}"\n')
-                    #START240720
                     F0f[0].write('    --fMRITimeSeries="${RAW_BOLD[*]}" \\\n')
-
-
                     if par.sbref:
                         if any(par.bsbref):
                             F0f[0].write('    --fMRISBRef="\\\n')
@@ -614,14 +599,11 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
                     if args.userefinement: F0f[0].write('    --userefinement \\\n')
-
-                    #START240730
                     F0f[0].write('    --dilation=${dilation} \\\n')
-                    #START240730
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
-
-
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
+
+                    F0f[0].write('${GM_WM_CSF} ${sf0}\n')
 
                 if par.taskidx:
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)

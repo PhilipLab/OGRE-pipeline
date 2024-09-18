@@ -9,8 +9,8 @@ helpmsg(){
     echo "  3) Mask your eroded-T1 with unlabeled voxels from wmparc"
     echo "  4) All (eroded unlabeled voxels) in T1 with magnitude < (CSF conservative bounds) defined as Sulcal CSF and included"
     echo " "
-    #echo "Usage: OGRESplitFreeSurferMashks.sh -p PIPEDIR [-s SUBJECT]"
-    echo "Usage: OGRESplitFreeSurferMashks.sh [-p] PIPEDIR [-s SUBJECT]"
+    #echo "Usage: OGRESplitFreeSurferMasks.sh -p PIPEDIR [-s SUBJECT]"
+    echo "Usage: OGRESplitFreeSurferMasks.sh [-p] PIPEDIR [-s SUBJECT]"
 
     echo "      -p PIPEDIR: pipeline directory of OGRE working outputs. "
     echo "                  An optionless argument is assumed to be the pipeline directory."

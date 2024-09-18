@@ -359,32 +359,6 @@ else
     fi
 fi
 
-
-
-#if [ -z "$pipedir" ];then
-#    datf=$(realpath ${dat[0]})
-#    dir0=${datf%/*}
-#    IFS='/' read -ra subj <<< "${dir0}"
-#    s0=${subj[${#subj[@]}-1]}
-#    T1f=${T1f//${s0}/'${s0}'}
-#    T2f=${T2f//${s0}/'${s0}'}
-#    if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
-#        dir0=/$(join_by / ${subj[@]::${#subj[@]}-1})/${s0}/pipeline${FREESURFVER}$append
-#        dir1=/$(join_by / ${subj[@]::${#subj[@]}-1})/'${s0}'/pipeline'${FREESURFVER}'$append
-#    else
-#        for j in "${!subj[@]}";do
-#            if [[ "${subj[j]}" = "raw_data" ]];then
-#                dir0=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/${s0}/pipeline${FREESURFVER}$append
-#                dir1=/$(join_by / ${subj[@]::j})/derivatives/preprocessed/'${s0}'/pipeline'${FREESURFVER}'$append
-#                break
-#            fi
-#        done
-#    fi
-#else
-#    dir0=${pipedir}/pipeline${FREESURFVER}
-#    dir1=${pipedir}/pipeline'${FREESURFVER}'
-#fi
-#START240813
 datf=$(realpath ${dat[0]})
 dir0=${datf%/*}
 IFS='/' read -ra subj <<< "${dir0}"
@@ -566,52 +540,18 @@ if [[ "$TemplateMaskLow" != *"dil"* ]];then
     TemplateMaskLowUndil=$TemplateMaskLow
     echo Dilating $TemplateMaskLowUndil
     mkdir -p ${dir0}/templates
+
+    #TemplateMaskLow=${TemplateMaskLow##*/}
+    #TemplateMaskLow=${dir0}/templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
+    #START240917
     TemplateMaskLow=${TemplateMaskLow##*/}
-    TemplateMaskLow=${dir0}/templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
+    TemplateMaskLow0=templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
+    TemplateMaskLow=${dir0}/${TemplateMaskLow0}
+
+
     # https://neurostars.org/t/how-to-dilate-a-binary-mask-using-fsl/29033
     fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
 fi
-
-#START240806
-#lcexit=0
-#if [ -z "$T1wTemplate" ];then
-#    echo T1wTemplate is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$T1wTemplateBrain" ];then
-#    echo T1wTemplateBrain is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$T1wTemplateLow" ];then
-#    echo T1wTemplateLow is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$T2wTemplate" ];then
-#    echo T2wTemplate is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$T2wTemplateBrain" ];then
-#    echo T2wTemplateBrain is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$T2wTemplateLow" ];then
-#    echo T2wTemplateLow is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$TemplateMask" ];then
-#    echo TemplateMask is not set.
-#    lcexit=1 
-#fi
-#if [ -z "$TemplateMaskLow" ];then
-#    echo TemplateMaskLow is not set.
-#    lcexit=1 
-#fi
-#if((lcexit>0));then
-#    echo Abort!
-#    exit
-#fi
-
-
 
 echo -e "$shebang\nset -e\n" > ${F0} 
 echo -e "#$0 $@\n" >> ${F0}
@@ -644,15 +584,6 @@ echo '        --T2='${T2f}' \' >> ${F0}
 echo '        --GREfieldmapMag="NONE" \' >> ${F0}
 echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
 echo '        --Hires=${Hires} \' >> ${F0}
-
-#[ -n "${t1}" ] && echo '        --T1wTemplate='${t1}' \' >> ${F0}
-#[ -n "${t1b}" ] && echo '        --T1wTemplateBrain='${t1b}' \' >> ${F0}
-#[ -n "${t1l}" ] && echo '        --T1wTemplateLow='${t1l}' \' >> ${F0}
-#[ -n "${t2}" ] && echo '        --T2wTemplate='${t2}' \' >> ${F0}
-#[ -n "${t2b}" ] && echo '        --T2wTemplateBrain='${t2b}' \' >> ${F0}
-#[ -n "${t2l}" ] && echo '        --T2wTemplateLow='${t1l}' \' >> ${F0}
-#[ -n "${t1bm}" ] && echo '        --TemplateMask='${t1bm}' \' >> ${F0}
-#[ -n "${t1bml}" ] && echo '        --TemplateMaskLow='${t1bml}' \' >> ${F0}
 echo '        --T1wTemplate='${T1wTemplate}' \' >> ${F0}
 echo '        --T1wTemplateBrain='${T1wTemplateBrain}' \' >> ${F0}
 echo '        --T1wTemplateLow='${T1wTemplateLow}' \' >> ${F0}
@@ -660,7 +591,10 @@ echo '        --T2wTemplate='${T2wTemplate}' \' >> ${F0}
 echo '        --T2wTemplateBrain='${T2wTemplateBrain}' \' >> ${F0}
 echo '        --T2wTemplateLow='${T2wTemplateLow}' \' >> ${F0}
 echo '        --TemplateMask='${TemplateMask}' \' >> ${F0}
-echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
+
+#echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
+#START240917
+echo '        --TemplateMaskLow=${sf0}/'${TemplateMaskLow0}' \' >> ${F0}
 
 echo '        --EnvironmentScript=${SETUP}' >> ${F0}
 echo 'else' >> ${F0}
