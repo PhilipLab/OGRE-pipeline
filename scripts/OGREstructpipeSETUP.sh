@@ -123,12 +123,8 @@ if((${#@}<1));then
     exit
 fi
 
-#lcautorun=0;lchostname=0;lcdate=0;append=;erosion=2;dilation=3 #do not set dat;unexpected
-#unset bs pipedir name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
-#START240813
 lcautorun=0;lchostname=0;lcdate=0;erosion=2;dilation=3 #do not set dat;unexpected
 unset bs cd0 name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
-
 unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow 
 
 arg=("$@")
@@ -551,6 +547,9 @@ if [[ "$TemplateMaskLow" != *"dil"* ]];then
 
     # https://neurostars.org/t/how-to-dilate-a-binary-mask-using-fsl/29033
     fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
+
+    #START240918
+    TemplateMaskLow='${sf0}'/${TemplateMaskLow0}
 fi
 
 echo -e "$shebang\nset -e\n" > ${F0} 
@@ -591,11 +590,7 @@ echo '        --T2wTemplate='${T2wTemplate}' \' >> ${F0}
 echo '        --T2wTemplateBrain='${T2wTemplateBrain}' \' >> ${F0}
 echo '        --T2wTemplateLow='${T2wTemplateLow}' \' >> ${F0}
 echo '        --TemplateMask='${TemplateMask}' \' >> ${F0}
-
-#echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
-#START240917
-echo '        --TemplateMaskLow=${sf0}/'${TemplateMaskLow0}' \' >> ${F0}
-
+echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
 echo '        --EnvironmentScript=${SETUP}' >> ${F0}
 echo 'else' >> ${F0}
 echo '    dirdate=$(date -r $freesurferdir)' >> ${F0}

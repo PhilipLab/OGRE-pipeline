@@ -141,44 +141,40 @@ NumFrames=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
 ## Downsample warpfield (fMRI to standard) to increase speed 
 ##   NB: warpfield resolution is 10mm, so 1mm to fMRIres downsample loses no precision
 #${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --warp2=${StructuralToStandard} --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${OutputTransform}
-#START190725
 
-#if ! [ ${Analysis} = "NATIVE" ] ; then
-#START190801
 if [ "${Analysis}" != "NATIVE" ] ; then
+
     if [ ${FinalfMRIResolution} = "2" ] ; then
         ResampRefIm=$FSLDIR/data/standard/MNI152_T1_2mm
     elif [ ${FinalfMRIResolution} = "1" ] ; then
         ResampRefIm=$FSLDIR/data/standard/MNI152_T1_1mm
     else
-      ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
-      ResampRefIm=${WD}/${T1wImageFile}.${FinalfMRIResolution} 
+        ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
+        ResampRefIm=${WD}/${T1wImageFile}.${FinalfMRIResolution} 
     fi
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1wImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wImageFile}.${FinalfMRIResolution}
+
     # Create brain masks in this space from the FreeSurfer output (changing resolution)
     ${FSLDIR}/bin/applywarp --rel --interp=nn -i ${FreeSurferBrainMask}.nii.gz -r ${WD}/${T1wImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz
+
     # Create versions of the biasfield (changing resolution)
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${BiasField} -r ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${BiasFieldFile}.${FinalfMRIResolution}
     ${FSLDIR}/bin/fslmaths ${WD}/${BiasFieldFile}.${FinalfMRIResolution} -thr 0.1 ${WD}/${BiasFieldFile}.${FinalfMRIResolution}
+
     # Downsample warpfield (fMRI to standard) to increase speed 
     #   NB: warpfield resolution is 10mm, so 1mm to fMRIres downsample loses no precision
     ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --warp2=${StructuralToStandard} --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${OutputTransform}
-else
-    #if ! [ ${FinalfMRIResolution} = "0.7" ]; then
-    #START190801
-    if [ "${FinalfMRIResolution}" != "0.7" ]; then
 
+else
+
+    if [ "${FinalfMRIResolution}" != "0.7" ]; then
         ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
     else
-        #cp ${T1wImage} ${WD}/${T1wImageFile}.${FinalfMRIResolution}
-        #START190802
         cp ${T1wImage}.nii.gz ${WD}/${T1wImageFile}.${FinalfMRIResolution}.nii.gz
     fi
     cp ${FreeSurferBrainMask}.nii.gz ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz
     cp ${BiasField}.nii.gz ${WD}/${BiasFieldFile}.${FinalfMRIResolution}.nii.gz
 
-    #${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${OutputTransform}
-    #START191122
     c0="${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${OutputTransform}";echo $c0;$c0
 
 fi

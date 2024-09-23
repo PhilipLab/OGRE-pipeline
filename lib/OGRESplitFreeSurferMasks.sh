@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+root0=${0##*/}
 helpmsg(){
     echo "Identifies GM/WM/CSF from FreeSurfer results within OGRE."
     echo "Based on wmparc and the values in Freesurfer7.4.1/FreeSurferColorLUT.txt."
@@ -53,10 +54,9 @@ done
 
 [ -n "${unexpected}" ] && PIPEDIR+=(${unexpected[@]})
 if [ -z "${PIPEDIR}" ];then
-    echo "Error in OGRESplitFreeSurferMasks.sh: must provide PIPEDIR"
+    echo "Error in ${root0}: must provide PIPEDIR"
     exit
 fi
-
 
 #temp1=${PIPEDIR##*/pipeline} #everything after the last /pipeline
 if [ -z "${SUBJECT}" ];then
@@ -65,9 +65,9 @@ if [ -z "${SUBJECT}" ];then
         subjSlashes="${BASH_REMATCH[0]}"
         subLastSlash="${subjSlashes:1}" # drop 1st char
         SUBJECT="${subLastSlash%/*}" # drop trailing /
-        echo "OGRESplitFreeSurferMasks.sh determined subject to be ${SUBJECT}"
+        echo "${root0} determined subject to be ${SUBJECT}"
     else
-        echo "Error in OGRESplitFreeSurferMasks.sh: PIPEDIR contains no /sub-X/, and subject not set externally"
+        echo "Error in ${root0}: PIPEDIR contains no /sub-X/, and subject not set externally"
         exit
     fi
 fi
@@ -79,7 +79,7 @@ mkdir -p ${partialDir}
 
 gmLong=graymatter
 wmLong=whitematter
-    csfLong=cerebrospinalfluid
+csfLong=cerebrospinalfluid
 
 originalFile=${inputDir}/${parcelFile}.nii.gz
 

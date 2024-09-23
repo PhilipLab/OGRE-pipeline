@@ -231,30 +231,15 @@ T1wRestoreImage="T1w_acpc_dc_restore"
 T1wRestoreImageBrain="T1w_acpc_dc_restore_brain"
 T1wFolder="T1w" #Location of T1w images
 
-#AtlasSpaceFolder="MNINonLinear"
-#START190725
-if ! [ ${Analysis} = "NATIVE" ] ; then
-    AtlasSpaceFolder="MNINonLinear"
-else
-    AtlasSpaceFolder=${T1wFolder}
-fi
-
 ResultsFolder="Results"
 BiasField="BiasField_acpc_dc"
-
-#BiasFieldMNI="BiasField"
-#START190725
 if ! [ ${Analysis} = "NATIVE" ] ; then
+    AtlasSpaceFolder="MNINonLinear"
     BiasFieldMNI="BiasField"
-else
-    BiasFieldMNI=${BiasField}
-fi
-
-#T1wAtlasName="T1w_restore"
-#START190725
-if ! [ ${Analysis} = "NATIVE" ] ; then
     T1wAtlasName="T1w_restore"
 else
+    AtlasSpaceFolder=${T1wFolder}
+    BiasFieldMNI=${BiasField}
     T1wAtlasName="T1w_acpc_dc_restore"
 fi
 
@@ -335,47 +320,6 @@ else
   cp "$fMRIScout" "$fMRIFolder"/"$OrigScoutName".nii.gz
 fi
 
-
-
-
-##Gradient Distortion Correction of fMRI
-#log_Msg "Gradient Distortion Correction of fMRI"
-#if [ ! $GradientDistortionCoeffs = "NONE" ] ; then
-#    log_Msg "mkdir -p ${fMRIFolder}/GradientDistortionUnwarp"
-#    mkdir -p "$fMRIFolder"/GradientDistortionUnwarp
-#    ${RUN} "$GlobalScripts"/GradientDistortionUnwarp.sh \
-#		   --workingdir="$fMRIFolder"/GradientDistortionUnwarp \
-#		   --coeffs="$GradientDistortionCoeffs" \
-#		   --in="$fMRIFolder"/"$OrigTCSName" \
-#		   --out="$fMRIFolder"/"$NameOffMRI"_gdc \
-#		   --owarp="$fMRIFolder"/"$NameOffMRI"_gdc_warp
-#	
-#    log_Msg "mkdir -p ${fMRIFolder}/${ScoutName}_GradientDistortionUnwarp"	
-#    mkdir -p "$fMRIFolder"/"$ScoutName"_GradientDistortionUnwarp
-#    ${RUN} "$GlobalScripts"/GradientDistortionUnwarp.sh \
-#		   --workingdir="$fMRIFolder"/"$ScoutName"_GradientDistortionUnwarp \
-#		   --coeffs="$GradientDistortionCoeffs" \
-#		   --in="$fMRIFolder"/"$OrigScoutName" \
-#		   --out="$fMRIFolder"/"$ScoutName"_gdc \
-#		   --owarp="$fMRIFolder"/"$ScoutName"_gdc_warp
-#	
-#	if [[ $UseJacobian == "true" ]]
-#	then
-#	    ${RUN} ${FSLDIR}/bin/fslmaths "$fMRIFolder"/"$NameOffMRI"_gdc -mul "$fMRIFolder"/"$NameOffMRI"_gdc_warp_jacobian "$fMRIFolder"/"$NameOffMRI"_gdc
-#	    ${RUN} ${FSLDIR}/bin/fslmaths "$fMRIFolder"/"$ScoutName"_gdc -mul "$fMRIFolder"/"$ScoutName"_gdc_warp_jacobian "$fMRIFolder"/"$ScoutName"_gdc
-#	fi
-#else
-#    log_Msg "NOT PERFORMING GRADIENT DISTORTION CORRECTION"
-#    ${RUN} ${FSLDIR}/bin/imcp "$fMRIFolder"/"$OrigTCSName" "$fMRIFolder"/"$NameOffMRI"_gdc
-#    ${RUN} ${FSLDIR}/bin/fslroi "$fMRIFolder"/"$NameOffMRI"_gdc "$fMRIFolder"/"$NameOffMRI"_gdc_warp 0 3
-#    ${RUN} ${FSLDIR}/bin/fslmaths "$fMRIFolder"/"$NameOffMRI"_gdc_warp -mul 0 "$fMRIFolder"/"$NameOffMRI"_gdc_warp
-#    ${RUN} ${FSLDIR}/bin/imcp "$fMRIFolder"/"$OrigScoutName" "$fMRIFolder"/"$ScoutName"_gdc
-#    #make fake jacobians of all 1s, for completeness
-#    ${RUN} ${FSLDIR}/bin/fslmaths "$fMRIFolder"/"$OrigScoutName" -mul 0 -add 1 "$fMRIFolder"/"$ScoutName"_gdc_warp_jacobian
-#    ${RUN} ${FSLDIR}/bin/fslroi "$fMRIFolder"/"$NameOffMRI"_gdc_warp "$fMRIFolder"/"$NameOffMRI"_gdc_warp_jacobian 0 1
-#    ${RUN} ${FSLDIR}/bin/fslmaths "$fMRIFolder"/"$NameOffMRI"_gdc_warp_jacobian -mul 0 -add 1 "$fMRIFolder"/"$NameOffMRI"_gdc_warp_jacobian
-#fi
-#START190805
 if [ "$do_GradientDistortionCorrection" -eq "1" ];then
     #Gradient Distortion Correction of fMRI
     log_Msg "Gradient Distortion Correction of fMRI"
@@ -460,49 +404,6 @@ if [ "$do_MotionCorrection" -eq "1" ];then
            "$MotionCorrectionType"
 fi
 
-
-
-
-
-## EPI Distortion Correction and EPI to T1w Registration
-#log_Msg "EPI Distortion Correction and EPI to T1w Registration"
-#DCFolderName=DistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased
-#DCFolder=${fMRIFolder}/${DCFolderName}
-#if [ -e ${DCFolder} ] ; then
-#    ${RUN} rm -r ${DCFolder}
-#fi
-#log_Msg "mkdir -p ${DCFolder}"
-#mkdir -p ${DCFolder}
-#${RUN} ${P0} \
-#       --workingdir=${DCFolder} \
-#       --scoutin=${fMRIFolder}/${ScoutName}_gdc \
-#       --t1=${T1wFolder}/${T1wImage} \
-#       --t1restore=${T1wFolder}/${T1wRestoreImage} \
-#       --t1brain=${T1wFolder}/${T1wRestoreImageBrain} \
-#       --fmapmag=${MagnitudeInputName} \
-#       --fmapphase=${PhaseInputName} \
-#       --fmapgeneralelectric=${GEB0InputName} \
-#       --echodiff=${deltaTE} \
-#       --SEPhaseNeg=${SpinEchoPhaseEncodeNegative} \
-#       --SEPhasePos=${SpinEchoPhaseEncodePositive} \
-#       --echospacing=${EchoSpacing} \
-#       --unwarpdir=${UnwarpDir} \
-#       --owarp=${T1wFolder}/xfms/${fMRI2strOutputTransform} \
-#       --biasfield=${T1wFolder}/${BiasField} \
-#       --oregim=${fMRIFolder}/${RegOutput} \
-#       --freesurferfolder=${T1wFolder} \
-#       --freesurfersubjectid=${Subject} \
-#       --gdcoeffs=${GradientDistortionCoeffs} \
-#       --qaimage=${fMRIFolder}/${QAImage} \
-#       --method=${DistortionCorrection} \
-#       --topupconfig=${TopupConfig} \
-#       --ojacobian=${fMRIFolder}/${JacobianOut} \
-#       --dof=${dof} \
-#       --fmriname=${NameOffMRI} \
-#       --subjectfolder=${SubjectFolder} \
-#       --biascorrection=${BiasCorrection} \
-#       --usejacobian=${UseJacobian}
-#START190807
 DCFolderName=DistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased
 DCFolder=${fMRIFolder}/${DCFolderName}
 if [ "$do_P0" -eq "1" ];then
@@ -546,33 +447,6 @@ if [ "$do_P0" -eq "1" ];then
            --userefinement=${UseRefinement}
 fi
 
-
-##One Step Resampling
-#log_Msg "One Step Resampling"
-#log_Msg "mkdir -p ${fMRIFolder}/OneStepResampling"
-#mkdir -p ${fMRIFolder}/OneStepResampling
-#${RUN} ${P1} \
-#       --workingdir=${fMRIFolder}/OneStepResampling \
-#       --infmri=${fMRIFolder}/${OrigTCSName}.nii.gz \
-#       --t1=${AtlasSpaceFolder}/${T1wAtlasName} \
-#       --fmriresout=${FinalfMRIResolution} \
-#       --fmrifolder=${fMRIFolder} \
-#       --fmri2structin=${T1wFolder}/xfms/${fMRI2strOutputTransform} \
-#       --struct2std=${AtlasSpaceFolder}/xfms/${AtlasTransform} \
-#       --owarp=${AtlasSpaceFolder}/xfms/${OutputfMRI2StandardTransform} \
-#       --oiwarp=${AtlasSpaceFolder}/xfms/${Standard2OutputfMRITransform} \
-#       --motionmatdir=${fMRIFolder}/${MotionMatrixFolder} \
-#       --motionmatprefix=${MotionMatrixPrefix} \
-#       --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin \
-#       --freesurferbrainmask=${AtlasSpaceFolder}/${FreeSurferBrainMask} \
-#       --biasfield=${AtlasSpaceFolder}/${BiasFieldMNI} \
-#       --gdfield=${fMRIFolder}/${NameOffMRI}_gdc_warp \
-#       --scoutin=${fMRIFolder}/${OrigScoutName} \
-#       --scoutgdcin=${fMRIFolder}/${ScoutName}_gdc \
-#       --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
-#       --ojacobian=${fMRIFolder}/${JacobianOut}_MNI.${FinalfMRIResolution} \
-#       --analysis=${Analysis}
-#START190807
 #One Step Resampling
 if [ "$do_P1" -eq "1" ];then
     log_Msg "One Step Resampling"
@@ -611,8 +485,6 @@ mkdir -p ${ResultsFolder}
 #the alternative is to add a bunch of optional arguments to OneStepResampling that just do the same thing
 #we need to do this before intensity normalization, as it uses the bias field output
 
-#if [[ ${DistortionCorrection} == "TOPUP" ]]; then
-#START190807
 if [[ ${DistortionCorrection} == "TOPUP" && "${Analysis}" != "NATIVE" ]]; then
 
     #create MNI space corrected fieldmap images

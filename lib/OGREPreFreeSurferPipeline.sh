@@ -681,8 +681,6 @@ fi #if [ "startAtlasRegistrationToMNI152" = "FALSE"];then
 
 log_Msg "Performing Atlas Registration to MNI152 (FLIRT and FNIRT)"
 
-#${RUN} ${HCPPIPEDIR_PreFS}/AtlasRegistrationToMNI152_FLIRTandFNIRT.sh \
-#START200306
 ${RUN} ${P2} \
     --workingdir=${AtlasSpaceFolder} \
     --t1=${T1wFolder}/${T1wImage}_acpc_dc \
