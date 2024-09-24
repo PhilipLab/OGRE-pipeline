@@ -144,6 +144,6 @@ if __name__ == "__main__":
         if dict1["OGREfMRIpipeSETUP"]:
             if dict1["OGREstructpipeSETUP"]: print()
             cmd_func = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
-            #print(cmd_func)
+            print(f'Running: {cmd_func}')
             msg=run_cmd(cmd_func)
             print(msg)
