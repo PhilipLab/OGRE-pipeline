@@ -145,5 +145,36 @@ if __name__ == "__main__":
             if dict1["OGREstructpipeSETUP"]: print()
             cmd_func = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
             print(f'Running: {cmd_func}')
-            msg=run_cmd(cmd_func)
-            print(msg)
+
+            #msg=run_cmd(cmd_func)
+            #print(msg)
+            #START240923
+            #from subprocess import Popen,PIPE
+            ##proc = Popen(cmd_func,stdin=PIPE,stdout=PIPE,encoding='utf8',shell=True,start_new_session=True)
+            #proc = Popen(cmd_func,stdin=PIPE,stdout=PIPE,encoding='utf8',shell=True)
+            #for line in proc.stdout: print(f'stdin={line}')
+            #for line in proc.stdin: print(f'stdout={line}')
+            #START240923
+            #import pexpect
+            #p = pexpect.spawn(cmd_func)
+            #START240923
+            #import threading
+            #thread=threading.Thread(target=run_cmd(cmd_func))
+            #thread.start()
+            #thread.join()
+
+#return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
+
+            import subprocess
+            import threading
+            def run_script():
+                #subprocess.run(cmd_func)
+                #subprocess.run(f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py',f'{str_both}{str_func}')
+                subprocess.run(cmd_func,shell=True)
+            thread = threading.Thread(target=run_script)
+            thread.start()
+
+
+
+
+
