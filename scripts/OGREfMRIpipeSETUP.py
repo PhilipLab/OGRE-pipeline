@@ -251,7 +251,7 @@ if __name__ == "__main__":
     #print(f'args.bs={args.bs}')
 
     #START240923
-    print(f'args={args}')
+    #print(f'args={args}')
 
 #STARTHERE
     if args.dir:
@@ -560,7 +560,7 @@ if __name__ == "__main__":
                     j=-1 #default value needed for a single bold
 
                     for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
-                    F0f[0].write(f'    {par.bold[j+1][0]})\n')
+                    F0f[0].write(f'        {par.bold[j+1][0]})\n')
 
 
                     F0f[0].write('\n${VOLPROC} \\\n')

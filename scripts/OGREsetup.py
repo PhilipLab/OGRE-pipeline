@@ -4,6 +4,8 @@
 import argparse
 import json
 import pathlib
+import subprocess
+import threading
 import sys
 from opl.rou import run_cmd
 
@@ -13,6 +15,11 @@ import importlib.resources
 with importlib.resources.files("opl").joinpath("OGREdefault.json").open('r',encoding="utf8") as file:
     dict0 = json.load(file)  
 
+def run_script(cmd):
+    subprocess.run(cmd,shell=True)
+def run_thread(cmd):
+    #print(f'Running: {cmd}')
+    threading.Thread(target=run_script(cmd)).start()
 
 if __name__ == "__main__":
 
@@ -136,45 +143,10 @@ if __name__ == "__main__":
             if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
 
         if dict1["OGREstructpipeSETUP"]:
-            cmd_stru = f'{dict1["OGREDIR"]}/scripts/OGREstructpipeSETUP.sh{str_both}{str_stru}'
-            #print(cmd_stru)
-            msg=run_cmd(cmd_stru)
-            print(msg)
+            cmd = f'{dict1["OGREDIR"]}/scripts/OGREstructpipeSETUP.sh{str_both}{str_stru}'
+            run_thread(cmd)
 
         if dict1["OGREfMRIpipeSETUP"]:
             if dict1["OGREstructpipeSETUP"]: print()
-            cmd_func = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
-            print(f'Running: {cmd_func}')
-
-            #msg=run_cmd(cmd_func)
-            #print(msg)
-            #START240923
-            #from subprocess import Popen,PIPE
-            ##proc = Popen(cmd_func,stdin=PIPE,stdout=PIPE,encoding='utf8',shell=True,start_new_session=True)
-            #proc = Popen(cmd_func,stdin=PIPE,stdout=PIPE,encoding='utf8',shell=True)
-            #for line in proc.stdout: print(f'stdin={line}')
-            #for line in proc.stdin: print(f'stdout={line}')
-            #START240923
-            #import pexpect
-            #p = pexpect.spawn(cmd_func)
-            #START240923
-            #import threading
-            #thread=threading.Thread(target=run_cmd(cmd_func))
-            #thread.start()
-            #thread.join()
-
-#return subprocess.run(cmd, capture_output=True, shell=True).stdout.decode().strip()
-
-            import subprocess
-            import threading
-            def run_script():
-                #subprocess.run(cmd_func)
-                #subprocess.run(f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py',f'{str_both}{str_func}')
-                subprocess.run(cmd_func,shell=True)
-            thread = threading.Thread(target=run_script)
-            thread.start()
-
-
-
-
-
+            cmd = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
+            run_thread(cmd)
