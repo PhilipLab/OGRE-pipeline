@@ -532,25 +532,50 @@ fi
 [ -n "${t1bm}" ] && TemplateMask=${t1bm}
 [ -n "${t1bml}" ] && TemplateMaskLow=${t1bml}
 
+#START241002
+mkdir -p ${dir0}/templates
+
 if [[ "$TemplateMaskLow" != *"dil"* ]];then
     TemplateMaskLowUndil=$TemplateMaskLow
     echo Dilating $TemplateMaskLowUndil
-    mkdir -p ${dir0}/templates
 
-    #TemplateMaskLow=${TemplateMaskLow##*/}
-    #TemplateMaskLow=${dir0}/templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
-    #START240917
+    #START241002
+    #mkdir -p ${dir0}/templates
+
     TemplateMaskLow=${TemplateMaskLow##*/}
     TemplateMaskLow0=templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
     TemplateMaskLow=${dir0}/${TemplateMaskLow0}
 
-
     # https://neurostars.org/t/how-to-dilate-a-binary-mask-using-fsl/29033
     fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
 
-    #START240918
     TemplateMaskLow='${sf0}'/${TemplateMaskLow0}
+
+#fi
+#START241002
+else
+    cp -p -f $TemplateMaskLow ${dir0}/templates
 fi
+cp -p -f $T1wTemplate ${dir0}/templates
+cp -p -f $T1wTemplateBrain ${dir0}/templates
+cp -p -f $T1wTemplateLow ${dir0}/templates
+cp -p -f $T2wTemplate ${dir0}/templates
+cp -p -f $T2wTemplateBrain ${dir0}/templates
+cp -p -f $T2wTemplateLow ${dir0}/templates
+cp -p -f $TemplateMask ${dir0}/templates
+
+FT=${dir0}/templates/export_templates.sh
+echo -e "$shebang\nset -e\n" > ${FT} 
+echo export T1wTemplate=${dir0}/templates/${T1wTemplate##*/} >> ${FT}
+echo export T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain##*/} >> ${FT}
+echo export T1wTemplateLow=${dir0}/templates/${T1wTemplateLow##*/} >> ${FT}
+echo export T2wTemplate=${dir0}/templates/${T2wTemplate##*/} >> ${FT}
+echo export T2wTemplateBrain=${dir0}/templates/${T2wTemplateBrain##*/} >> ${FT}
+echo export T2wTemplateLow=${dir0}/templates/${T2wTemplateLow##*/} >> ${FT}
+echo export TemplateMask=${dir0}/templates/${TemplateMask##*/} >> ${FT}
+echo export TemplateMaskLow=${dir0}/templates/${TemplateMaskLow##*/} >> ${FT}
+
+
 
 echo -e "$shebang\nset -e\n" > ${F0} 
 echo -e "#$0 $@\n" >> ${F0}
@@ -568,7 +593,10 @@ echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
 
 echo "s0=${s0}" >> ${F0}
 echo -e "sf0=${dir1}\n" >> ${F0}
-echo -e "Hires=${Hires}" >> ${F0}
+
+#START241002
+#echo -e "Hires=${Hires}" >> ${F0}
+
 echo "erosion=${erosion}" >> ${F0}
 echo -e "dilation=${dilation}\n" >> ${F0}
 
@@ -580,17 +608,22 @@ echo '        --Subject=${s0} \' >> ${F0}
 echo '        --runlocal \' >> ${F0}
 echo '        --T1='${T1f}' \' >> ${F0}
 echo '        --T2='${T2f}' \' >> ${F0}
-echo '        --GREfieldmapMag="NONE" \' >> ${F0}
-echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
-echo '        --Hires=${Hires} \' >> ${F0}
-echo '        --T1wTemplate='${T1wTemplate}' \' >> ${F0}
-echo '        --T1wTemplateBrain='${T1wTemplateBrain}' \' >> ${F0}
-echo '        --T1wTemplateLow='${T1wTemplateLow}' \' >> ${F0}
-echo '        --T2wTemplate='${T2wTemplate}' \' >> ${F0}
-echo '        --T2wTemplateBrain='${T2wTemplateBrain}' \' >> ${F0}
-echo '        --T2wTemplateLow='${T2wTemplateLow}' \' >> ${F0}
-echo '        --TemplateMask='${TemplateMask}' \' >> ${F0}
-echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
+
+
+#START241002 Get the hires and lowres from the templates
+#echo '        --GREfieldmapMag="NONE" \' >> ${F0}
+#echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
+#echo '        --Hires=${Hires} \' >> ${F0}
+#echo '        --T1wTemplate='${T1wTemplate}' \' >> ${F0}
+#echo '        --T1wTemplateBrain='${T1wTemplateBrain}' \' >> ${F0}
+#echo '        --T1wTemplateLow='${T1wTemplateLow}' \' >> ${F0}
+#echo '        --T2wTemplate='${T2wTemplate}' \' >> ${F0}
+#echo '        --T2wTemplateBrain='${T2wTemplateBrain}' \' >> ${F0}
+#echo '        --T2wTemplateLow='${T2wTemplateLow}' \' >> ${F0}
+#echo '        --TemplateMask='${TemplateMask}' \' >> ${F0}
+#echo '        --TemplateMaskLow='${TemplateMaskLow}' \' >> ${F0}
+
+
 echo '        --EnvironmentScript=${SETUP}' >> ${F0}
 echo 'else' >> ${F0}
 echo '    dirdate=$(date -r $freesurferdir)' >> ${F0}
@@ -603,7 +636,10 @@ echo '${FREE} \' >> ${F0}
 echo '    --StudyFolder=${sf0} \' >> ${F0}
 echo '    --Subject=${s0} \' >> ${F0}
 echo '    --runlocal \' >> ${F0}
-echo '    --Hires=${Hires} \' >> ${F0}
+
+#START241002
+#echo '    --Hires=${Hires} \' >> ${F0}
+
 echo '    --freesurferVersion=${FREESURFVER} \' >> ${F0}
 ((lcsinglereconall)) && echo '    --singlereconall \' >> ${F0}
 ((lctworeconall)) && echo '    --tworeconall \' >> ${F0}
