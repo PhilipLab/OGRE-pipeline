@@ -77,11 +77,6 @@ set -e
 #   --runlocal     - if specified (without an argument), processing is run
 #                    on "this" machine as opposed to being submitted to a
 #                    computing grid
-
-#START190313
-#   --Hires=       - Numbers only. Choices are "0.7", "0.8" or "1" mm.
-#                    Default is 0.7 mm which is used by the HCP. 
-
 #
 #   Set the values of the following global variables to reflect command
 #   line specified parameters
@@ -103,7 +98,7 @@ get_batch_options() {
         unset command_line_specified_GREfieldmapMag
         unset command_line_specified_GREfieldmapPhase     
         unset command_line_specified_EnvironmentScript
-        unset command_line_specified_Hires
+        #unset command_line_specified_Hires
 
         cls_startT2="FALSE"
         cls_startAtlasRegistrationToMNI152="FALSE"
@@ -167,10 +162,10 @@ get_batch_options() {
                             index=$(( index + 1 ))
                             ;;
 
-                        --Hires=*)
-                                command_line_specified_Hires=${argument#*=}
-				index=$(( index + 1 ))
-				;;
+                        #--Hires=*)
+                        #        command_line_specified_Hires=${argument#*=}
+			#	index=$(( index + 1 ))
+			#	;;
                         --T1wTemplate=*)
                             T1wTemplate=${argument#*=}
                             ((++index))
@@ -261,8 +256,6 @@ main()
 	#	Hires="${command_line_specified_Hires}"
 	#fi
         #echo "Hires: ${Hires}"
-        #START241002
-	[ -n "${command_line_specified_Hires}" ] && Hires="${command_line_specified_Hires}"
    
 
 	# Report major script control variables to user
@@ -571,82 +564,6 @@ main()
 		GEB0InputName="NONE"
 
 		# Templates
-
-		## Hires T1w MNI template
-		#T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
-		## Hires brain extracted MNI template
-		#T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
-		## Lowres T1w MNI template
-		#T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
-		## Hires T2w MNI Template
-		#T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
-		## Hires T2w brain extracted MNI Template
-		#T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
-		## Lowres T2w MNI Template
-		#T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
-		## Hires MNI brain mask template
-		#TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
-		## Lowres MNI brain mask template
-		#Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
-                #START240721
-                ## Hires T1w MNI template
-                #[ -z "T1wTemplate" ] && T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
-                ## Hires brain extracted MNI template
-                #[ -z "T1wTemplateBrain" ] && T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
-                ## Lowres T1w MNI template
-                #[ -z "T1wTemplate2mm" ] && T1wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
-                ## Hires T2w MNI Template
-                #[ -z "T2wTemplate" ] && T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
-                ## Hires T2w brain extracted MNI Template
-                #[ -z "T2wTemplateBrain" ] && T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
-                ## Lowres T2w MNI Template
-                #[ -z "T2wTemplate2mm" ] && T2wTemplate2mm="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
-                ## Hires MNI brain mask template
-                #[ -z "TemplateMask" ] && TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
-                ## Lowres MNI brain mask template
-                #[ -z "Template2mmMask" ] && Template2mmMask="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
-                #START240726
-                # Hires T1w MNI template
-                #if [ -z "T1wTemplate" ];then
-                #    echo No value for T1wTemplate. Abort!
-                #    exit
-                #fi
-                ## Hires brain extracted MNI template
-                #if [ -z "T1wTemplateBrain" ];then
-                #    echo No value for T1wTemplateBrain. Abort!
-                #    exit
-                #fi
-                ## Lowres T1w MNI template
-                #if [ -z "T1wTemplate2mm" ];then
-                #    echo No value for T1wTemplate2mm. Abort!
-                #    exit
-                #fi
-                ## Hires T2w MNI Template
-                #if [ -z "T2wTemplate" ];then
-                #    echo No value for T2wTemplate. Abort!
-                #    exit
-                #fi
-                ## Hires T2w brain extracted MNI Template
-                #if [ -z "T2wTemplateBrain" ];then
-                #    echo No value for T2wTemplateBrain. Abort!
-                #    exit
-                #fi
-                ## Lowres T2w MNI Template
-                #if [ -z "T2wTemplate2mm" ];then
-                #    echo No value for T2wTemplate2mm. Abort!
-                #    exit
-                #fi
-                ## Hires MNI brain mask template
-                #if [ -z "TemplateMask" ];then
-                #    echo No value for TemplateMask. Abort!
-                #    exit
-                #fi 
-                ## Lowres MNI brain mask template
-                #if [ -z "Template2mmMask" ];then
-                #    echo No value fo Template2mmMask. Abort!
-                #    exit
-                #fi 
-                #START241002
                 if [ -f $StudyFoler/templates/export_templates.sh ];then
                     echo Running $StudyFoler/templates/export_templates.sh
                     source $StudyFoler/templates/export_templates.sh 
@@ -692,8 +609,6 @@ main()
                         exit
                     fi
                 fi
-#STARTHERE
-
                 echo T1wTemplate = $T1wTemplate
                 echo T1wTemplateBrain = $T1wTemplateBrain
                 echo T1wTemplate2mm = $T1wTemplate2mm
@@ -815,44 +730,6 @@ main()
                     --printcom=$PRINTCOM \
                     --startT2=$cls_startT2 \
                     --startAtlasRegistrationToMNI152=$cls_startAtlasRegistrationToMNI152
-                #START220502
-                #${queuing_command} ${P0} \
-                #    --path="$StudyFolder" \
-                #    --subject="$Subject" \
-                #    --t1="$T1wInputImages" \
-                #    --t2="$T2wInputImages" \
-                #    --t1template="$T1wTemplate" \
-                #    --t1templatebrain="$T1wTemplateBrain" \
-                #    --t1template2mm="$T1wTemplate2mm" \
-                #    --t2template="$T2wTemplate" \
-                #    --t2templatebrain="$T2wTemplateBrain" \
-                #    --t2template2mm="$T2wTemplate2mm" \
-                #    --templatemask="$TemplateMask" \
-                #    --template2mmmask="$Template2mmMask" \
-                #    --brainsize="$BrainSize" \
-                #    --fnirtconfig="$FNIRTConfig" \
-                #    --fmapmag="$MagnitudeInputName" \
-                #    --fmapphase="$PhaseInputName" \
-                #    --fmapgeneralelectric="$GEB0InputName" \
-                #    --echodiff="$TE" \
-                #    --SEPhaseNeg="$SpinEchoPhaseEncodeNegative" \
-                #    --SEPhasePos="$SpinEchoPhaseEncodePositive" \
-                #    --echospacing="$DwellTime" \
-                #    --seunwarpdir="$SEUnwarpDir" \
-                #    --t1samplespacing="$T1wSampleSpacing" \
-                #    --t2samplespacing="$T2wSampleSpacing" \
-                #    --unwarpdir="$UnwarpDir" \
-                #    --gdcoeffs="$GradientDistortionCoeffs" \
-                #    --avgrdcmethod="$AvgrdcSTRING" \
-                #    --topupconfig="$TopupConfig" \
-                #    --printcom=$PRINTCOM \
-                #    --startT2=$cls_startT2 \
-                #    --startAtlasRegistrationToMNI152=$cls_startAtlasRegistrationToMNI152 \
-                #    --Hires=$Hires
-
-
-
-
 	done
 }
 
