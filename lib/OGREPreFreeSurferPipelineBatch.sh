@@ -104,8 +104,8 @@ get_batch_options() {
         cls_startAtlasRegistrationToMNI152="FALSE"
         unset cls_BrainSize
 
-        #START240721
-        unset T1wTemplate T1wTemplateBrain T1wTemplate2mm T2wTemplate T2wTemplateBrain T2wTemplate2mm TemplateMask Template2mmMask
+        #START241004
+        #unset T1wTemplate T1wTemplateBrain T1wTemplate2mm T2wTemplate T2wTemplateBrain T2wTemplate2mm TemplateMask Template2mmMask
 
 
 	local index=0
@@ -166,38 +166,38 @@ get_batch_options() {
                         #        command_line_specified_Hires=${argument#*=}
 			#	index=$(( index + 1 ))
 			#	;;
-                        --T1wTemplate=*)
-                            T1wTemplate=${argument#*=}
-                            ((++index))
-                            ;;
-                        --T1wTemplateBrain=*)
-                            T1wTemplateBrain=${argument#*=}
-                            ((++index))
-                            ;;
-                        --T1wTemplateLow=*)
-                            T1wTemplate2mm=${argument#*=}
-                            ((++index))
-                            ;;
-                        --T2wTemplate=*)
-                            T2wTemplate=${argument#*=}
-                            ((++index))
-                            ;;
-                        --T2wTemplateBrain=*)
-                            T2wTemplateBrain=${argument#*=}
-                            ((++index))
-                            ;;
-                        --T2wTemplateLow=*)
-                            T2wTemplate2mm=${argument#*=}
-                            ((++index))
-                            ;;
-                        --TemplateMask=*)
-                            TemplateMask=${argument#*=}
-                            ((++index))
-                            ;;
-                        --TemplateMaskLow=*)
-                            Template2mmMask=${argument#*=}
-                            ((++index))
-                            ;;
+                        #--T1wTemplate=*)
+                        #    T1wTemplate=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--T1wTemplateBrain=*)
+                        #    T1wTemplateBrain=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--T1wTemplateLow=*)
+                        #    T1wTemplate2mm=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--T2wTemplate=*)
+                        #    T2wTemplate=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--T2wTemplateBrain=*)
+                        #    T2wTemplateBrain=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--T2wTemplateLow=*)
+                        #    T2wTemplate2mm=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--TemplateMask=*)
+                        #    TemplateMask=${argument#*=}
+                        #    ((++index))
+                        #    ;;
+                        #--TemplateMaskLow=*)
+                        #    Template2mmMask=${argument#*=}
+                        #    ((++index))
+                        #    ;;
 
 
 			*)
@@ -563,61 +563,69 @@ main()
 		#   GEB0InputName="${StudyFolder}/${Subject}/unprocessed/3T/T1w_MPR1/${Subject}_3T_GradientEchoFieldMap.nii.gz"
 		GEB0InputName="NONE"
 
-		# Templates
-                if [ -f $StudyFoler/templates/export_templates.sh ];then
-                    echo Running $StudyFoler/templates/export_templates.sh
-                    source $StudyFoler/templates/export_templates.sh 
-                else
-                    # Hires T1w MNI template
-                    if [ -z "T1wTemplate" ];then
-                        echo No value for T1wTemplate. Abort!
-                        exit
-                    fi
-                    # Hires brain extracted MNI template
-                    if [ -z "T1wTemplateBrain" ];then
-                        echo No value for T1wTemplateBrain. Abort!
-                        exit
-                    fi
-                    # Lowres T1w MNI template
-                    if [ -z "T1wTemplate2mm" ];then
-                        echo No value for T1wTemplate2mm. Abort!
-                        exit
-                    fi
-                    # Hires T2w MNI Template
-                    if [ -z "T2wTemplate" ];then
-                        echo No value for T2wTemplate. Abort!
-                        exit
-                    fi
-                    # Hires T2w brain extracted MNI Template
-                    if [ -z "T2wTemplateBrain" ];then
-                        echo No value for T2wTemplateBrain. Abort!
-                        exit
-                    fi
-                    # Lowres T2w MNI Template
-                    if [ -z "T2wTemplate2mm" ];then
-                        echo No value for T2wTemplate2mm. Abort!
-                        exit
-                    fi
-                    # Hires MNI brain mask template
-                    if [ -z "TemplateMask" ];then
-                        echo No value for TemplateMask. Abort!
-                        exit
-                    fi
-                    # Lowres MNI brain mask template
-                    if [ -z "Template2mmMask" ];then
-                        echo No value fo Template2mmMask. Abort!
-                        exit
-                    fi
+		## Templates
+                #if [ -f $StudyFoler/templates/export_templates.sh ];then
+                #    echo Running $StudyFoler/templates/export_templates.sh
+                #    source $StudyFoler/templates/export_templates.sh 
+                #else
+                #    # Hires T1w MNI template
+                #    if [ -z "T1wTemplate" ];then
+                #        echo No value for T1wTemplate. Abort!
+                #        exit
+                #    fi
+                #    # Hires brain extracted MNI template
+                #    if [ -z "T1wTemplateBrain" ];then
+                #        echo No value for T1wTemplateBrain. Abort!
+                #        exit
+                #    fi
+                #    # Lowres T1w MNI template
+                #    if [ -z "T1wTemplate2mm" ];then
+                #        echo No value for T1wTemplate2mm. Abort!
+                #        exit
+                #    fi
+                #    # Hires T2w MNI Template
+                #    if [ -z "T2wTemplate" ];then
+                #        echo No value for T2wTemplate. Abort!
+                #        exit
+                #    fi
+                #    # Hires T2w brain extracted MNI Template
+                #    if [ -z "T2wTemplateBrain" ];then
+                #        echo No value for T2wTemplateBrain. Abort!
+                #        exit
+                #    fi
+                #    # Lowres T2w MNI Template
+                #    if [ -z "T2wTemplate2mm" ];then
+                #        echo No value for T2wTemplate2mm. Abort!
+                #        exit
+                #    fi
+                #    # Hires MNI brain mask template
+                #    if [ -z "TemplateMask" ];then
+                #        echo No value for TemplateMask. Abort!
+                #        exit
+                #    fi
+                #    # Lowres MNI brain mask template
+                #    if [ -z "Template2mmMask" ];then
+                #        echo No value fo Template2mmMask. Abort!
+                #        exit
+                #    fi
+                #fi
+                #START241004
+                # Templates aren't used here. This is just a check.
+                unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow
+                if [ ! -f $StudyFoler/templates/export_templates.sh ];then
+                    echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
+                    exit
                 fi
+                echo Running $StudyFolder/templates/export_templates.sh
+                source $StudyFolder/templates/export_templates.sh
                 echo T1wTemplate = $T1wTemplate
                 echo T1wTemplateBrain = $T1wTemplateBrain
-                echo T1wTemplate2mm = $T1wTemplate2mm
+                echo T1wTemplateLow = $T1wTemplateLow
                 echo T2wTemplate = $T2wTemplate
                 echo T2wTemplateBrain = $T2wTemplateBrain
-                echo T2wTemplate2mm = $T2wTemplate2mm
+                echo T2wTemplateLow = $T2wTemplateLow
                 echo TemplateMask = $TemplateMask
-                echo Template2mmMask = $Template2mmMask
-                
+                echo TemplateMaskLow = $TemplateMaskLow 
 
 
 		# Structural Scan Settings
@@ -693,24 +701,47 @@ main()
 		# Run (or submit to be run) the PreFreeSurferPipeline.sh script
 		# with all the specified parameter values
 
-		#${queuing_command} ${HCPPIPEDIR}/PreFreeSurfer/PreFreeSurferPipeline.sh \
-                #START200305
                 echo "cls_startT2 = $cls_startT2"
                 echo "cls_AtlasRegistrationToMNI152 = $cls_AtlasRegistrationToMNI152"
 
+                #${queuing_command} ${P0} \
+                #    --path="$StudyFolder" \
+                #    --subject="$Subject" \
+                #    --t1="$T1wInputImages" \
+                #    --t2="$T2wInputImages" \
+                #    --t1template="$T1wTemplate" \
+                #    --t1templatebrain="$T1wTemplateBrain" \
+                #    --t1template2mm="$T1wTemplate2mm" \
+                #    --t2template="$T2wTemplate" \
+                #    --t2templatebrain="$T2wTemplateBrain" \
+                #    --t2template2mm="$T2wTemplate2mm" \
+                #    --templatemask="$TemplateMask" \
+                #    --template2mmmask="$Template2mmMask" \
+                #    --brainsize="$BrainSize" \
+                #    --fnirtconfig="$FNIRTConfig" \
+                #    --fmapmag="$MagnitudeInputName" \
+                #    --fmapphase="$PhaseInputName" \
+                #    --fmapgeneralelectric="$GEB0InputName" \
+                #    --echodiff="$TE" \
+                #    --SEPhaseNeg="$SpinEchoPhaseEncodeNegative" \
+                #    --SEPhasePos="$SpinEchoPhaseEncodePositive" \
+                #    --echospacing="$DwellTime" \
+                #    --seunwarpdir="$SEUnwarpDir" \
+                #    --t1samplespacing="$T1wSampleSpacing" \
+                #    --t2samplespacing="$T2wSampleSpacing" \
+                #    --unwarpdir="$UnwarpDir" \
+                #    --gdcoeffs="$GradientDistortionCoeffs" \
+                #    --avgrdcmethod="$AvgrdcSTRING" \
+                #    --topupconfig="$TopupConfig" \
+                #    --printcom=$PRINTCOM \
+                #    --startT2=$cls_startT2 \
+                #    --startAtlasRegistrationToMNI152=$cls_startAtlasRegistrationToMNI152
+                #START241004
                 ${queuing_command} ${P0} \
                     --path="$StudyFolder" \
                     --subject="$Subject" \
                     --t1="$T1wInputImages" \
                     --t2="$T2wInputImages" \
-                    --t1template="$T1wTemplate" \
-                    --t1templatebrain="$T1wTemplateBrain" \
-                    --t1template2mm="$T1wTemplate2mm" \
-                    --t2template="$T2wTemplate" \
-                    --t2templatebrain="$T2wTemplateBrain" \
-                    --t2template2mm="$T2wTemplate2mm" \
-                    --templatemask="$TemplateMask" \
-                    --template2mmmask="$Template2mmMask" \
                     --brainsize="$BrainSize" \
                     --fnirtconfig="$FNIRTConfig" \
                     --fmapmag="$MagnitudeInputName" \
@@ -730,6 +761,11 @@ main()
                     --printcom=$PRINTCOM \
                     --startT2=$cls_startT2 \
                     --startAtlasRegistrationToMNI152=$cls_startAtlasRegistrationToMNI152
+
+
+
+
+
 	done
 }
 

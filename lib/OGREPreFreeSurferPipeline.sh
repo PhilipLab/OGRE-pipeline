@@ -198,14 +198,20 @@ Usage: PreFreeSurferPipeline.sh [options]
                        (T1w) structural images for the subject (required)
   --t2=<T2w images>    An @ symbol separated list of full paths to T2-weighted
                        (T2w) structural images for the subject (required)
-  --t1template=<file path>          MNI T1w template
-  --t1templatebrain=<file path>     Brain extracted MNI T1wTemplate
-  --t1template2mm=<file path>       MNI 2mm T1wTemplate
-  --t2template=<file path>          MNI T2w template
-  --t2templatebrain=<file path>     Brain extracted MNI T2wTemplate
-  --t2template2mm=<file path>       MNI 2mm T2wTemplate
-  --templatemask=<file path>        Brain mask MNI Template
-  --template2mmmask=<file path>     Brain mask MNI 2mm Template 
+
+
+  #START241004
+  #--t1template=<file path>          MNI T1w template
+  #--t1templatebrain=<file path>     Brain extracted MNI T1wTemplate
+  #--t1template2mm=<file path>       MNI 2mm T1wTemplate
+  #--t2template=<file path>          MNI T2w template
+  #--t2templatebrain=<file path>     Brain extracted MNI T2wTemplate
+  #--t2template2mm=<file path>       MNI 2mm T2wTemplate
+  #--templatemask=<file path>        Brain mask MNI Template
+  #--template2mmmask=<file path>     Brain mask MNI 2mm Template 
+
+
+
   --brainsize=<size value>          Brain size estimate in mm, 150 for humans
   --fnirtconfig=<file path>         FNIRT 2mm T1w Configuration file
   --fmapmag=<file path>             Siemens Gradient Echo Fieldmap magnitude file
@@ -290,14 +296,20 @@ StudyFolder=`opts_GetOpt1 "--path" $@`
 Subject=`opts_GetOpt1 "--subject" $@`
 T1wInputImages=`opts_GetOpt1 "--t1" $@`
 T2wInputImages=`opts_GetOpt1 "--t2" $@`
-T1wTemplate=`opts_GetOpt1 "--t1template" $@`
-T1wTemplateBrain=`opts_GetOpt1 "--t1templatebrain" $@`
-T1wTemplate2mm=`opts_GetOpt1 "--t1template2mm" $@`
-T2wTemplate=`opts_GetOpt1 "--t2template" $@`
-T2wTemplateBrain=`opts_GetOpt1 "--t2templatebrain" $@`
-T2wTemplate2mm=`opts_GetOpt1 "--t2template2mm" $@`
-TemplateMask=`opts_GetOpt1 "--templatemask" $@`
-Template2mmMask=`opts_GetOpt1 "--template2mmmask" $@`
+
+
+#START241004
+#T1wTemplate=`opts_GetOpt1 "--t1template" $@`
+#T1wTemplateBrain=`opts_GetOpt1 "--t1templatebrain" $@`
+#T1wTemplate2mm=`opts_GetOpt1 "--t1template2mm" $@`
+#T2wTemplate=`opts_GetOpt1 "--t2template" $@`
+#T2wTemplateBrain=`opts_GetOpt1 "--t2templatebrain" $@`
+#T2wTemplate2mm=`opts_GetOpt1 "--t2template2mm" $@`
+#TemplateMask=`opts_GetOpt1 "--templatemask" $@`
+#Template2mmMask=`opts_GetOpt1 "--template2mmmask" $@`
+
+
+
 BrainSize=`opts_GetOpt1 "--brainsize" $@`
 FNIRTConfig=`opts_GetOpt1 "--fnirtconfig" $@`
 MagnitudeInputName=`opts_GetOpt1 "--fmapmag" $@`
@@ -344,14 +356,20 @@ log_Msg "StudyFolder: ${StudyFolder}"
 log_Msg "Subject: ${Subject}"
 log_Msg "T1wInputImages: ${T1wInputImages}"
 log_Msg "T2wInputImages: ${T2wInputImages}"
-log_Msg "T1wTemplate: ${T1wTemplate}"
-log_Msg "T1wTemplateBrain: ${T1wTemplateBrain}"
-log_Msg "T1wTemplate2mm: ${T1wTemplate2mm}"
-log_Msg "T2wTemplate: ${T2wTemplate}"
-log_Msg "T2wTemplateBrain: ${T2wTemplateBrain}"
-log_Msg "T2wTemplate2mm: ${T2wTemplate2mm}"
-log_Msg "TemplateMask: ${TemplateMask}"
-log_Msg "Template2mmMask: ${Template2mmMask}"
+
+
+#START241004
+#log_Msg "T1wTemplate: ${T1wTemplate}"
+#log_Msg "T1wTemplateBrain: ${T1wTemplateBrain}"
+#log_Msg "T1wTemplate2mm: ${T1wTemplate2mm}"
+#log_Msg "T2wTemplate: ${T2wTemplate}"
+#log_Msg "T2wTemplateBrain: ${T2wTemplateBrain}"
+#log_Msg "T2wTemplate2mm: ${T2wTemplate2mm}"
+#log_Msg "TemplateMask: ${TemplateMask}"
+#log_Msg "Template2mmMask: ${Template2mmMask}"
+
+
+
 log_Msg "BrainSize: ${BrainSize}"
 log_Msg "FNIRTConfig: ${FNIRTConfig}"
 log_Msg "MagnitudeInputName: ${MagnitudeInputName}"
@@ -443,19 +461,33 @@ log_Msg "POSIXLY_CORRECT="${POSIXLY_CORRECT}
 #  - Perform Brain Extraction(FNIRT-based Masking)
 # ------------------------------------------------------------------------------
 
-#Modalities="T1w T2w"
-#START200305
+
+#START241004
+unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow
+if [ ! -f $StudyFoler/templates/export_templates.sh ];then
+    echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
+    exit
+fi
+echo Running $StudyFolder/templates/export_templates.sh
+source $StudyFolder/templates/export_templates.sh
+echo T1wTemplate = $T1wTemplate
+echo T1wTemplateBrain = $T1wTemplateBrain
+echo T1wTemplateLow = $T1wTemplateLow
+echo T2wTemplate = $T2wTemplate
+echo T2wTemplateBrain = $T2wTemplateBrain
+echo T2wTemplateLow = $T2wTemplateLow
+echo TemplateMask = $TemplateMask
+echo TemplateMaskLow = $TemplateMaskLow
+
+
 
 if [ "${startAtlasRegistrationToMNI152}" = "FALSE" ];then
-
 Modalities="T1w T2w"
 if [ -z "${T2wInputImages}" ];then
     [ "${startT2}" = "FALSE" ] && Modalities="T1w" || Modalities=
 else
     [ "${startT2}" = "FALSE" ] && Modalities="T1w T2w" || Modalities="T2w"
 fi
-echo "here200 Modalities=$Modalities"
-
 
 for TXw in ${Modalities} ; do
     log_Msg "Processing Modality: " $TXw
@@ -465,14 +497,25 @@ for TXw in ${Modalities} ; do
         TXwInputImages="${T1wInputImages}"
         TXwFolder=${T1wFolder}
         TXwImage=${T1wImage}
+
+        #TXwTemplate=${T1wTemplate}
+    	#TXwTemplate2mm=${T1wTemplate2mm}
+        #START241004
         TXwTemplate=${T1wTemplate}
-    	TXwTemplate2mm=${T1wTemplate2mm}
+    	TXwTemplate2mm=${T1wTemplateLow}
+
+
     else
         TXwInputImages="${T2wInputImages}"
         TXwFolder=${T2wFolder}
         TXwImage=${T2wImage}
+
+        #TXwTemplate=${T2wTemplate}
+        #TXwTemplate2mm=${T2wTemplate2mm}
+        #START241004
         TXwTemplate=${T2wTemplate}
-        TXwTemplate2mm=${T2wTemplate2mm}
+        TXwTemplate2mm=${T2wTemplateLow}
+
     fi
     OutputTXwImageSTRING=""
 
@@ -681,7 +724,34 @@ fi #if [ "startAtlasRegistrationToMNI152" = "FALSE"];then
 
 log_Msg "Performing Atlas Registration to MNI152 (FLIRT and FNIRT)"
 
+
+
+
+#${RUN} ${P2} \
+#    --workingdir=${AtlasSpaceFolder} \
+#    --t1=${T1wFolder}/${T1wImage}_acpc_dc \
+#    --t1rest=${T1wFolder}/${T1wImage}_acpc_dc_restore \
+#    --t1restbrain=${T1wFolder}/${T1wImage}_acpc_dc_restore_brain \
+#    --t2=${T1wFolder}/${T2wImage}_acpc_dc \
+#    --t2rest=${T1wFolder}/${T2wImage}_acpc_dc_restore \
+#    --t2restbrain=${T1wFolder}/${T2wImage}_acpc_dc_restore_brain \
+#    --ref=${T1wTemplate} \
+#    --refbrain=${T1wTemplateBrain} \
+#    --refmask=${TemplateMask} \
+#    --ref2mm=${T1wTemplate2mm} \
+#    --ref2mmmask=${Template2mmMask} \
+#    --owarp=${AtlasSpaceFolder}/xfms/acpc_dc2standard.nii.gz \
+#    --oinvwarp=${AtlasSpaceFolder}/xfms/standard2acpc_dc.nii.gz \
+#    --ot1=${AtlasSpaceFolder}/${T1wImage} \
+#    --ot1rest=${AtlasSpaceFolder}/${T1wImage}_restore \
+#    --ot1restbrain=${AtlasSpaceFolder}/${T1wImage}_restore_brain \
+#    --ot2=${AtlasSpaceFolder}/${T2wImage} \
+#    --ot2rest=${AtlasSpaceFolder}/${T2wImage}_restore \
+#    --ot2restbrain=${AtlasSpaceFolder}/${T2wImage}_restore_brain \
+#    --fnirtconfig=${FNIRTConfig}
+#START241004
 ${RUN} ${P2} \
+    --StudyFolder=${StudyFolder} \
     --workingdir=${AtlasSpaceFolder} \
     --t1=${T1wFolder}/${T1wImage}_acpc_dc \
     --t1rest=${T1wFolder}/${T1wImage}_acpc_dc_restore \
@@ -689,11 +759,6 @@ ${RUN} ${P2} \
     --t2=${T1wFolder}/${T2wImage}_acpc_dc \
     --t2rest=${T1wFolder}/${T2wImage}_acpc_dc_restore \
     --t2restbrain=${T1wFolder}/${T2wImage}_acpc_dc_restore_brain \
-    --ref=${T1wTemplate} \
-    --refbrain=${T1wTemplateBrain} \
-    --refmask=${TemplateMask} \
-    --ref2mm=${T1wTemplate2mm} \
-    --ref2mmmask=${Template2mmMask} \
     --owarp=${AtlasSpaceFolder}/xfms/acpc_dc2standard.nii.gz \
     --oinvwarp=${AtlasSpaceFolder}/xfms/standard2acpc_dc.nii.gz \
     --ot1=${AtlasSpaceFolder}/${T1wImage} \
@@ -703,6 +768,9 @@ ${RUN} ${P2} \
     --ot2rest=${AtlasSpaceFolder}/${T2wImage}_restore \
     --ot2restbrain=${AtlasSpaceFolder}/${T2wImage}_restore_brain \
     --fnirtconfig=${FNIRTConfig}
+
+
+
 
 log_Msg "Completed"
 

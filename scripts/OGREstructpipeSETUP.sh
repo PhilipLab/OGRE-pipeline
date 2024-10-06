@@ -575,6 +575,8 @@ echo export T2wTemplateLow=${dir0}/templates/${T2wTemplateLow##*/} >> ${FT}
 echo export TemplateMask=${dir0}/templates/${TemplateMask##*/} >> ${FT}
 echo export TemplateMaskLow=${dir0}/templates/${TemplateMaskLow##*/} >> ${FT}
 
+#We might consider adding an option to softlink instead copying.
+
 
 
 echo -e "$shebang\nset -e\n" > ${F0} 

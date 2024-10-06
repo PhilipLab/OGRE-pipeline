@@ -42,16 +42,16 @@ helpmsg(){
     echo "                          Ex. --t1highreshead /Users/Shared/10_Connectivity/sub-1001/pipeline7.4.1/func/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
     echo "    --t1highres -t1highres --t1hires -t1hires"
     echo "                          Input your own brain masked T1."
-    echo "                          Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
+    echo "                          Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.1/MNINonLinear/T1w_restore_brain.nii.gz"
     #echo ""
     echo "    -u --atlas -atlas     Standard image resolution (ie FEAT standard). 1 or 2. Default is 2mm."
     echo "                          If 1mm, then FSLDIR/data/standard/MNI152_T1_1mm and FSLDIR/data/standard/MNI152_T1_1mm_brain are used."
     echo "                          If 2mm, then FSLDIR/data/standard/MNI152_T1_2mm and FSLDIR/data/standard/MNI152_T1_2mm_brain are used."
     echo "    --standardhead -standardhead"
     echo "                          Input your own whole head standard image."
-    echo "                          Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore.nii.gz"
+    echo "                          Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.1/MNINonLinear/T1w_restore.nii.gz"
     echo "    --standard -standard  Input your own brain masked standard image."
-    echo "                          Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.0/MNINonLinear/T1w_restore_brain.nii.gz"
+    echo "                          Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.1/MNINonLinear/T1w_restore_brain.nii.gz"
     #echo ""
     echo "    -h --help -help         Echo this help message."
     exit
@@ -250,6 +250,9 @@ if [ -z "${T1HIGHRES}" ];then
         exit
     fi
 fi
+
+
+
 if [ -z "${STANDARDHEAD}" ];then
     if((ATLAS==1));then
         STANDARDHEAD=${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz
@@ -270,6 +273,11 @@ if [ -z "${STANDARD}" ];then
         exit
     fi
 fi
+
+
+
+
+
 
 # First, slide any preexisting reg/reg_standard folder off to to a datestamped backup
 #REGSTD=${SUBJDIR}/model/${ANALYSISNAME}.feat/reg

@@ -18,11 +18,15 @@ Usage() {
   echo "                --t2=<t2w image>"
   echo "	 	--t2rest=<bias corrected t2w image>"
   echo "                --t2restbrain=<bias corrected, brain extracted t2w image>"
-  echo "                --ref=<reference image>"
-  echo "                --refbrain=<reference brain image>"
-  echo "                --refmask=<reference brain mask>"
-  echo "                [--ref2mm=<reference 2mm image>]"
-  echo "                [--ref2mmmask=<reference 2mm brain mask>]"
+
+  #START241004
+  #echo "                --ref=<reference image>"
+  #echo "                --refbrain=<reference brain image>"
+  #echo "                --refmask=<reference brain mask>"
+  #echo "                [--ref2mm=<reference 2mm image>]"
+  #echo "                [--ref2mmmask=<reference 2mm brain mask>]"
+
+
   echo "                --owarp=<output warp>"
   echo "                --oinvwarp=<output inverse warp>"
   echo "                --ot1=<output t1w to MNI>"
@@ -72,32 +76,74 @@ if [ $# -eq 0 ] ; then Usage; exit 0; fi
 if [ $# -lt 17 ] ; then Usage; exit 1; fi
 
 # parse arguments
-WD=`getopt1 "--workingdir" $@`  # "$1"
-T1wImage=`getopt1 "--t1" $@`  # "$2"
-T1wRestore=`getopt1 "--t1rest" $@`  # "$3"
-T1wRestoreBrain=`getopt1 "--t1restbrain" $@`  # "$4"
-T2wImage=`getopt1 "--t2" $@`  # "$5"
-T2wRestore=`getopt1 "--t2rest" $@`  # "$6"
-T2wRestoreBrain=`getopt1 "--t2restbrain" $@`  # "$7"
-Reference=`getopt1 "--ref" $@`  # "$8"
-ReferenceBrain=`getopt1 "--refbrain" $@`  # "$9"
-ReferenceMask=`getopt1 "--refmask" $@`  # "${10}"
-Reference2mm=`getopt1 "--ref2mm" $@`  # "${11}"
-Reference2mmMask=`getopt1 "--ref2mmmask" $@`  # "${12}"
-OutputTransform=`getopt1 "--owarp" $@`  # "${13}"
-OutputInvTransform=`getopt1 "--oinvwarp" $@`  # "${14}"
-OutputT1wImage=`getopt1 "--ot1" $@`  # "${15}"
-OutputT1wImageRestore=`getopt1 "--ot1rest" $@`  # "${16}"
-OutputT1wImageRestoreBrain=`getopt1 "--ot1restbrain" $@`  # "${17}"
-OutputT2wImage=`getopt1 "--ot2" $@`  # "${18}"
-OutputT2wImageRestore=`getopt1 "--ot2rest" $@`  # "${19}"
-OutputT2wImageRestoreBrain=`getopt1 "--ot2restbrain" $@`  # "${20}"
-FNIRTConfig=`getopt1 "--fnirtconfig" $@`  # "${21}"
+#WD=`getopt1 "--workingdir" $@`  # "$1"
+#T1wImage=`getopt1 "--t1" $@`  # "$2"
+#T1wRestore=`getopt1 "--t1rest" $@`  # "$3"
+#T1wRestoreBrain=`getopt1 "--t1restbrain" $@`  # "$4"
+#T2wImage=`getopt1 "--t2" $@`  # "$5"
+#T2wRestore=`getopt1 "--t2rest" $@`  # "$6"
+#T2wRestoreBrain=`getopt1 "--t2restbrain" $@`  # "$7"
+#Reference=`getopt1 "--ref" $@`  # "$8"
+#ReferenceBrain=`getopt1 "--refbrain" $@`  # "$9"
+#ReferenceMask=`getopt1 "--refmask" $@`  # "${10}"
+#Reference2mm=`getopt1 "--ref2mm" $@`  # "${11}"
+#Reference2mmMask=`getopt1 "--ref2mmmask" $@`  # "${12}"
+#OutputTransform=`getopt1 "--owarp" $@`  # "${13}"
+#OutputInvTransform=`getopt1 "--oinvwarp" $@`  # "${14}"
+#OutputT1wImage=`getopt1 "--ot1" $@`  # "${15}"
+#OutputT1wImageRestore=`getopt1 "--ot1rest" $@`  # "${16}"
+#OutputT1wImageRestoreBrain=`getopt1 "--ot1restbrain" $@`  # "${17}"
+#OutputT2wImage=`getopt1 "--ot2" $@`  # "${18}"
+#OutputT2wImageRestore=`getopt1 "--ot2rest" $@`  # "${19}"
+#OutputT2wImageRestoreBrain=`getopt1 "--ot2restbrain" $@`  # "${20}"
+#FNIRTConfig=`getopt1 "--fnirtconfig" $@`  # "${21}"
+#START241004
+StudyFolder=`getopt1 "--StudyFolder" $@`  # "$1"
+WD=`getopt1 "--workingdir" $@`  # "$2"
+T1wImage=`getopt1 "--t1" $@`  # "$3"
+T1wRestore=`getopt1 "--t1rest" $@`  # "$4"
+T1wRestoreBrain=`getopt1 "--t1restbrain" $@`  # "$5"
+T2wImage=`getopt1 "--t2" $@`  # "$6"
+T2wRestore=`getopt1 "--t2rest" $@`  # "$7"
+T2wRestoreBrain=`getopt1 "--t2restbrain" $@`  # "$8"
+OutputTransform=`getopt1 "--owarp" $@`  # "${9}"
+OutputInvTransform=`getopt1 "--oinvwarp" $@`  # "${10}"
+OutputT1wImage=`getopt1 "--ot1" $@`  # "${11}"
+OutputT1wImageRestore=`getopt1 "--ot1rest" $@`  # "${12}"
+OutputT1wImageRestoreBrain=`getopt1 "--ot1restbrain" $@`  # "${13}"
+OutputT2wImage=`getopt1 "--ot2" $@`  # "${14}"
+OutputT2wImageRestore=`getopt1 "--ot2rest" $@`  # "${15}"
+OutputT2wImageRestoreBrain=`getopt1 "--ot2restbrain" $@`  # "${16}"
+FNIRTConfig=`getopt1 "--fnirtconfig" $@`  # "${17}"
+
+if [ ! -f $StudyFoler/templates/export_templates.sh ];then
+    echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
+    exit
+fi
+echo Running $StudyFolder/templates/export_templates.sh
+source $StudyFolder/templates/export_templates.sh
+Reference=${T1wTemplate}
+ReferenceBrain=${T1wTemplateBrain}
+ReferenceMask=${TemplateMask}
+Reference2mm=$T1wTemplateLow
+Reference2mmMask=$TemplateMaskLow
+
+
+
+
+
 
 # default parameters
 WD=`defaultopt $WD .`
-Reference2mm=`defaultopt $Reference2mm ${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz`
-Reference2mmMask=`defaultopt $Reference2mmMask ${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz`
+
+
+#START241004
+#Reference2mm=`defaultopt $Reference2mm ${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz`
+#Reference2mmMask=`defaultopt $Reference2mmMask ${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz`
+
+
+
+# MAYBE THIS NEEDS TO BE CHANGED!!!!!
 FNIRTConfig=`defaultopt $FNIRTConfig ${HCPPIPEDIR_Config}/T1_2_MNI152_2mm.cnf`
 
 
