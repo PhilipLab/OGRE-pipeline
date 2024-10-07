@@ -610,11 +610,11 @@ echo '        --Subject=${s0} \' >> ${F0}
 echo '        --runlocal \' >> ${F0}
 echo '        --T1='${T1f}' \' >> ${F0}
 echo '        --T2='${T2f}' \' >> ${F0}
+echo '        --GREfieldmapMag="NONE" \' >> ${F0}
+echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
 
 
 #START241002 Get the hires and lowres from the templates
-#echo '        --GREfieldmapMag="NONE" \' >> ${F0}
-#echo '        --GREfieldmapPhase="NONE" \' >> ${F0}
 #echo '        --Hires=${Hires} \' >> ${F0}
 #echo '        --T1wTemplate='${T1wTemplate}' \' >> ${F0}
 #echo '        --T1wTemplateBrain='${T1wTemplateBrain}' \' >> ${F0}

@@ -232,7 +232,7 @@ main()
 	if [ -z "${command_line_specified_study_folder}" ]; then
             echo "MUST PROVIDE StudyFolder"
             echo "    Ex. --StudyFolder=/Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/sub-1001_symatlas/pipeline7.4.1"
-	    exit
+	    exit 1
         fi
 	StudyFolder="${command_line_specified_study_folder}"
 
@@ -248,7 +248,7 @@ main()
         else
             echo "MUST PROVIDE EnvironmentScript"
             echo "    Ex. --EnvironmentScript=/home/usr/mcavoy/HCP/scripts/SetUpHCPPipeline_mm.sh"
-	    exit
+	    exit 1
 	fi
 
         #Hires="0.7"
@@ -612,9 +612,9 @@ main()
                 #START241004
                 # Templates aren't used here. This is just a check.
                 unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow
-                if [ ! -f $StudyFoler/templates/export_templates.sh ];then
+                if [ ! -f $StudyFolder/templates/export_templates.sh ];then
                     echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
-                    exit
+                    exit 1
                 fi
                 echo Running $StudyFolder/templates/export_templates.sh
                 source $StudyFolder/templates/export_templates.sh
@@ -684,17 +684,10 @@ main()
 
 		# Establish queuing command based on command line option
 		if [ -n "${command_line_specified_run_local}" ] ; then
-
-			#echo "About to run ${HCPPIPEDIR}/PreFreeSurfer/PreFreeSurferPipeline.sh"
-                        #START220203
 			echo "About to run ${P0}"
-
 			queuing_command=""
 		else
-			#echo "About to use fsl_sub to queue or run ${HCPPIPEDIR}/PreFreeSurfer/PreFreeSurferPipeline.sh"
-                        #START220502 
                         echo "About to use fsl_sub to queue or run ${P0}"
-
 			queuing_command="${FSLDIR}/bin/fsl_sub ${QUEUE}"
 		fi
 
