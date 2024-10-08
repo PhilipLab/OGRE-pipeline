@@ -462,20 +462,20 @@ log_Msg "POSIXLY_CORRECT="${POSIXLY_CORRECT}
 
 #START241004
 unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow
-if [ ! -f $StudyFolder/templates/export_templates.sh ];then
-    echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
+if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
+    echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
     exit 1
 fi
-echo Running $StudyFolder/templates/export_templates.sh
+echo "Running $StudyFolder/templates/export_templates.sh"
 source $StudyFolder/templates/export_templates.sh
-echo T1wTemplate = $T1wTemplate
-echo T1wTemplateBrain = $T1wTemplateBrain
-echo T1wTemplateLow = $T1wTemplateLow
-echo T2wTemplate = $T2wTemplate
-echo T2wTemplateBrain = $T2wTemplateBrain
-echo T2wTemplateLow = $T2wTemplateLow
-echo TemplateMask = $TemplateMask
-echo TemplateMaskLow = $TemplateMaskLow
+echo "T1wTemplate = $T1wTemplate"
+echo "T1wTemplateBrain = $T1wTemplateBrain"
+echo "T1wTemplateLow = $T1wTemplateLow"
+echo "T2wTemplate = $T2wTemplate"
+echo "T2wTemplateBrain = $T2wTemplateBrain"
+echo "T2wTemplateLow = $T2wTemplateLow"
+echo "TemplateMask = $TemplateMask"
+echo "TemplateMaskLow = $TemplateMaskLow"
 
 
 

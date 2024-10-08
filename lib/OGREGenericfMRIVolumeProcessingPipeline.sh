@@ -472,7 +472,8 @@ if [ "$do_P1" -eq "1" ];then
            --scoutgdcin=${fMRIFolder}/${ScoutName}_gdc \
            --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
            --ojacobian=${fMRIFolder}/${JacobianOut}_MNI.${FinalfMRIResolution} \
-           --analysis=${Analysis}
+           --analysis=${Analysis} \
+           --StudyFolder=${Path}    #START241007
 fi
 
 

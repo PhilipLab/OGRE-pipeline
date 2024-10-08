@@ -161,9 +161,17 @@ get_batch_options "$@"
 StudyFolder="${HOME}/projects/Pipelines_ExampleData" #Location of Subject folders (named by subjectID)
 Subjlist="100307" #Space delimited list of subject IDs
 
-if [ -n "${command_line_specified_study_folder}" ]; then
-    StudyFolder="${command_line_specified_study_folder}"
+#if [ -n "${command_line_specified_study_folder}" ]; then
+#    StudyFolder="${command_line_specified_study_folder}"
+#fi
+#START241007
+if [ -z "${command_line_specified_study_folder}" ]; then
+    echo "MUST PROVIDE StudyFolder"
+    echo "    Ex. --StudyFolder=/Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/sub-1001_symatlas/pipeline7.4.1"
+    exit 1
 fi
+StudyFolder="${command_line_specified_study_folder}"
+
 
 if [ -n "${command_line_specified_subj}" ]; then
     Subjlist="${command_line_specified_subj}"

@@ -97,6 +97,9 @@ ScoutOutput=`getopt1 "--oscout" $@`  # "${16}"
 JacobianOut=`getopt1 "--ojacobian" $@`  # "${18}"
 Analysis=`getopt1 "--analysis" $@`
 
+#START241007
+StudyFolder=`getopt1 "--StudyFolder" $@`
+
 BiasFieldFile=`basename "$BiasField"`
 T1wImageFile=`basename $T1wImage`
 FreeSurferBrainMaskFile=`basename "$FreeSurferBrainMask"`
@@ -111,6 +114,9 @@ echo "PWD = `pwd`" >> $WD/log.txt
 echo "date: `date`" >> $WD/log.txt
 echo " " >> $WD/log.txt
 echo "    Analysis = ${Analysis}"
+
+#START241007
+echo "    StudyFolder = ${StudyFolder}"
 
 
 ########################################## DO WORK ########################################## 
@@ -144,14 +150,36 @@ NumFrames=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
 
 if [ "${Analysis}" != "NATIVE" ] ; then
 
-    if [ ${FinalfMRIResolution} = "2" ] ; then
-        ResampRefIm=$FSLDIR/data/standard/MNI152_T1_2mm
-    elif [ ${FinalfMRIResolution} = "1" ] ; then
-        ResampRefIm=$FSLDIR/data/standard/MNI152_T1_1mm
-    else
-        ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
-        ResampRefIm=${WD}/${T1wImageFile}.${FinalfMRIResolution} 
+
+
+    #if [ ${FinalfMRIResolution} = "2" ] ; then
+    #    ResampRefIm=$FSLDIR/data/standard/MNI152_T1_2mm
+    #elif [ ${FinalfMRIResolution} = "1" ] ; then
+    #    ResampRefIm=$FSLDIR/data/standard/MNI152_T1_1mm
+    #else
+    #    ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
+    #    ResampRefIm=${WD}/${T1wImageFile}.${FinalfMRIResolution} 
+    #fi
+    #START241007
+    if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
+        echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
+        exit 1
     fi
+    echo "Running $StudyFolder/templates/export_templates.sh"
+    source $StudyFolder/templates/export_templates.sh
+    echo "T1wTemplate = $T1wTemplate"
+    echo "T1wTemplateBrain = $T1wTemplateBrain"
+    echo "T1wTemplateLow = $T1wTemplateLow"
+    echo "T2wTemplate = $T2wTemplate"
+    echo "T2wTemplateBrain = $T2wTemplateBrain"
+    echo "T2wTemplateLow = $T2wTemplateLow"
+    echo "TemplateMask = $TemplateMask"
+    echo "TemplateMaskLow = $TemplateMaskLow"
+
+
+
+
+
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1wImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wImageFile}.${FinalfMRIResolution}
 
     # Create brain masks in this space from the FreeSurfer output (changing resolution)

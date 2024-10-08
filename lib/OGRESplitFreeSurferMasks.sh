@@ -176,8 +176,16 @@ if [ $EXTRA == 1 ]; then
     $e0
     # identify unlabeled voxels
     unlabeledFile="${partialDir}/${SUBJECT}_unlabeled"
-    u0="${FSLDIR}/bin/fslmaths ${originalFile} -add 1 ${parcelFile}_add_1"
-    u1="${FSLDIR}/bin/fslmaths ${parcelFile}_add_1 -uthr 1 ${unlabeledFile}"
+
+
+    #u0="${FSLDIR}/bin/fslmaths ${originalFile} -add 1 ${parcelFile}_add_1"
+    #u1="${FSLDIR}/bin/fslmaths ${parcelFile}_add_1 -uthr 1 ${unlabeledFile}"
+    #START241007
+    parcelFile_add_1="${partialDir}/${SUBJECT}_${parcelFile}_add_1"
+    u0="${FSLDIR}/bin/fslmaths ${originalFile} -add 1 ${parcelFile_add_1}"
+    u1="${FSLDIR}/bin/fslmaths ${parcelFile_add_1} -uthr 1 ${unlabeledFile}"
+
+
     $u0
     $u1
     # mask eroded-brain with unlabeled

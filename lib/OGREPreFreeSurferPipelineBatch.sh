@@ -216,12 +216,7 @@ main()
 {
 	get_batch_options "$@"
 
-	# Set variable values that locate and specify data to process
-
-        #START241002
 	StudyFolder="${HOME}/projects/Pipelines_ExampleData" # Location of Subject folders (named by subjectID)
-
-
 	Subjlist="100307"                                    # Space delimited list of subject IDs
 
 	## Use any command line specified options to override any of the variable settings above
@@ -612,11 +607,11 @@ main()
                 #START241004
                 # Templates aren't used here. This is just a check.
                 unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow
-                if [ ! -f $StudyFolder/templates/export_templates.sh ];then
-                    echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
+                if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
+                    echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
                     exit 1
                 fi
-                echo Running $StudyFolder/templates/export_templates.sh
+                echo "Running $StudyFolder/templates/export_templates.sh"
                 source $StudyFolder/templates/export_templates.sh
                 echo T1wTemplate = $T1wTemplate
                 echo T1wTemplateBrain = $T1wTemplateBrain
