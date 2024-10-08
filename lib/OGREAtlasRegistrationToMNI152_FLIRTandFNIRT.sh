@@ -116,17 +116,17 @@ OutputT2wImageRestore=`getopt1 "--ot2rest" $@`  # "${15}"
 OutputT2wImageRestoreBrain=`getopt1 "--ot2restbrain" $@`  # "${16}"
 FNIRTConfig=`getopt1 "--fnirtconfig" $@`  # "${17}"
 
-if [ ! -f $StudyFoler/templates/export_templates.sh ];then
+if [ ! -f $StudyFolder/templates/export_templates.sh ];then
     echo Please run OGREstructpipeSETUP.sh to set up the templates. Abort!
-    exit
+    exit 1
 fi
 echo Running $StudyFolder/templates/export_templates.sh
 source $StudyFolder/templates/export_templates.sh
 Reference=${T1wTemplate}
 ReferenceBrain=${T1wTemplateBrain}
 ReferenceMask=${TemplateMask}
-Reference2mm=$T1wTemplateLow
-Reference2mmMask=$TemplateMaskLow
+Reference2mm=${T1wTemplateLow}
+Reference2mmMask=${TemplateMaskLow}
 
 
 

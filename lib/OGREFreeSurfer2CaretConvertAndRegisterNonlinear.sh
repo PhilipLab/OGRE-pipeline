@@ -168,14 +168,26 @@ echo "0 0 0 1" >> "$FreeSurferFolder"/mri/c_ras.mat
 
 #START230614
 #echo -e "\n    **** Convert FreeSurfer Volumes ****\n"
-#echo "    **** Convert FreeSurfer Volumes ****"
+echo "    **** Convert FreeSurfer Volumes ****"
 
 #Convert FreeSurfer Volumes
 for Image in wmparc aparc.a2009s+aseg aparc+aseg ; do
+
+        echo "here99 $FreeSurferFolder/mri/$Image.mgz"
+
 	if [ -e "$FreeSurferFolder"/mri/"$Image".mgz ] ; then
+
+                echo "here100"
+
 		mri_convert -rt nearest -rl "$T1wFolder"/"$T1wImage".nii.gz "$FreeSurferFolder"/mri/"$Image".mgz "$T1wFolder"/"$Image"_1mm.nii.gz
+
+                echo "here101"
+
 		applywarp --rel --interp=nn -i "$T1wFolder"/"$Image"_1mm.nii.gz -r "$AtlasSpaceFolder"/"$AtlasSpaceT1wImage" --premat=$FSLDIR/etc/flirtsch/ident.mat -o "$T1wFolder"/"$Image".nii.gz
 		applywarp --rel --interp=nn -i "$T1wFolder"/"$Image"_1mm.nii.gz -r "$AtlasSpaceFolder"/"$AtlasSpaceT1wImage" -w "$AtlasTransform" -o "$AtlasSpaceFolder"/"$Image".nii.gz
+
+                echo "here102 $AtlasSpaceFolder/$Image.nii.gz"
+
 		${CARET7DIR}/wb_command -volume-label-import "$T1wFolder"/"$Image".nii.gz "$FreeSurferLabels" "$T1wFolder"/"$Image".nii.gz -drop-unused-labels
 		${CARET7DIR}/wb_command -volume-label-import "$AtlasSpaceFolder"/"$Image".nii.gz "$FreeSurferLabels" "$AtlasSpaceFolder"/"$Image".nii.gz -drop-unused-labels
 	fi
@@ -183,7 +195,7 @@ done
 
 #START230614
 #echo -e "\n    **** Create FreeSurfer Brain Mask ****\n"
-#echo "    **** Create FreeSurfer Brain Mask ****"
+echo "    **** Create FreeSurfer Brain Mask ****"
 
 #Create FreeSurfer Brain Mask
 

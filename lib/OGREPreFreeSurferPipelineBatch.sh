@@ -564,7 +564,7 @@ main()
 		GEB0InputName="NONE"
 
 		## Templates
-                #if [ -f $StudyFoler/templates/export_templates.sh ];then
+                #if [ -f $StudyFolder/templates/export_templates.sh ];then
                 #    echo Running $StudyFoler/templates/export_templates.sh
                 #    source $StudyFoler/templates/export_templates.sh 
                 #else
