@@ -49,10 +49,17 @@ helpmsg(){
     echo "                          If 2mm, then FSLDIR/data/standard/MNI152_T1_2mm and FSLDIR/data/standard/MNI152_T1_2mm_brain are used."
     echo "    --standardhead -standardhead"
     echo "                          Input your own whole head standard image."
-    echo "                          Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.1/MNINonLinear/T1w_restore.nii.gz"
+
+    #echo "                          Ex. --standardhead /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.1/MNINonLinear/T1w_restore.nii.gz"
+    #START241008
+    echo "                          Default is <HCPPIPEDIR_Templates>/MNI152_T1_<atlas>mm.nii.gz"
+
     echo "    --standard -standard  Input your own brain masked standard image."
-    echo "                          Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.1/MNINonLinear/T1w_restore_brain.nii.gz"
-    #echo ""
+
+    #echo "                          Ex. --standard /Users/Shared/10_Connectivity/sub-1001/pipelineTest7.4.1/MNINonLinear/T1w_restore_brain.nii.gz"
+    #START241008
+    echo "                          Default is <HCPPIPEDIR_Templates>/MNI152_T1_<atlas>mm_brain.nii.gz"
+
     echo "    -h --help -help         Echo this help message."
     exit
     }
@@ -252,6 +259,7 @@ if [ -z "${T1HIGHRES}" ];then
 fi
 
 
+#STARTHERE
 
 if [ -z "${STANDARDHEAD}" ];then
     if((ATLAS==1));then

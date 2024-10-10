@@ -11,7 +11,7 @@ helpmsg(){
     echo "    -s Subject (optional)"
     echo "        e.g. sub-1001. If not set, will extract from PIPEDIR path '/sub-X/'"
     echo "    -T1wTemplateLow <my reference image> (optional)"
-    echo "        Default is MNI152_T1_2mm.nii.gz."
+    echo "        Default is to export T1wTemplateLow from  PIPEDIR/templates/export_templates.sh"
     echo "        As the reference image, this can be a blank image with just the proper dimensions and voxel size."
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE software package (e.g. ~/GitHub/OGRE-pipeline)."
@@ -89,8 +89,24 @@ if [ -z "${SUBJECT}" ];then
     fi
 fi
 
-HCPPIPEDIR_Templates=${OGREDIR}/lib/HCP/HCPpipelines-3.27.0/global/templates
-[ -n "${T1wTemplateLow}" ] && T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz" 
+#START241008
+if [ -z "${T1wTemplateLow}" ];then
+    if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
+        echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
+        exit
+    fi
+    echo "Running $StudyFolder/templates/export_templates.sh"
+    source $StudyFolder/templates/export_templates.sh
+    echo "T1wTemplate = $T1wTemplate"
+    echo "T1wTemplateBrain = $T1wTemplateBrain"
+    echo "T1wTemplateLow = $T1wTemplateLow"
+    echo "T2wTemplate = $T2wTemplate"
+    echo "T2wTemplateBrain = $T2wTemplateBrain"
+    echo "T2wTemplateLow = $T2wTemplateLow"
+    echo "TemplateMask = $TemplateMask"
+    echo "TemplateMaskLow = $TemplateMaskLow"
+fi
+
 
 masks=(graymatter whitematter cerebrospinalfluid)
 for i in ${masks[@]};do 

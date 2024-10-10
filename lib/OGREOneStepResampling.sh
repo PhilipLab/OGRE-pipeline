@@ -175,6 +175,7 @@ if [ "${Analysis}" != "NATIVE" ] ; then
     echo "T2wTemplateLow = $T2wTemplateLow"
     echo "TemplateMask = $TemplateMask"
     echo "TemplateMaskLow = $TemplateMaskLow"
+    ResampRefIm=$T1wTemplateLow
 
 
 
