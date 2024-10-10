@@ -526,6 +526,9 @@ for Subject in $Subjlist ; do
         Analysis="MNI"
     fi
     echo "Analysis = ${Analysis}"
+
+
+    #STARTHERE get from templates/low res T1
     if [ -n "${command_line_specified_FinalFMRIResolution}" ] ; then
         FinalFMRIResolution=${command_line_specified_FinalFMRIResolution}
     else

@@ -200,8 +200,6 @@ fi
 
 if [ -z "${T1HIGHRESHEAD}" ];then
     if((T1==1));then
-
-        #START240519
         t1bids=${ANATDIR}/${SUBJECT}_OGRE-preproc_desc-restore_T1w.nii.gz
         t1ogre=${MNLDIR}/T1w_restore.nii.gz
         if [ -f "${t1bids}" ];then
@@ -212,8 +210,6 @@ if [ -z "${T1HIGHRESHEAD}" ];then
             echo -e "T1 head 1mm not found.Looked for\n    ${t1bids}\n    ${t1ogre}"
             exit
         fi
-
-
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
         if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2.nii.gz ]; then
             T1HIGHRESHEAD=${ANATDIR}/sub-${SUBJECT}_OGRE-preproc_desc-restore_res-2_T1w.nii.gz
@@ -230,8 +226,6 @@ if [ -z "${T1HIGHRESHEAD}" ];then
 fi
 if [ -z "${T1HIGHRES}" ];then
     if((T1==1));then
-
-        #START240519
         t1bids=${ANATDIR}/${SUBJECT}_OGRE-preproc_desc-restore_T1w_brain.nii.gz
         t1ogre=${MNLDIR}/T1w_restore_brain.nii.gz
         if [ -f "${t1bids}" ];then
@@ -242,11 +236,11 @@ if [ -z "${T1HIGHRES}" ];then
             echo -e "T1 brain 1mm not found.Looked for\n    ${t1bids}\n    ${t1ogre}"
             exit
         fi
-
     elif((T1==2));then # currently these are in separate locations, but we should probably fix that instead
         if [ -f ${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz ]; then
             T1HIGHRES=${ANATDIR}/sub-${SUBJECT}_T1w_restore.2_brain.nii.gz
         elif [ -f ${MNLDIR}/T1w_restore.2_brain.nii.gz ]; then
+            #THIS IS NOT THE RIGHT ONE!!! Do an "ls -ltr" on MNINonLinear
             T1HIGHRES=${MNLDIR}/T1w_restore.2_brain.nii.gz
         else
             echo "T1 brain 2mm not found: ${T1}"

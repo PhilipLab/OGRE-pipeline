@@ -73,6 +73,8 @@ fslmaths "$OutputMNIT1wImage" -abs "$OutputMNIT1wImage" -odt float
 fslmaths "$OutputMNIT1wImage" -div "$BiasFieldOutput" "$OutputMNIT1wImageRestore"
 fslmaths "$OutputMNIT1wImageRestore" -mas "$T1wMNIImageBrain" "$OutputMNIT1wImageRestoreBrain"
 
+#STARTHERE
+
 #echo "T1w images completed"
 
 if [ -f "${OrginalT2wImage}.nii.gz" ];then
