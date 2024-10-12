@@ -19,7 +19,10 @@ get_batch_options() {
     unset command_line_specified_SpinEchoPhaseEncodeNegative
     unset command_line_specified_SpinEchoPhaseEncodePositive
     unset command_line_specified_native
-    unset command_line_specified_FinalFMRIResolution
+
+    #START241010
+    #unset command_line_specified_FinalFMRIResolution
+
     unset command_line_specified_UnwarpDirection
     unset command_line_specified_json
     unset command_line_specified_EnvironmentScript
@@ -94,10 +97,12 @@ get_batch_options() {
                 command_line_specified_native="TRUE"
                 index=$(( index + 1 ))
                 ;;
-            --FinalFMRIResolution=*)
-                command_line_specified_FinalFMRIResolution=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
+
+            #START241010
+            #--FinalFMRIResolution=*)
+            #    command_line_specified_FinalFMRIResolution=${argument#*=}
+            #    index=$(( index + 1 ))
+            #    ;;
 
             #START190724
             #--PhaseEncodingDirection=*)
@@ -528,13 +533,36 @@ for Subject in $Subjlist ; do
     echo "Analysis = ${Analysis}"
 
 
-    #STARTHERE get from templates/low res T1
-    if [ -n "${command_line_specified_FinalFMRIResolution}" ] ; then
-        FinalFMRIResolution=${command_line_specified_FinalFMRIResolution}
-    else
-        FinalFMRIResolution="2"
+    #if [ -n "${command_line_specified_FinalFMRIResolution}" ] ; then
+    #    FinalFMRIResolution=${command_line_specified_FinalFMRIResolution}
+    #else
+    #    FinalFMRIResolution="2"
+    #fi
+    #echo "FinalFMRIResolution = ${FinalFMRIResolution}"
+    #START241010
+    unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow
+    if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
+        echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
+        exit 1
     fi
-    echo "FinalFMRIResolution = ${FinalFMRIResolution}"
+    echo "Running $StudyFolder/templates/export_templates.sh"
+    source $StudyFolder/templates/export_templates.sh
+    #echo T1wTemplate = $T1wTemplate
+    #echo T1wTemplateBrain = $T1wTemplateBrain
+    #echo T1wTemplateLow = $T1wTemplateLow
+    #echo T2wTemplate = $T2wTemplate
+    #echo T2wTemplateBrain = $T2wTemplateBrain
+    #echo T2wTemplateLow = $T2wTemplateLow
+    #echo TemplateMask = $TemplateMask
+    #echo TemplateMaskLow = $TemplateMaskLow
+    echo "Getting FinalFMRIResolution from $T1wTemplateLow ..."
+    #https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
+    IFS=$'\r\n\t, ' read -r -d '' -a arr < <( fslinfo $T1wTemplateLow | fgrep pixdim1 && printf '\0' ) 
+    FinalFMRIResolution=${arr[1]}
+    echo "    FinalFMRIResolution = ${FinalFMRIResolution}"
+
+
+
 
 	# Gradient distortion correction
 	# Set to NONE to skip gradient distortion correction
