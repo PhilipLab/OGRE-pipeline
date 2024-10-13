@@ -37,9 +37,19 @@ helpmsg(){
     echo "                          If 2mm, then Results/T1w_restore.2 and Results/T1w_restore_brain.2 are used."
 
     echo "                              NOTE: MNINonLinear/T1w_restore.2 is not the correct image. It is a so-called subcortical T1 for surface analysis."
+
+    #echo "    --t1highreshead -t1highreshead --t1hireshead -t1hireshead"
+    #echo "                          Input your own whole head T1."
+    #echo "                          Ex. --t1highreshead /Users/Shared/10_Connectivity/sub-1001/pipeline7.4.1/func/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
+    #START241010
     echo "    --t1highreshead -t1highreshead --t1hireshead -t1hireshead"
-    echo "                          Input your own whole head T1."
-    echo "                          Ex. --t1highreshead /Users/Shared/10_Connectivity/sub-1001/pipeline7.4.1/func/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
+    echo "                          Optional. Input your own whole head T1."
+    echo "                          By default, the location is extracted from the FEAT directory with the filename following OGRE BIDS naming conventions."
+    echo "                          e.g. -feat /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/sub-1001_symatlas/pipeline7.4.1"
+    echo "                               then t1highreshead = /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/sub-1001_symatlas/anat/sub-1001_OGRE-preproc_desc-restore_T1w.nii.gz"
+
+
+
     echo "    --t1highres -t1highres --t1hires -t1hires"
     echo "                          Input your own brain masked T1."
     echo "                          Ex. --t1highres /Users/Shared/10_Connectivity/10_1001/pipelineTest7.4.1/MNINonLinear/T1w_restore_brain.nii.gz"
@@ -181,8 +191,11 @@ if [ -z "${OGRESUBDIR}" ]; then
     STUDYPATH=${FEATDIR_LONG%%/derivatives*}
     DERIVDIR="${FEATDIR_LONG%%derivatives*}derivatives"
     OGRESUBDIR=${DERIVDIR}/preprocessed/${SUBJECT}
-    #echo "DD = ${DERIVDIR}"
+
+    echo "OGREmakeregdir STUDYPATH = $STUDYPATH"
+    echo "OGREmakeregdir DERIVDIR = $DERIVDIR"
 fi
+echo "OGREmakeregdir OGRESUBDIR = $OGRESUBDIR"
 
 ANATDIR=${OGRESUBDIR}/anat
 MNLDIR=${OGRESUBDIR}/pipeline${FREESURFVER}/MNINonLinear

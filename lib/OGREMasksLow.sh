@@ -41,6 +41,7 @@ for((i=0;i<${#@};++i));do
             ;;
         -T1wTemplateLow | --T1wTemplateLow)
             T1wTemplateLow=${arg[((++i))]}
+            ;;
         -O | --OGREDIR | -OGREDIR | --ogredir | -ogredir)
             OGREDIR=${arg[((++i))]}
             ;;
