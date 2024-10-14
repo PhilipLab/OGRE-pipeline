@@ -558,7 +558,8 @@ for Subject in $Subjlist ; do
     echo "Getting FinalFMRIResolution from $T1wTemplateLow ..."
     #https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
     IFS=$'\r\n\t, ' read -r -d '' -a arr < <( fslinfo $T1wTemplateLow | fgrep pixdim1 && printf '\0' ) 
-    FinalFMRIResolution=${arr[1]}
+    #https://stackoverflow.com/questions/18714645/how-can-i-remove-leading-and-trailing-zeroes-from-numbers-with-sed-awk-perl
+    FinalFMRIResolution=$(sed -e 's/^[0]*//' -e 's/[0]*$//' -e 's/\.$//g' <<< ${arr[1]})
     echo "    FinalFMRIResolution = ${FinalFMRIResolution}"
 
 
