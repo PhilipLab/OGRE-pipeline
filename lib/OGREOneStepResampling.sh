@@ -79,7 +79,10 @@ if [ $# -eq 0 ] ; then Usage; exit 0; fi
 WD=`getopt1 "--workingdir" $@`  # "$1"
 InputfMRI=`getopt1 "--infmri" $@`  # "$2"
 T1wImage=`getopt1 "--t1" $@`  # "$3"
-FinalfMRIResolution=`getopt1 "--fmriresout" $@`  # "$4"
+
+#START241013
+#FinalfMRIResolution=`getopt1 "--fmriresout" $@`  # "$4"
+
 fMRIFolder=`getopt1 "--fmrifolder" $@`
 fMRIToStructuralInput=`getopt1 "--fmri2structin" $@`  # "$6"
 StructuralToStandard=`getopt1 "--struct2std" $@`  # "$7"
@@ -96,8 +99,6 @@ ScoutInputgdc=`getopt1 "--scoutgdcin" $@`  # "${15}"
 ScoutOutput=`getopt1 "--oscout" $@`  # "${16}"
 JacobianOut=`getopt1 "--ojacobian" $@`  # "${18}"
 Analysis=`getopt1 "--analysis" $@`
-
-#START241007
 StudyFolder=`getopt1 "--StudyFolder" $@`
 
 BiasFieldFile=`basename "$BiasField"`
@@ -130,27 +131,7 @@ NumFrames=`${FSLDIR}/bin/fslval ${InputfMRI} dim4`
 #       2mm and 1mm cases because it doesn't know the peculiarities of the 
 #       MNI template FOVs
 
-#if [ ${FinalfMRIResolution} = "2" ] ; then
-#    ResampRefIm=$FSLDIR/data/standard/MNI152_T1_2mm
-#elif [ ${FinalfMRIResolution} = "1" ] ; then
-#    ResampRefIm=$FSLDIR/data/standard/MNI152_T1_1mm
-#else
-#  ${FSLDIR}/bin/flirt -interp spline -in ${T1wImage} -ref ${T1wImage} -applyisoxfm $FinalfMRIResolution -out ${WD}/${T1wImageFile}.${FinalfMRIResolution}
-#  ResampRefIm=${WD}/${T1wImageFile}.${FinalfMRIResolution} 
-#fi
-#${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1wImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wImageFile}.${FinalfMRIResolution}
-## Create brain masks in this space from the FreeSurfer output (changing resolution)
-#${FSLDIR}/bin/applywarp --rel --interp=nn -i ${FreeSurferBrainMask}.nii.gz -r ${WD}/${T1wImageFile}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz
-## Create versions of the biasfield (changing resolution)
-#${FSLDIR}/bin/applywarp --rel --interp=spline -i ${BiasField} -r ${WD}/${FreeSurferBrainMaskFile}.${FinalfMRIResolution}.nii.gz --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${BiasFieldFile}.${FinalfMRIResolution}
-#${FSLDIR}/bin/fslmaths ${WD}/${BiasFieldFile}.${FinalfMRIResolution} -thr 0.1 ${WD}/${BiasFieldFile}.${FinalfMRIResolution}
-## Downsample warpfield (fMRI to standard) to increase speed 
-##   NB: warpfield resolution is 10mm, so 1mm to fMRIres downsample loses no precision
-#${FSLDIR}/bin/convertwarp --relout --rel --warp1=${fMRIToStructuralInput} --warp2=${StructuralToStandard} --ref=${WD}/${T1wImageFile}.${FinalfMRIResolution} --out=${OutputTransform}
-
 if [ "${Analysis}" != "NATIVE" ] ; then
-
-
 
     #if [ ${FinalfMRIResolution} = "2" ] ; then
     #    ResampRefIm=$FSLDIR/data/standard/MNI152_T1_2mm
@@ -167,14 +148,14 @@ if [ "${Analysis}" != "NATIVE" ] ; then
     fi
     echo "Running $StudyFolder/templates/export_templates.sh"
     source $StudyFolder/templates/export_templates.sh
-    echo "T1wTemplate = $T1wTemplate"
-    echo "T1wTemplateBrain = $T1wTemplateBrain"
-    echo "T1wTemplateLow = $T1wTemplateLow"
-    echo "T2wTemplate = $T2wTemplate"
-    echo "T2wTemplateBrain = $T2wTemplateBrain"
-    echo "T2wTemplateLow = $T2wTemplateLow"
-    echo "TemplateMask = $TemplateMask"
-    echo "TemplateMaskLow = $TemplateMaskLow"
+    #echo "T1wTemplate = $T1wTemplate"
+    #echo "T1wTemplateBrain = $T1wTemplateBrain"
+    #echo "T1wTemplateLow = $T1wTemplateLow"
+    #echo "T2wTemplate = $T2wTemplate"
+    #echo "T2wTemplateBrain = $T2wTemplateBrain"
+    #echo "T2wTemplateLow = $T2wTemplateLow"
+    #echo "TemplateMask = $TemplateMask"
+    #echo "TemplateMaskLow = $TemplateMaskLow"
     ResampRefIm=$T1wTemplateLow
 
 

@@ -555,12 +555,12 @@ for Subject in $Subjlist ; do
     #echo T2wTemplateLow = $T2wTemplateLow
     #echo TemplateMask = $TemplateMask
     #echo TemplateMaskLow = $TemplateMaskLow
-    echo "Getting FinalFMRIResolution from $T1wTemplateLow ..."
-    #https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
-    IFS=$'\r\n\t, ' read -r -d '' -a arr < <( fslinfo $T1wTemplateLow | fgrep pixdim1 && printf '\0' ) 
-    #https://stackoverflow.com/questions/18714645/how-can-i-remove-leading-and-trailing-zeroes-from-numbers-with-sed-awk-perl
-    FinalFMRIResolution=$(sed -e 's/^[0]*//' -e 's/[0]*$//' -e 's/\.$//g' <<< ${arr[1]})
-    echo "    FinalFMRIResolution = ${FinalFMRIResolution}"
+    #echo "Getting FinalFMRIResolution from $T1wTemplateLow ..."
+    ##https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
+    #IFS=$'\r\n\t, ' read -r -d '' -a arr < <( fslinfo $T1wTemplateLow | fgrep pixdim1 && printf '\0' ) 
+    ##https://stackoverflow.com/questions/18714645/how-can-i-remove-leading-and-trailing-zeroes-from-numbers-with-sed-awk-perl
+    #FinalFMRIResolution=$(sed -e 's/^[0]*//' -e 's/[0]*$//' -e 's/\.$//g' <<< ${arr[1]})
+    #echo "    FinalFMRIResolution = ${FinalFMRIResolution}"
 
 
 
@@ -588,6 +588,34 @@ for Subject in $Subjlist ; do
     echo "cls_startIntensityNormalization = $cls_startIntensityNormalization"
     echo "cls_freesurferVersion = $cls_freesurferVersion"
 
+    #${queuing_command} ${P0} \
+    #  --path=$StudyFolder \
+    #  --subject=$Subject \
+    #  --fmriname=${fMRIName[i]} \
+    #  --fmritcs=${fMRITimeSeries[i]} \
+    #  --fmriscout=$fMRISBRef \
+    #  --SEPhaseNeg=$SpinEchoPhaseEncodeNegative \
+    #  --SEPhasePos=$SpinEchoPhaseEncodePositive \
+    #  --fmapmag=$MagnitudeInputName \
+    #  --fmapphase=$PhaseInputName \
+    #  --fmapgeneralelectric=$GEB0InputName \
+    #  --echospacing=$EchoSpacing \
+    #  --echodiff=$DeltaTE \
+    #  --unwarpdir=$UnwarpDir \
+    #  --fmrires=$FinalFMRIResolution \
+    #  --dcmethod=$DistortionCorrection \
+    #  --gdcoeffs=$GradientDistortionCoeffs \
+    #  --topupconfig=$TopUpConfig \
+    #  --printcom=$PRINTCOM \
+    #  --biascorrection=$BiasCorrection \
+    #  --mctype=${MCType} \
+    #  --analysis=$Analysis \
+    #  --freesurferVersion=$cls_freesurferVersion \
+    #  --userefinement=$cls_userefinement \
+    #  --startOneStepResampling=$cls_startOneStepResampling \
+    #  --startIntensityNormalization=$cls_startIntensityNormalization \
+    #  --dilation="$dilation"
+    #START241013
     ${queuing_command} ${P0} \
       --path=$StudyFolder \
       --subject=$Subject \
@@ -602,7 +630,6 @@ for Subject in $Subjlist ; do
       --echospacing=$EchoSpacing \
       --echodiff=$DeltaTE \
       --unwarpdir=$UnwarpDir \
-      --fmrires=$FinalFMRIResolution \
       --dcmethod=$DistortionCorrection \
       --gdcoeffs=$GradientDistortionCoeffs \
       --topupconfig=$TopUpConfig \
@@ -616,35 +643,6 @@ for Subject in $Subjlist ; do
       --startIntensityNormalization=$cls_startIntensityNormalization \
       --dilation="$dilation"
 
-  # The following lines are used for interactive debugging to set the positional parameters: $1 $2 $3 ...
-
-  #echo -e "--path=$StudyFolder\n \
-  #    --subject=$Subject\n \
-  #    --fmriname=${fMRIName[i]}\n \
-  #    --fmritcs=${fMRITimeSeries[i]}\n \
-  #    --fmriscout=$fMRISBRef\n \
-  #    --SEPhaseNeg=$SpinEchoPhaseEncodeNegative\n \
-  #    --SEPhasePos=$SpinEchoPhaseEncodePositive\n \
-  #    --fmapmag=$MagnitudeInputName\n \
-  #    --fmapphase=$PhaseInputName\n \
-  #    --fmapgeneralelectric=$GEB0InputName\n \
-  #    --echospacing=$EchoSpacing\n \
-  #    --echodiff=$DeltaTE\n \
-  #    --unwarpdir=$UnwarpDir\n \
-  #    --fmrires=$FinalFMRIResolution\n \
-  #    --dcmethod=$DistortionCorrection\n \
-  #    --gdcoeffs=$GradientDistortionCoeffs\n \
-  #    --topupconfig=$TopUpConfig\n \
-  #    --printcom=$PRINTCOM\n \
-  #    --biascorrection=$BiasCorrection\n \
-  #    --mctype=${MCType}\n \
-  #    --analysis=$Analysis\n \
-  #    --freesurferVersion=$cls_freesurferVersion\n \
-  #    --userefinement=$cls_userefinement\n \
-  #    --startOneStepResampling=$cls_startOneStepResampling\n \
-  #    --startIntensityNormalization=$cls_startIntensityNormalization\n"
-
-    #i=$(($i+1))
   done
 done
 echo "**** Exiting $0 ****"

@@ -448,6 +448,34 @@ if [ "$do_P0" -eq "1" ];then
 fi
 
 #One Step Resampling
+#if [ "$do_P1" -eq "1" ];then
+#    log_Msg "One Step Resampling"
+#    log_Msg "mkdir -p ${fMRIFolder}/OneStepResampling"
+#    mkdir -p ${fMRIFolder}/OneStepResampling
+#    ${RUN} ${P1} \
+#           --workingdir=${fMRIFolder}/OneStepResampling \
+#           --infmri=${fMRIFolder}/${OrigTCSName}.nii.gz \
+#           --t1=${AtlasSpaceFolder}/${T1wAtlasName} \
+#           --fmriresout=${FinalfMRIResolution} \
+#           --fmrifolder=${fMRIFolder} \
+#           --fmri2structin=${T1wFolder}/xfms/${fMRI2strOutputTransform} \
+#           --struct2std=${AtlasSpaceFolder}/xfms/${AtlasTransform} \
+#           --owarp=${AtlasSpaceFolder}/xfms/${OutputfMRI2StandardTransform} \
+#           --oiwarp=${AtlasSpaceFolder}/xfms/${Standard2OutputfMRITransform} \
+#           --motionmatdir=${fMRIFolder}/${MotionMatrixFolder} \
+#           --motionmatprefix=${MotionMatrixPrefix} \
+#           --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin \
+#           --freesurferbrainmask=${AtlasSpaceFolder}/${FreeSurferBrainMask} \
+#           --biasfield=${AtlasSpaceFolder}/${BiasFieldMNI} \
+#           --gdfield=${fMRIFolder}/${NameOffMRI}_gdc_warp \
+#           --scoutin=${fMRIFolder}/${OrigScoutName} \
+#           --scoutgdcin=${fMRIFolder}/${ScoutName}_gdc \
+#           --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
+#           --ojacobian=${fMRIFolder}/${JacobianOut}_MNI.${FinalfMRIResolution} \
+#           --analysis=${Analysis} \
+#           --StudyFolder=${Path}    #START241007
+#fi
+#START241013
 if [ "$do_P1" -eq "1" ];then
     log_Msg "One Step Resampling"
     log_Msg "mkdir -p ${fMRIFolder}/OneStepResampling"
@@ -456,7 +484,6 @@ if [ "$do_P1" -eq "1" ];then
            --workingdir=${fMRIFolder}/OneStepResampling \
            --infmri=${fMRIFolder}/${OrigTCSName}.nii.gz \
            --t1=${AtlasSpaceFolder}/${T1wAtlasName} \
-           --fmriresout=${FinalfMRIResolution} \
            --fmrifolder=${fMRIFolder} \
            --fmri2structin=${T1wFolder}/xfms/${fMRI2strOutputTransform} \
            --struct2std=${AtlasSpaceFolder}/xfms/${AtlasTransform} \
@@ -473,8 +500,9 @@ if [ "$do_P1" -eq "1" ];then
            --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
            --ojacobian=${fMRIFolder}/${JacobianOut}_MNI.${FinalfMRIResolution} \
            --analysis=${Analysis} \
-           --StudyFolder=${Path}    #START241007
+           --StudyFolder=${Path}
 fi
+
 
 
 

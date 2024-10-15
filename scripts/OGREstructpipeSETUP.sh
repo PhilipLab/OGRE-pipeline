@@ -563,19 +563,41 @@ cp -p -f $T2wTemplate ${dir0}/templates
 cp -p -f $T2wTemplateBrain ${dir0}/templates
 cp -p -f $T2wTemplateLow ${dir0}/templates
 cp -p -f $TemplateMask ${dir0}/templates
-
-FT=${dir0}/templates/export_templates.sh
-echo -e "$shebang\nset -e\n" > ${FT} 
-echo export T1wTemplate=${dir0}/templates/${T1wTemplate##*/} >> ${FT}
-echo export T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain##*/} >> ${FT}
-echo export T1wTemplateLow=${dir0}/templates/${T1wTemplateLow##*/} >> ${FT}
-echo export T2wTemplate=${dir0}/templates/${T2wTemplate##*/} >> ${FT}
-echo export T2wTemplateBrain=${dir0}/templates/${T2wTemplateBrain##*/} >> ${FT}
-echo export T2wTemplateLow=${dir0}/templates/${T2wTemplateLow##*/} >> ${FT}
-echo export TemplateMask=${dir0}/templates/${TemplateMask##*/} >> ${FT}
-echo export TemplateMaskLow=${dir0}/templates/${TemplateMaskLow##*/} >> ${FT}
-
 #We might consider adding an option to softlink instead copying.
+
+#FT=${dir0}/templates/export_templates.sh
+#echo -e "$shebang\nset -e\n" > ${FT} 
+#echo export T1wTemplate=${dir0}/templates/${T1wTemplate##*/} >> ${FT}
+#echo export T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain##*/} >> ${FT}
+#echo export T1wTemplateLow=${dir0}/templates/${T1wTemplateLow##*/} >> ${FT}
+#echo export T2wTemplate=${dir0}/templates/${T2wTemplate##*/} >> ${FT}
+#echo export T2wTemplateBrain=${dir0}/templates/${T2wTemplateBrain##*/} >> ${FT}
+#echo export T2wTemplateLow=${dir0}/templates/${T2wTemplateLow##*/} >> ${FT}
+#echo export TemplateMask=${dir0}/templates/${TemplateMask##*/} >> ${FT}
+#echo export TemplateMaskLow=${dir0}/templates/${TemplateMaskLow##*/} >> ${FT}
+#START241013
+FT=${dir0}/templates/export_templates.sh
+echo -e "$shebang\nset -e\n" > ${FT}
+echo "export T1wTemplate=${dir0}/templates/${T1wTemplate##*/}" >> ${FT}
+echo "export T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain##*/}" >> ${FT}
+echo "export T1wTemplateLow=${dir0}/templates/${T1wTemplateLow##*/}" >> ${FT}
+echo "export T2wTemplate=${dir0}/templates/${T2wTemplate##*/}" >> ${FT}
+echo "export T2wTemplateBrain=${dir0}/templates/${T2wTemplateBrain##*/}" >> ${FT}
+echo "export T2wTemplateLow=${dir0}/templates/${T2wTemplateLow##*/}" >> ${FT}
+echo "export TemplateMask=${dir0}/templates/${TemplateMask##*/}" >> ${FT}
+echo -e "export TemplateMaskLow=${dir0}/templates/${TemplateMaskLow##*/}\n" >> ${FT}
+#https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
+echo "IFS=$'\r\n\t, ' read -r -d '' -a arr < <( fslinfo "'$T1wTemplateLow'" | fgrep pixdim1 && printf '\0' )" >> ${FT}
+#https://stackoverflow.com/questions/18714645/how-can-i-remove-leading-and-trailing-zeroes-from-numbers-with-sed-awk-perl
+echo export FinalfMRIResolution='$'"(sed -e 's/^[0]*//' -e 's/[0]*"'$'"//' -e 's/\."'$'"//g' <<< "'$'"{arr[1]})" >> ${FT}
+
+
+
+
+
+
+
+
 
 
 
