@@ -105,8 +105,6 @@ BiasFieldFile=`basename "$BiasField"`
 T1wImageFile=`basename $T1wImage`
 FreeSurferBrainMaskFile=`basename "$FreeSurferBrainMask"`
 
-echo -e "\nSTART: $0"
-
 mkdir -p $WD
 
 # Record the input options in a log file

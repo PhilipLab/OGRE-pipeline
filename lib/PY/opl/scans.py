@@ -96,6 +96,26 @@ class Scans:
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
 
+
+
+            #if self.T2:
+            #    f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
+            #    f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
+            #else:
+            #    f0.write('ANAT=(T1w_restore T1w_restore_brain)\n')
+            #    f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain)\n')
+            #f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
+            #f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
+            #f0.write('    if [ ! -f "${file}" ];then\n')
+            #f0.write('        echo ${file} not found.\n')
+            #f0.write('        continue\n')
+            #f0.write('    fi\n')
+            #f0.write('    file1=${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
+            #f0.write('    cp -f -p $file ${file1}\n')
+            #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
+            #f0.write('done\n\n')
+            #START241016
+#STARTHERE
             if self.T2:
                 f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
                 f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
@@ -113,7 +133,6 @@ class Scans:
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
 
-#STARTHERE cp T1 low res
 
 
             f0.write('mkdir -p ${bids}/regressors\n')

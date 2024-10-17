@@ -80,20 +80,19 @@ if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
 fi
 echo "Running $StudyFolder/templates/export_templates.sh"
 source $StudyFolder/templates/export_templates.sh
-#echo "T1wTemplate = $T1wTemplate"
-#echo "T1wTemplateBrain = $T1wTemplateBrain"
-#echo "T1wTemplateLow = $T1wTemplateLow"
-#echo "T2wTemplate = $T2wTemplate"
-#echo "T2wTemplateBrain = $T2wTemplateBrain"
-#echo "T2wTemplateLow = $T2wTemplateLow"
-#echo "TemplateMask = $TemplateMask"
-#echo "TemplateMaskLow = $TemplateMaskLow"
-##https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
-#IFS=$'\r\n\t, ' read -r -d '' -a arr < <( fslinfo $T1wTemplateLow | fgrep pixdim1 && printf '\0' )
-##https://stackoverflow.com/questions/18714645/how-can-i-remove-leading-and-trailing-zeroes-from-numbers-with-sed-awk-perl
-#FinalfMRIResolution=$(sed -e 's/^[0]*//' -e 's/[0]*$//' -e 's/\.$//g' <<< ${arr[1]})
-T1wImageFile=$(basename $OutputMNIT1wImageRestore)
-${FSLDIR}/bin/applywarp --rel --interp=spline -i $OutputMNIT1wImageRestore -r $T1wTemplateLow --premat=$FSLDIR/etc/flirtsch/ident.mat -o $AtlasSpaceFolder/${T1wImageFile}.${FinalfMRIResolution}
+
+
+#T1wImageFile=$(basename $OutputMNIT1wImageRestore)
+#${FSLDIR}/bin/applywarp --rel --interp=spline -i $OutputMNIT1wImageRestore -r $T1wTemplateLow --premat=$FSLDIR/etc/flirtsch/ident.mat -o $AtlasSpaceFolder/${T1wImageFile}.${FinalfMRIResolution}
+#START241016
+${FSLDIR}/bin/applywarp --rel --interp=spline -i $OutputMNIT1wImageRestore -r $T1wTemplateLow --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${OutputMNIT1wImageRestore}.${FinalfMRIResolution}
+#T1wMNIImageBrain is brainmask_fs. This should be relabeled
+${FSLDIR}/bin/applywarp --rel --interp=nn -i "$T1wMNIImageBrain" -r ${OutputMNIT1wImageRestore}.${FinalfMRIResolution} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${T1wMNIImageBrain}.${FinalfMRIResolution}
+fslmaths ${OutputMNIT1wImageRestore}.${FinalfMRIResolution} -mas ${T1wMNIImageBrain}.${FinalfMRIResolution} ${OutputMNIT1wImageRestoreBrain}.${FinalfMRIResolution}
+
+
+
+
 
 
 #echo "T1w images completed"
