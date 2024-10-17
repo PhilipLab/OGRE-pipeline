@@ -92,27 +92,28 @@ fi
 
 #START241008
 if [ -z "${T1wTemplateLow}" ];then
-    if [ ! -f "$StudyFolder/templates/export_templates.sh" ];then
+    if [ ! -f "$PIPEDIR/templates/export_templates.sh" ];then
         echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
         exit
     fi
-    echo "Running $StudyFolder/templates/export_templates.sh"
-    source $StudyFolder/templates/export_templates.sh
-    echo "T1wTemplate = $T1wTemplate"
-    echo "T1wTemplateBrain = $T1wTemplateBrain"
+    echo "Running $PIPEDIR/templates/export_templates.sh"
+    source $PIPEDIR/templates/export_templates.sh
+    #echo "T1wTemplate = $T1wTemplate"
+    #echo "T1wTemplateBrain = $T1wTemplateBrain"
     echo "T1wTemplateLow = $T1wTemplateLow"
-    echo "T2wTemplate = $T2wTemplate"
-    echo "T2wTemplateBrain = $T2wTemplateBrain"
-    echo "T2wTemplateLow = $T2wTemplateLow"
-    echo "TemplateMask = $TemplateMask"
-    echo "TemplateMaskLow = $TemplateMaskLow"
+    #echo "T2wTemplate = $T2wTemplate"
+    #echo "T2wTemplateBrain = $T2wTemplateBrain"
+    #echo "T2wTemplateLow = $T2wTemplateLow"
+    #echo "TemplateMask = $TemplateMask"
+    #echo "TemplateMaskLow = $TemplateMaskLow"
+    echo "FinalfMRIResolution = $FinalfMRIResolution"
 fi
 
 
 masks=(graymatter whitematter cerebrospinalfluid)
 for i in ${masks[@]};do 
-    in=$PIPEDIR/gm_wm_csf/$SUBJECT_$i.nii.gz
-    out=$PIPEDIR/gm_wm_csf/$SUBJECT_$i.2.nii.gz
+    in=$PIPEDIR/MNINonLinear/gm_wm_csf/${SUBJECT}_$i.nii.gz
+    out=$PIPEDIR/MNINonLinear/gm_wm_csf/${SUBJECT}_$i.${FinalfMRIResolution}.nii.gz
     if [ ! -f "$in" ];then
         echo $in does not exist. Skipping ...
         continue
