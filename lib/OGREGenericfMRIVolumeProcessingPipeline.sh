@@ -33,6 +33,10 @@ do_P2=1
 source $HCPPIPEDIR/global/scripts/log.shlib  # Logging related functions
 source $HCPPIPEDIR/global/scripts/opts.shlib # Command line option functions
 
+
+
+
+
 ################################################ SUPPORT FUNCTIONS ##################################################
 
 # --------------------------------------------------------------------------------
@@ -101,8 +105,9 @@ log_Msg "deltaTE: ${deltaTE}"
 UnwarpDir=`opts_GetOpt1 "--unwarpdir" $@`  
 log_Msg "UnwarpDir: ${UnwarpDir}"
 
-FinalfMRIResolution=`opts_GetOpt1 "--fmrires" $@`  
-log_Msg "FinalfMRIResolution: ${FinalfMRIResolution}"
+#START241017
+#FinalfMRIResolution=`opts_GetOpt1 "--fmrires" $@`  
+#log_Msg "FinalfMRIResolution: ${FinalfMRIResolution}"
 
 # FIELDMAP, SiemensFieldMap, GeneralElectricFieldMap, or TOPUP
 # Note: FIELDMAP and SiemensFieldMap are equivalent
@@ -158,6 +163,14 @@ log_Msg "startIntensityNormalization: ${startIntensityNormalization}"
 dilation=`opts_GetOpt1 "--dilation" $@`
 
 
+#START241017
+if [ ! -f "$Path/templates/export_templates.sh" ];then
+    echo "Please run OGREstructpipeSETUP.sh to set up the templates. Abort!"
+    exit 1
+fi
+echo "Running $Path/templates/export_templates.sh"
+source $Path/templates/export_templates.sh
+echo "FinalfMRIResolution = ${FinalfMRIResolution}"
 
 
 echo "startOneStepResampling = $startOneStepResampling"
