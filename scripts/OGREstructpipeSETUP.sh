@@ -616,7 +616,12 @@ echo SETUP='${OGREDIR}'/lib/${SETUP} >> ${F0}
 echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
 
 echo "s0=${s0}" >> ${F0}
-echo -e "sf0=${dir1}\n" >> ${F0}
+
+#echo -e "sf0=${dir1}\n" >> ${F0}
+#START241018
+echo "bids=${cd0}" >> ${F0}
+echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${F0}
+
 
 #START241002
 #echo -e "Hires=${Hires}" >> ${F0}
@@ -676,9 +681,42 @@ echo '    --runlocal \' >> ${F0}
 echo '    --erosion=${erosion} \' >> ${F0}
 echo '    --dilation=${dilation} \' >> ${F0}
 echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
-echo '${MASKS} ${sf0}' >> ${F0}
+#echo '${MASKS} ${sf0}' >> ${F0}
+echo -e '${MASKS} ${sf0}\n' >> ${F0}
 
-#START240806
+
+#START241018
+echo 'mkdir -p ${bids}/anat' >> ${F0}
+echo 'source ${sf0}/templates/export_templates.sh #->FinalfMRIResolution' >> ${F0}
+echo 'ANAT=(T1w_restore \' >> ${F0}
+echo '      T1w_restore_brain \'  >> ${F0}
+echo '      T1w_restore.${FinalfMRIResolution} \' >> ${F0}
+[ -n "${T2f}" ] && ender=' \' || ender=')'
+echo '      T1w_restore_brain.${FinalfMRIResolution}'$ender  >> ${F0}
+if [ -n "${T2f}" ];then
+    echo '      T2w_restore \'  >> ${F0}
+    echo '      T2w_restore_brain)'  >> ${F0}
+fi
+echo 'OUT=(OGRE-preproc_desc-restore_T1w \' >> ${F0}
+echo '     OGRE-preproc_desc-restore_T1w_brain \' >> ${F0}
+echo '     OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w \' >> ${F0}
+echo '     OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w_brain'$ender >> ${F0}
+if [ -n "${T2f}" ];then
+    echo '     OGRE-preproc_desc-restore_T2w \' >> ${F0}
+    echo '     OGRE-preproc_desc-restore_T2w_brain)' >> ${F0}
+fi
+echo 'for((i=0;i<${#ANAT[@]};++i));do' >> ${F0}
+echo '    anat=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz' >> ${F0}
+echo '    if [ ! -f "${anat}" ];then' >> ${F0}
+echo '        echo ${anat} not found.' >> ${F0}
+echo '        continue' >> ${F0}
+echo '    fi' >> ${F0}
+echo '    out=${bids}/anat/${s0}_${OUT[i]}.nii.gz' >> ${F0}
+echo '    cp -f -p ${anat} ${out}' >> ${F0}
+echo '    echo -e "${anat}\n    copied to ${out}"' >> ${F0}
+echo 'done' >> ${F0}
+
+
 echo -e '\necho -e "Finshed $0\\nOGRE structural pipeline completed."' >> ${F0}
 
 echo -e "$shebang\nset -e\n" > ${F1} 

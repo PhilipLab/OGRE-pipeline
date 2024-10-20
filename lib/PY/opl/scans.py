@@ -73,7 +73,8 @@ class Scans:
             f0.write(f'{SHEBANG}\nset -e\n\n')
             f0.write(f'FREESURFVER={FREESURFVER}\n\n')
             f0.write(pathstr+'\n') # s0, bids and sf0
-            f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
+            #f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
+            f0.write('mkdir -p ${bids}/func\n\n')
             self.write_bold_bash(f0,s0,self.bold)
             f0.write('\nfor i in ${BOLD[@]};do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
@@ -96,8 +97,7 @@ class Scans:
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('done\n\n')
 
-
-
+            #START241018
             #if self.T2:
             #    f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
             #    f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
@@ -114,26 +114,6 @@ class Scans:
             #f0.write('    cp -f -p $file ${file1}\n')
             #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             #f0.write('done\n\n')
-            #START241016
-#STARTHERE
-            if self.T2:
-                f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-                f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
-            else:
-                f0.write('ANAT=(T1w_restore T1w_restore_brain)\n')
-                f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain)\n')
-            f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
-            f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
-            f0.write('    if [ ! -f "${file}" ];then\n')
-            f0.write('        echo ${file} not found.\n')
-            f0.write('        continue\n')
-            f0.write('    fi\n')
-            f0.write('    file1=${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
-            f0.write('    cp -f -p $file ${file1}\n')
-            f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
-            f0.write('done\n\n')
-
-
 
             f0.write('mkdir -p ${bids}/regressors\n')
             f0.write('MC=(Movement_Regressors.txt Movement_Regressors_dt.txt)\n')
