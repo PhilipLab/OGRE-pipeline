@@ -39,7 +39,7 @@ class Feat:
             #print(f'Reading {i} ...') 
             p0 = pathlib.Path(i)
             if not p0.exists():
-                print(f'ERROR: {i} does not exist. Skipping!')
+                print(f'ERROR: {p0} does not exist. Skipping!')
                 continue 
             if p0.is_dir():
                 fsf0 = p0.glob('*.fsf') 
@@ -51,19 +51,16 @@ class Feat:
 
             elif p0.is_file():
                 if p0.suffix=='.fsf': 
-
                     #print(f'p0.as_posix()={p0.as_posix()}')
-
                     self.__grep_fsf(p0.as_posix())
                 else:
                     with open(p0,encoding="utf8",errors='ignore') as f0:
                         for line0 in f0:
                             line1=line0.strip()
                             if not line1 or line1.startswith('#'): continue
-
-                            p0 = pathlib.Path(line0)
+                            p0 = pathlib.Path(line1)
                             if not p0.exists():
-                                print(f'{line0} does not exist. Skipping!')
+                                print(f'{p0} does not exist. Skipping!')
                                 continue
                             if p0.is_dir():
                                 fsf0 = p0.glob('*.fsf')
@@ -74,7 +71,7 @@ class Feat:
                                 if p0.suffix=='.fsf':
                                     self.__grep_fsf(p0.as_posix())
                             else:
-                                print(f'{i} is neither a directory of file. Skipping!')
+                                print(f'{line1} is neither a directory of file. Skipping!')
             else:
                 print(f'{i} is neither a directory of file. Skipping!')
         #print(f'self.outputdir = {self.outputdir}') 
