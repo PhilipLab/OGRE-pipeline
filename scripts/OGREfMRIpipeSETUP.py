@@ -734,8 +734,18 @@ if __name__ == "__main__":
                     if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
 
                 Fcleanf.write(f'{gev.SHEBANG}\n\n')
-                Fcleanf.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
+
+                #Fcleanf.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
+                #Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
+                #START241103
+                Fcleanf.write(f'FREESURFVER={gev.FREESURFVER}\n{pathstr}')
+                Fcleanf.write('\nmkdir -p ${sf0}/MNINonLinearSave\n')
+                Fcleanf.write('cp -r ${sf0}/MNINonLinear/gm_wm_csf ${sf0}/MNINonLinearSave\n')
+                Fcleanf.write('cp -r ${sf0}/MNINonLinear/Results ${sf0}/MNINonLinearSave\n')
                 Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
+                Fcleanf.write('mv ${sf0}/MNINonLinearSave ${sf0}/MNINonLinear\n\n')
+
+
                 Fcleanf.write('rm -rf ${sf0}/T1w\n')
                 Fcleanf.write('rm -rf ${sf0}/T2w\n')
                 par.write_bold_bash(Fcleanf,s0,par.bold)
