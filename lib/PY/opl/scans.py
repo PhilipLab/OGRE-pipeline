@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#/usr/bin/env python3
 
 import re
 import pathlib
@@ -15,8 +15,6 @@ class Scans:
         self.restidx = []
         self.dwifmap = []
         self.dwi = []
-
-        #START240823
         self.T2 = []
 
         with open(file,encoding="utf8",errors='ignore') as f0:

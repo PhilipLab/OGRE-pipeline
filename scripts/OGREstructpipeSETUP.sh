@@ -319,7 +319,19 @@ if [ -n "${bs}" ];then
 fi
 
 echo "Reading ${dat}"
-sed -i '' $'s/\r$//' ${dat}
+
+
+#sed -i '' $'s/\r$//' ${dat}
+#START241106
+#https://stackoverflow.com/questions/40393643/preserve-timestamp-in-sed-command
+#cp -p ${dat} tmp; sed -i '' $'s/\r$//' ${dat}; touch -r tmp ${dat}; rm -f tmp
+#t=$(stat -c %y "${dat}"); sed -i '' $'s/\r$//' ${dat}; touch -d "$t" "${dat}" #does not preserve timestamp
+#https://stackoverflow.com/questions/34432514/preserve-timestamp-when-editing-file
+touch -r ${dat} tmp; sed -i '' $'s/\r$//' ${dat}; touch -r tmp ${dat}; rm -f tmp
+
+
+
+
 unset T1f T2f
 cnt=0
 #https://stackoverflow.com/questions/24537483/bash-loop-to-get-lines-in-a-file-skipping-comments-and-blank-lines
@@ -334,6 +346,7 @@ while IFS=$'\t, ' read -ra line; do
     fi
     ((cnt==2)) && break
 done < <(grep -vE '^(\s*$|#)' ${dat})
+
 
 if [ -z "${T1f}" ];then
     echo -e "    T1 not found with searchstr = \"${T1SEARCHSTR}\" Abort!"
