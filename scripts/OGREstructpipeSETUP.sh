@@ -15,6 +15,9 @@ POST=OGREPostFreeSurferPipelineBatch.sh
 SETUP=OGRESetUpHCPPipeline.sh
 MASKS=OGRESplitFreeSurferMasks.sh
 
+#START241107
+MASKSLOW=OGREMasksLow.sh
+
 #Resolution. MNI152  options: 1, 0.7 or 0.8
 #            mni_sym options: 1, 0.7, 0.8 #or 0.5
 Hires=1
@@ -626,7 +629,11 @@ echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
 echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
 echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
 echo SETUP='${OGREDIR}'/lib/${SETUP} >> ${F0}
-echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
+
+#echo -e MASKS='${OGREDIR}'/lib/${MASKS}'\n' >> ${F0}
+#START241107
+echo MASKS='${OGREDIR}'/lib/${MASKS} >> ${F0}
+echo -e MASKSLOW='${OGREDIR}'/lib/${MASKSLOW}'\n' >> ${F0}
 
 echo "s0=${s0}" >> ${F0}
 
@@ -694,9 +701,9 @@ echo '    --runlocal \' >> ${F0}
 echo '    --erosion=${erosion} \' >> ${F0}
 echo '    --dilation=${dilation} \' >> ${F0}
 echo -e '    --EnvironmentScript=${SETUP}\n' >> ${F0}
-#echo '${MASKS} ${sf0}' >> ${F0}
-echo -e '${MASKS} ${sf0}\n' >> ${F0}
 
+echo '${MASKS} ${sf0}' >> ${F0}
+echo -e '${MASKSLOW} ${sf0}\n' >> ${F0}
 
 #START241018
 echo 'mkdir -p ${bids}/anat' >> ${F0}

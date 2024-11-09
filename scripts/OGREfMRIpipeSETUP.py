@@ -13,8 +13,8 @@ P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh'
 P2='OGRESmoothingProcess.sh'
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
-P4='OGRESplitFreeSurferMasks.sh'
-P5='OGREMasksLow.sh'
+#P4='OGRESplitFreeSurferMasks.sh'
+#P5='OGREMasksLow.sh'
 
 from contextlib import ExitStack
 def open_files(filenames,mode):
@@ -533,9 +533,9 @@ if __name__ == "__main__":
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
 
                     #START240917
-                    F0f[0].write('GM_WM_CSF=${OGREDIR}/lib/'+P4+'\n')
+                    #F0f[0].write('GM_WM_CSF=${OGREDIR}/lib/'+P4+'\n')
                     #START241008
-                    F0f[0].write('GM_WM_CSF_LOW=${OGREDIR}/lib/'+P5+'\n')
+                    #F0f[0].write('GM_WM_CSF_LOW=${OGREDIR}/lib/'+P5+'\n')
 
 
                 if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
@@ -610,10 +610,9 @@ if __name__ == "__main__":
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
 
-                    F0f[0].write('${GM_WM_CSF} ${sf0}\n')
-
+                    #F0f[0].write('${GM_WM_CSF} ${sf0}\n')
                     #START241008
-                    F0f[0].write('${GM_WM_CSF_LOW} ${sf0}\n')
+                    #F0f[0].write('${GM_WM_CSF_LOW} ${sf0}\n')
 
                 if par.taskidx:
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
