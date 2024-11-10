@@ -725,6 +725,7 @@ if [ -n "${T2f}" ];then
     echo '     OGRE-preproc_desc-restore_T2w \' >> ${F0}
     echo '     OGRE-preproc_desc-restore_T2w_brain)' >> ${F0}
 fi
+
 echo 'for((i=0;i<${#ANAT[@]};++i));do' >> ${F0}
 echo '    anat=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz' >> ${F0}
 echo '    if [ ! -f "${anat}" ];then' >> ${F0}
@@ -735,6 +736,29 @@ echo '    out=${bids}/anat/${s0}_${OUT[i]}.nii.gz' >> ${F0}
 echo '    cp -f -p ${anat} ${out}' >> ${F0}
 echo '    echo -e "${anat}\n    copied to ${out}"' >> ${F0}
 echo 'done' >> ${F0}
+
+
+#START241108
+T1j=${T1f//nii.gz/json}
+[ -n "${T2f}" ] && T2j=${T2f//nii.gz/json}
+echo -e '\nFILE=(${bids}/anat/${s0}_OGRE-preproc_desc-restore_T1w.nii.gz \' >> ${F0}
+echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T1w_brain.nii.gz \' >> ${F0}
+echo '     ${bids}/anat/${s0}_OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w.nii.gz \' >> ${F0}
+echo '     ${bids}/anat/${s0}_OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w_brain.nii.gz'$ender >> ${F0}
+if [ -n "${T2f}" ];then
+    echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T2w.nii.gz \' >> ${F0}
+    echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T2w_brain.nii.gz)' >> ${F0}
+fi
+echo 'JSON=('${T1j}' \' >> ${F0}
+echo '      '${T1j}' \' >> ${F0}
+echo '      '${T1j}' \' >> ${F0}
+[ -n "${T2j}" ] && ender=' \' || ender=')'
+echo '      '${T1j}$ender >> ${F0}
+if [ -n "${T2j}" ];then
+    echo '      '${T2j}' \' >> ${F0}
+    echo '      '${T2j}')' >> ${F0}
+fi
+echo 'OGREjson.py -f "${FILE[@]}" -j "${JSON[@]}"' >> ${F0} #@ needed for python to see arrays
 
 
 echo -e '\necho -e "Finshed $0\\nOGRE structural pipeline completed."' >> ${F0}
