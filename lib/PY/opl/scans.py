@@ -74,26 +74,60 @@ class Scans:
             #f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
             f0.write('mkdir -p ${bids}/func\n\n')
             self.write_bold_bash(f0,s0,self.bold)
-            f0.write('\nfor i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
+
+            #START241109
+            f0.write('\nJSON=(\\\n')
+            j=-1 #default value needed for a single bold
+            for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split('.nii')[0]}.json \\\n')
+            f0.write(f'        {self.bold[j+1][0].split('.nii')[0]}.json)\n')
+
+            #f0.write('\nfor i in ${BOLD[@]};do\n')
+            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
+            #f0.write('    if [ ! -f "${file}" ];then\n')
+            #f0.write('        echo ${file} not found.\n')
+            #f0.write('        continue\n')
+            #f0.write('    fi\n')
+            #f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
+            #f0.write('    cp -f -p $file ${file1}\n')
+            #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
+            #f0.write('done\n\n')
+            #START241109
+            f0.write('\nfor i in "${!BOLD[@]}";do\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${BOLD[i]}/${BOLD[i]}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
+            f0.write('    file1=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
             f0.write('    cp -f -p $file ${file1}\n')
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
-            f0.write('done\n\n')
-            f0.write('for i in ${BOLD[@]};do\n')
-            f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
+            f0.write('    OGREjson.py -f "${file1}" -j "${JSON[i]}"\n')
+            f0.write('done\n')
+
+            #f0.write('for i in ${BOLD[@]};do\n')
+            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
+            #f0.write('    if [ ! -f "${file}" ];then\n')
+            #f0.write('        echo ${file} not found.\n')
+            #f0.write('        continue\n')
+            #f0.write('    fi\n')
+            #f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
+            #f0.write('    cp -f -p $file ${file1}\n')
+            #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
+            #f0.write('done\n\n')
+            #START241109
+            f0.write('\nfor i in "${!BOLD[@]}";do\n')
+            f0.write('    file=${sf0}/MNINonLinear/Results/${BOLD[i]}/brainmask_fs.2.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
             f0.write('        echo ${file} not found.\n')
             f0.write('        continue\n')
             f0.write('    fi\n')
-            f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
+            f0.write('    file1=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
             f0.write('    cp -f -p $file ${file1}\n')
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
+            f0.write('    OGREjson.py -f "${file1}" -j "${JSON[i]}"\n')
             f0.write('done\n\n')
+
+
 
             #START241018
             #if self.T2:
@@ -148,24 +182,27 @@ class Scans:
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
 
-        f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n')
+        #f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n') #241109 json's are now being written
+
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
         f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
         f0.write('    ${SMOOTH} \\\n')
         f0.write('        --fMRITimeSeriesResults="$file"\\\n')
         if fwhm: f0.write(f'        --fwhm="{' '.join(fwhm)}" \\\n')
+
+        #if paradigm_hp_sec:
+        #    f0.write(f'        --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
+        #    f0.write('        --TR="${TR[i]}" \n')
+        #START241109
         if paradigm_hp_sec:
-            f0.write(f'        --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-            f0.write('        --TR="${TR[i]}" \n')
+            f0.write(f'        --paradigm_hp_sec="{paradigm_hp_sec}" \n')
+
         f0.write('done\n\n')
 
     def write_bold_bash(self,f0,s0,bolds):
         bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
         f0.write('BOLD=(\\\n')
-
-        #START240916
         j=-1 #default value needed for single bold
-
         for j in range(len(bold_bash)-1):
             str0 = pathlib.Path(bold_bash[j]).name.split('.nii')[0]
             f0.write(f'    {str0} \\\n')

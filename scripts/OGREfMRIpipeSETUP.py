@@ -554,14 +554,11 @@ if __name__ == "__main__":
                     F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
                     if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
                     F0f[0].write(f'dilation={args.dilation}\n')
+
                     F0f[0].write('\nRAW_BOLD=(\\\n')
-
-                    #START240916
                     j=-1 #default value needed for a single bold
-
                     for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
                     F0f[0].write(f'        {par.bold[j+1][0]})\n')
-
 
                     F0f[0].write('\n${VOLPROC} \\\n')
                     F0f[0].write('    --StudyFolder=${sf0} \\\n')

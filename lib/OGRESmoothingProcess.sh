@@ -134,14 +134,18 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
         if [ -n "${command_line_specified_TR}" ];then
             TR0=${TR[i]}
         else
-            echo "here0" 
-            json=${fMRITimeSeriesResults[i]%%.*}.json
+
+            #json=${fMRITimeSeriesResults[i]%%.*}.json
+            #START241109
+            json=${fMRITimeSeriesResults[i]//nii.gz/json}
+
             if [ ! -f $json ];then
                 echo " $json not found"
                 continue
             fi
             IFS=$' ,' read -ra line0 < <( grep RepetitionTime $json )
             TR0=${line0[1]}
+            echo "Found TR=${TR0}"
         fi
     fi
 
@@ -240,6 +244,10 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
         fi
 
         echo "Output written to ${out0}"
+
+        #START241109
+        OGREjson.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}"
+
     done
 
     rm -r ${sd0}
