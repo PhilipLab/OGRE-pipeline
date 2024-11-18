@@ -123,11 +123,6 @@ class Feat:
 
         opl.rou.make_executable(filename)
 
-#def abort(string):
-#    hd='Archaic. Use --container_directory instead. Abort!'
-#    print(f'{sys.argv}Your option list includes {string}\n{hd}')
-#    exit()
-
 if __name__ == "__main__":
 
     parser=argparse.ArgumentParser(description=f'Create OGRE fMRI pipeline script. Required: OGREfMRIpipeSETUP.py <scanlist.csv>',formatter_class=argparse.RawTextHelpFormatter)
@@ -440,15 +435,6 @@ if __name__ == "__main__":
                         + f'    New container directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
                         + f'    Is this what you want? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-
-                
-            #START240909
-            #d0 = str(pathlib.Path(args.cd0).resolve())
-            #dir0 = d0 + '/pipeline' + gev.FREESURFVER
-            #bids = d0 
-            #dir1 = '${bids}/pipeline${FREESURFVER}'
-            #dir2 = bids + '/pipeline${FREESURFVER}'
-
         else:
             idx = i.find('raw_data')
             if idx == -1:
@@ -467,7 +453,10 @@ if __name__ == "__main__":
 
         #print(f'dir0={dir0}\ndir1={dir1}\ndir2={dir2}')
 
-        stem0 = dir0 + '/' + s0
+        #stem0 = dir0 + '/' + s0
+        #START241117
+        stem0 = dir0 + '/scripts/' + s0
+
         str0 = stem0 + '_' + l0 + datestr
 
         F0 = [str0 + '.sh']

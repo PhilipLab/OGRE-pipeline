@@ -403,20 +403,32 @@ if((lchostname==1));then
     dir0+=_$(hostname)
     dir1+=_'$(hostname)'
 fi
-mkdir -p ${dir0}
+
+#START241117
+#mkdir -p ${dir0}
+
 datestr=''
 if((lcdate==1));then
     datestr=_$(date +%y%m%d)
 elif((lcdate==2));then
     datestr=_$(date +%y%m%d%H%M%S)
 fi
-F0stem=${dir0}/${s0}_OGREstruct${datestr} 
+
+#F0stem=${dir0}/${s0}_OGREstruct${datestr} 
+#START241117
+mkdir -p ${dir0}/scripts
+F0stem=${dir0}/scripts/${s0}_OGREstruct${datestr} 
+
 F0=${F0stem}.sh
 F1=${F0stem}_fileout.sh
 F0name='${s0}'_OGREstruct${datestr}.sh
 
 if [ -n "${bs}" ];then
-    bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
+
+    #bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
+    #START241117
+    bs0stem=${dir0}/scripts/${s0}_OGREbatch${datestr} 
+
     bs0=${bs0stem}.sh
     echo -e "$shebang\nset -e\n" > ${bs0} 
     bs1=${bs0stem}_fileout.sh
@@ -810,7 +822,8 @@ if [ -n "${bs}" ];then
     fi
 fi
 
-# added by Ben 240707
-cp -p -f ${dat} ${dir0}
+#cp -p -f ${dat} ${dir0}
+#START241117
+cp -p -f ${dat} ${dir0}/templates
 
 echo "OGRE structural pipeline setup completed."
