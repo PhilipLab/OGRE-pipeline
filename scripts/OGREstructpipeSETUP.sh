@@ -824,6 +824,8 @@ fi
 
 #cp -p -f ${dat} ${dir0}
 #START241117
-cp -p -f ${dat} ${dir0}/templates
+#cp -p -f ${dat} ${dir0}/templates
+#START241210
+cp -p -f ${dat} ${dir0}/scripts
 
 echo "OGRE structural pipeline setup completed."
