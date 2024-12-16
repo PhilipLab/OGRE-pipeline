@@ -4,16 +4,20 @@
 import argparse
 import json
 import pathlib
+import shutil
 import subprocess
-import threading
 import sys
-from opl.rou import run_cmd
+import threading
+
+#from opl.rou import run_cmd
+#START241214
+#from opl.rou import run_cmd,Envvars
 
 #https://stackoverflow.com/questions/60687577/trying-to-read-json-file-within-a-python-package
 #https://docs.python.org/3/library/importlib.resources.html
 import importlib.resources
 with importlib.resources.files("opl").joinpath("OGREdefault.json").open('r',encoding="utf8") as file:
-    dict0 = json.load(file)  
+    dict0 = json.load(file)
 
 def run_script(cmd):
     subprocess.run(cmd,shell=True)
@@ -150,3 +154,32 @@ if __name__ == "__main__":
             if dict1["OGREstructpipeSETUP"]: print()
             cmd = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
             run_thread(cmd)
+
+        #START241214
+        #KEEP
+        #if dict1["ContainerDirectory"]:
+        #    #use the shell to evaluate the directory name in case it includes $(date +%y%m%d)
+        #    cd0 = dict1["ContainerDirectory"]
+        #    cd1 = run_cmd(f'echo "{cd0}"')
+        #    print(f'container directory = {cd1}')
+        #    d0 = str(pathlib.Path(cd1).resolve())
+        #    print(f'd0 = {d0}')
+        #
+        #    gev = Envvars()
+        #    if dict1["FreeSurferVersion"]: gev.FREESURFVER =  dict1["FreeSurferVersion"]
+        #    dir0 = d0 + '/pipeline' + gev.FREESURFVER
+        #
+        #    dest = shutil.copy2(i,f'{dir0}/scripts/{pathlib.Path(i).name}')
+        #    print(f'JSON copied to {dest}')
+        #START241214
+        tmp='.OGREtmp'
+        try:
+            with open(tmp,encoding="utf8",errors='ignore') as f0:
+                cd0 = f0.read().strip()
+            pathlib.Path.unlink(tmp)
+        except FileNotFoundError:
+            print(f'    Error: {tmp} does not exist. Abort!')
+            exit()
+        dest = shutil.copy2(i,f'{cd0}/scripts/{pathlib.Path(i).name}')
+        print(f'JSON copied to {dest}')
+

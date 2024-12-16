@@ -94,6 +94,7 @@ helpmsg(){
     echo "    -n --name -name"
     echo "        Use with --container_directory to provide the subject name. Default is root of scanlist.csv."
 
+
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
         echo "        Show all options."
@@ -117,6 +118,14 @@ helpmsg(){
         echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
         echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
         echo '        Mask is dilated if name does not include "dil".'
+
+#        #START241213
+#        echo "    -j --json -json"
+#        echo "        json file is copied to the scripts directory. This option is used by OGREsetup.py for record keeping."
+#        echo "        The json file is not used by ${root0}. Rather ${root0} creates the scripts directory."
+#        echo "        A cleaner way would be to break out the scripts creation code into a separate routine."
+#        echo "        Then the json file could be copied to the scripts directory by OGREsetup.py."
+
     fi
     echo "    -h --help -help"
     echo "        Echo this help message."
@@ -395,17 +404,11 @@ else
     dir1=${cd0}/pipeline'${FREESURFVER}'
 fi
 
-
-
-
 [ -n "$name" ] && s0=$name
 if((lchostname==1));then
     dir0+=_$(hostname)
     dir1+=_'$(hostname)'
 fi
-
-#START241117
-#mkdir -p ${dir0}
 
 datestr=''
 if((lcdate==1));then
@@ -414,11 +417,14 @@ elif((lcdate==2));then
     datestr=_$(date +%y%m%d%H%M%S)
 fi
 
-#F0stem=${dir0}/${s0}_OGREstruct${datestr} 
-#START241117
 mkdir -p ${dir0}/scripts
-F0stem=${dir0}/scripts/${s0}_OGREstruct${datestr} 
 
+tmp='.OGREtmp'
+rm -Rf $tmp 
+echo ${dir0} > $tmp 
+
+
+F0stem=${dir0}/scripts/${s0}_OGREstruct${datestr} 
 F0=${F0stem}.sh
 F1=${F0stem}_fileout.sh
 F0name='${s0}'_OGREstruct${datestr}.sh

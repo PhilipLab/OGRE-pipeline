@@ -3,7 +3,7 @@
 import argparse
 from datetime import datetime
 import glob
-import os
+#import os
 import pathlib
 import sys
 
@@ -309,7 +309,12 @@ if __name__ == "__main__":
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
             args.bs = pathlib.Path(args.bs).resolve()
-            if "/" in str(args.bs): os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+
+            #if "/" in str(args.bs): os.makedirs(pathlib.Path(args.bs).resolve().parent,exist_ok=True)
+            #START241214
+            if "/" in str(args.bs): pathlib.Path(args.bs).resolve().parent.mkdir(exist_ok=True)
+             
+
             bs_fileout = str(args.bs).split('.sh')[0] + '_fileout.sh'
             batchscriptf = open_files([args.bs,bs_fileout],'w') 
             for i in batchscriptf: i.write(f'{gev.SHEBANG}\n\n')          
@@ -324,10 +329,6 @@ if __name__ == "__main__":
 
 
     for i in args.dat:
-
-        #print(f'i={i}')  
-        #print(f'pathlib.Path(i).parent={pathlib.Path(i).parent}')  
-        #os.makedirs(pathlib.Path(i).parent, exist_ok=True)
 
         print(f'Reading {i}')
 
@@ -344,21 +345,7 @@ if __name__ == "__main__":
             #print(f'{s0}')
         
         if args.cd0:
-            #d0 = str(pathlib.Path(args.cd0).resolve())
-            #print(f'pathlib.Path(args.cd0)={pathlib.Path(args.cd0)}')
-            #print(f'pathlib.Path(args.cd0).resolve()={pathlib.Path(args.cd0).resolve()}')
-            #print(f'pathlib.Path(args.cd0).absolute()={pathlib.Path(args.cd0).absolute()}')
-            #p0=pathlib.Path(args.cd0)
-            #print(f'p0.resolve()={p0.resolve()}')
-            #print(f'pathlib.Path(args.cd0).is_absolute()={pathlib.Path(args.cd0).is_absolute()}')
-            #print(f'os.path.abspath(args.cd0)={os.path.abspath(args.cd0)}')
-            #print(f'pathlib.Path(args.cd0).root={pathlib.Path(args.cd0).root}')
-            #print(f'pathlib.Path(args.cd0).drive={pathlib.Path(args.cd0).drive}')
-            #print(f'd0={d0}')
-
             p0=pathlib.Path(args.cd0) 
-
-            #START240909
             d0 = str(p0.resolve())
             dir0 = d0 + '/pipeline' + gev.FREESURFVER
             bids = d0 
@@ -453,10 +440,16 @@ if __name__ == "__main__":
 
         #print(f'dir0={dir0}\ndir1={dir1}\ndir2={dir2}')
 
-        #stem0 = dir0 + '/' + s0
-        #START241117
-        stem0 = dir0 + '/scripts/' + s0
+        #START241214
+        tmp='.OGREtmp'
+        try:
+            with open(tmp,'w',encoding="utf8",errors='ignore') as f0:
+                f0.write(dir0) 
+        except Exception as e:
+            print(f'Error: Unable to write to {tmp}: {e}')
 
+
+        stem0 = dir0 + '/scripts/' + s0
         str0 = stem0 + '_' + l0 + datestr
 
         F0 = [str0 + '.sh']
@@ -488,7 +481,9 @@ if __name__ == "__main__":
                 par.check_phase_dims_fmap()
                 par.check_ped_dims()
 
-        os.makedirs(pathlib.Path(F0[0]).parent, exist_ok=True)
+        #os.makedirs(pathlib.Path(F0[0]).parent, exist_ok=True)
+        #START241214
+        pathlib.Path(F0[0]).parent.mkdir(exist_ok=True)
 
         from contextlib import ExitStack
         with ExitStack() as fs:
