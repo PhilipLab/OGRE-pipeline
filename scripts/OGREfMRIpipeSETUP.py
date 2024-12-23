@@ -172,6 +172,13 @@ if __name__ == "__main__":
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
+
+    #START241219
+    hlcdonotsmoothrest='Flag. Do not do SUSAN smoothing and high pass filtering on rest runs.\n' \
+        + 'The default is to smooth all runs.'
+    parser.add_argument('--donotsmoothrest','-donotsmoothrest','--DONOTSMOOTHREST','-DONOTSMOOTHREST',dest='lcdonotsmoothrest',action='store_true',help=hlcdonotsmoothrest)
+    
+
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
     parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
@@ -332,10 +339,16 @@ if __name__ == "__main__":
 
         print(f'Reading {i}')
 
+        #if not args.lcfeatadapter:
+        #    par = opl.scans.Par(i)
+        #else:
+        #    par = opl.scans.Scans(i)
+        #START241219
         if not args.lcfeatadapter:
-            par = opl.scans.Par(i)
+            par = opl.scans.Par(i,args.lcdonotsmoothrest)
         else:
-            par = opl.scans.Scans(i)
+            par = opl.scans.Scans(i,args.lcdonotsmoothrest)
+
 
         idx = i.find('sub-')
 

@@ -7,7 +7,11 @@ import json
 from opl.rou import run_cmd,SHEBANG
 
 class Scans:
-    def __init__(self,file):
+
+    #def __init__(self,file):
+    #START241219
+    def __init__(self,file,lcdonotsmoothrest):
+
         self.fmap = []
         self.sbref = []
         self.bold = [] 
@@ -42,10 +46,21 @@ class Scans:
                         self.sbref.append((file0,int(len(self.fmap)/2-1)))
                     else:
                         self.bold.append((file0,int(len(self.fmap)/2-1)))
-                        if line2[-1].find('task-rest') != -1:
-                            self.restidx.append(j)
+
+                        #if line2[-1].find('task-rest') != -1:
+                        #    self.restidx.append(j)
+                        #else:
+                        #    self.taskidx.append(j)
+                        #START241219
+                        if lcdonotsmoothrest:
+                            if line2[-1].find('task-rest') != -1:
+                                self.restidx.append(j)
+                            else:
+                                self.taskidx.append(j)
                         else:
                             self.taskidx.append(j)
+
+
                         j+=1
                 elif line2[-2] == 'dwi':
                     self.dwi.append((file0,int(len(self.dwifmap)-1))) #double parentheses for tuple
@@ -210,8 +225,13 @@ class Scans:
         f0.write(f'    {str0})\n')
 
 class Par(Scans):
-    def __init__(self,file):
-        super().__init__(file)
+
+    #def __init__(self,file):
+    #    super().__init__(file)
+    #START241219
+    def __init__(self,file,lcdonotsmoothrest):
+        super().__init__(file,lcdonotsmoothrest)
+
         self.bsbref = [False]*len(self.bold)
         self.ped = []
         self.dim = []
