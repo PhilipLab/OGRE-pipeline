@@ -782,7 +782,14 @@ echo 'OGREjson.py -f "${FILE[@]}" -j "${JSON[@]}"' >> ${F0} #@ needed for python
 echo -e '\necho -e "Finshed $0\\nOGRE structural pipeline completed."' >> ${F0}
 
 echo -e "$shebang\nset -e\n" > ${F1} 
-echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
+
+#START241224
+e0="FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/scripts/${F0name}"\n"out='${F0}'.txt
+
+#echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${F1}
+#START241224
+echo -e ${e0} >> ${F1}
+
 echo 'if [ -f "${out}" ];then' >> ${F1}
 echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${F1}
 echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${F1}
@@ -798,7 +805,11 @@ echo "    Output written to ${F0}"
 echo "    Output written to ${F1}"
 
 if [ -n "${bs}" ];then
-    echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${bs0}
+
+    #echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${bs0}
+    #START241224
+    echo -e ${e0} >> ${bs0}
+
     echo 'if [ -f "${out}" ];then' >> ${bs0}
     echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${bs0}
     echo '    echo "    Reinstantiation $(date)" >> ${out}' >> ${bs0}

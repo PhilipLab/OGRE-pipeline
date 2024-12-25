@@ -28,6 +28,7 @@
         "FWHM": null,
         "HPFcutoff": null,
         "SmoothOnly": false,
+        "donotsmoothrest": false,
         "Feat": null,
         "FeatAdapter": false,
         "UseRefinement": false,
