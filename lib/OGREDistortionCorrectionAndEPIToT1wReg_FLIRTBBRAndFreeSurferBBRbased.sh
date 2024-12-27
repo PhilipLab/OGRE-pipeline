@@ -585,7 +585,7 @@ if [[ $UseRefinement == "true" ]];then
         msg0="ERROR: REFINEMENT ${fMRI2str_vol1_M} > 0 we will rerun without fMRI2str_refinement.mat"
         msg=$(date)"\n$0\n${WD}/fMRI2str_vol1.nii.gz\n$msg0\n"
         echo -e $msg
-        echo -e $msg >> OGREpipeline.log
+        echo -e $msg >> scripts/OGREpipeline.log
         ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
     else
         #create final affine from undistorted fMRI space to T1w space, will need it if it making SEBASED bias field
@@ -597,7 +597,7 @@ else
     msg0="INFORMATION: NO REFINEMENT"
     msg=$(date)"\n$0\n${WD}\n$msg0\n"
     echo -e $msg
-    echo -e $msg >> OGREpipeline.log
+    echo -e $msg >> scripts/OGREpipeline.log
     ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --out=${WD}/fMRI2str.nii.gz
 fi
 

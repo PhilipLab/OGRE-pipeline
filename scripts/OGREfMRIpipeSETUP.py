@@ -582,8 +582,13 @@ if __name__ == "__main__":
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
 
                 if not args.lcsmoothonly: 
-                    F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
-                    if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
+
+                    #F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
+                    #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
+                    #START241225
+                    F0f[0].write('COPY=${sf0}/scripts/'+f'{F2name}\n')
+                    if feat: F0f[0].write('FEAT=${sf0}/scripts/'+f'{Ffeatname}\n')
+
                     F0f[0].write(f'dilation={args.dilation}\n')
                     F0f[0].write('\nRAW_BOLD=(\\\n')
                     j=-1 #default value needed for a single bold

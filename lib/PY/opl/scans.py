@@ -193,7 +193,8 @@ class Scans:
         f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
         f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6 --paradigm_hp_sec=60\n")
         f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
-        f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n\n")
+        f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n")
+        f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
 
