@@ -643,11 +643,8 @@ if __name__ == "__main__":
                 if par.taskidx:
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
-
-                    #START24124
-                    write_regressors(args.fslmo,F0f[0])
-
                     par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+                    write_regressors(args.fslmo,F0f[0])
 
             #if feat: F0f[0].write('${FEAT}\n\n')
             #if args.fslmo:
