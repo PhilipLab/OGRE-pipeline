@@ -72,12 +72,14 @@ helpmsg(){
     echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
     echo "    -ht --ht --highres-template -highres-template"
     echo "        Optional. High resolution registration templates. Default is MNI152 1mm asymmetric (HCP/FSL version)"
-    echo "        Full path of a folder containing 4 files: T1w, T1w_brain and/or T1_brain_mask, T2w, T2w_brain (brain_mask may be used instead of _brain)"
+    echo "        Full path of a folder containing 2 files: T1w (whole-head), T1w_brain and/or T1_brain_mask"
+    echo "        Optionally, two T2-weighted images can be included: T2w (whole-head), T2w_brain and/or T2_brain_mask"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_1mm/"
     echo "    -lt --lt --lowres-template -lowres-template"
     echo "        Optional. Low resolution registration templates. Default is MNI152 2mm asymmetric (HCP/FSL version)"
-    echo "        Full path of a folder containing 4 files: T1w, T1w_brain or T1w_brain_mask, T2w (brain_mask may be used instead of _brain)"
+    echo "        Full path of a folder containing 2 files: T1w (whole-head), T1w_brain and/or T1w_brain_mask"
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
+    echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm/"
 
     #echo "    -n --name -name"
@@ -100,7 +102,7 @@ helpmsg(){
         echo "        Show all options."
     else
         echo "    -r --hires -hires"
-        echo "        Resolution. Should match that for the structural pipeline. options : 0.7, 0.8 or 1mm. Default is 1mm."
+        echo "        Resolution in mm: 0.7, 0.8 or 1. Default is 1."
         echo "    -T1 --T1 -t1 --t1" 
         echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
         echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
