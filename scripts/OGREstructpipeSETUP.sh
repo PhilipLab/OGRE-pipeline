@@ -103,30 +103,50 @@ helpmsg(){
     else
         echo "    -r --hires -hires"
         echo "        Resolution in mm: 0.7, 0.8 or 1. Default is 1."
-        echo "    -T1 --T1 -t1 --t1" 
+
+
+        #echo "    -T1 --T1 -t1 --t1" 
+        #echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
+        #echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
+        #echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz. This will overwrite -ht."
+        #echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
+        #echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
+        #echo "    -T2 --T2 -t2 --t2" 
+        #echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
+        #echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
+        #echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
+        #echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
+        #echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
+        #echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
+        #echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz. This will overwrite -ht."
+        #echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
+        #echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
+        #echo '        Mask is dilated if name does not include "dil".'
+        #START241228
+        echo "    -T1 --T1 -t1 --t1"
         echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
-        echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
+        echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b"
         echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz. This will overwrite -ht."
-        echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
-        echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
-        echo "    -T2 --T2 -t2 --t2" 
-        echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
-        echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
-        echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
-        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
-        echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
-        echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
+        echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm"
         echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz. This will overwrite -ht."
-        echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
+
+        echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l"
+        echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
+        echo "    -T1brainlow --T1brainlow -t1brainlow --t1brainlow -t1bl --t1bl -T1bl --T1bl"
+        echo "        No default. If provided, this will be used to make the low resolution mask. This will overwrite -lt."
+        echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml"
         echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
         echo '        Mask is dilated if name does not include "dil".'
 
-#        #START241213
-#        echo "    -j --json -json"
-#        echo "        json file is copied to the scripts directory. This option is used by OGREsetup.py for record keeping."
-#        echo "        The json file is not used by ${root0}. Rather ${root0} creates the scripts directory."
-#        echo "        A cleaner way would be to break out the scripts creation code into a separate routine."
-#        echo "        Then the json file could be copied to the scripts directory by OGREsetup.py."
+        echo "    -T2 --T2 -t2 --t2"
+        echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
+        echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b"
+        echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
+        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l"
+        echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
+
+
+
 
     fi
     echo "    -h --help -help"
@@ -138,8 +158,12 @@ if((${#@}<1));then
 fi
 
 lcautorun=0;lchostname=0;lcdate=0;erosion=2;dilation=3 #do not set dat;unexpected
-unset bs cd0 name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
-unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow 
+
+#unset bs cd0 name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
+#unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow 
+#START241228
+unset bs cd0 name helpall help t1 t1b t1bm t1l t1bl t1bml t2 t2b t2l ht lt
+unset T1wTemplate T1wTemplateBrain TemplateMask T1wTemplateLow T1wTemplateBrainLow TemplateMaskLow T2wTemplate T2wTemplateBrain T2wTemplateLow 
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -210,14 +234,51 @@ for((i=0;i<${#@};++i));do
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
             ;;
+
+
+
+        #-T1 | --T1 | -t1 | --t1)
+        #    t1=${arg[((++i))]}
+        #    ;;
+        #-T1brain | --T1brain | -t1brain | --t1brain | -t1b | --t1b | -T1b | --T1b)
+        #    t1b=${arg[((++i))]}
+        #    ;;
+        #-T1low | --T1low | -t1low | --t1low | -t1l | --t1l | -T1l | --T1l)
+        #    t1l=${arg[((++i))]}
+        #    ;;
+        #-T2 | --T2 | -t2 | --t2)
+        #    t2=${arg[((++i))]}
+        #    ;;
+        #-T2brain | --T2brain | -t2brain | --t2brain | -t2b | --t2b | -T2b | --T2b)
+        #    t2b=${arg[((++i))]}
+        #    ;;
+        #-T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l)
+        #    t2l=${arg[((++i))]}
+        #    ;;
+        #-T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm)
+        #    t1bm=${arg[((++i))]}
+        #    ;;
+        #-T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
+        #    t1bml=${arg[((++i))]}
+        #    ;;
+        #START241228
         -T1 | --T1 | -t1 | --t1)
             t1=${arg[((++i))]}
             ;;
         -T1brain | --T1brain | -t1brain | --t1brain | -t1b | --t1b | -T1b | --T1b)
             t1b=${arg[((++i))]}
             ;;
+        -T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm)
+            t1bm=${arg[((++i))]}
+            ;;
         -T1low | --T1low | -t1low | --t1low | -t1l | --t1l | -T1l | --T1l)
             t1l=${arg[((++i))]}
+            ;;
+        -T1brainlow | --T1brainlow | -t1brainlow | --t1brainlow | -t1bl | --t1bl | -T1bl | --T1bl)
+            t1bl=${arg[((++i))]}
+            ;;
+        -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
+            t1bml=${arg[((++i))]}
             ;;
         -T2 | --T2 | -t2 | --t2)
             t2=${arg[((++i))]}
@@ -228,12 +289,8 @@ for((i=0;i<${#@};++i));do
         -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l)
             t2l=${arg[((++i))]}
             ;;
-        -T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm)
-            t1bm=${arg[((++i))]}
-            ;;
-        -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
-            t1bml=${arg[((++i))]}
-            ;;
+
+
 
         #-p | --pipedir | -pipedir | -d | -directory | --directory)
         #    pipedir=${arg[((++i))]}
@@ -419,7 +476,9 @@ elif((lcdate==2));then
     datestr=_$(date +%y%m%d%H%M%S)
 fi
 
-mkdir -p ${dir0}/scripts
+#mkdir -p ${dir0}/scripts
+#START241228
+mkdir -p ${dir0}/scripts ${dir0}/templates 
 
 tmp='.OGREtmp'
 rm -Rf $tmp 
@@ -432,11 +491,7 @@ F1=${F0stem}_fileout.sh
 F0name='${s0}'_OGREstruct${datestr}.sh
 
 if [ -n "${bs}" ];then
-
-    #bs0stem=${dir0}/${s0}_OGREbatch${datestr} 
-    #START241117
     bs0stem=${dir0}/scripts/${s0}_OGREbatch${datestr} 
-
     bs0=${bs0stem}.sh
     echo -e "$shebang\nset -e\n" > ${bs0} 
     bs1=${bs0stem}_fileout.sh
@@ -474,9 +529,13 @@ if [[ -n "$ht" || -n "$lt" ]];then
     for i in $lt/*;do
         if [[ "$i" == *"T1w.nii.gz" ]];then
             T1wTemplateLow=$i
+
+        #START241228
+        elif [[ "$i" == *"T1w_brain.nii.gz" ]];then
+            T1wTemplateBrainLow=$i
+
         elif [[ "$i" == *"T1w_brain_mask.nii.gz" ]];then
             TemplateMaskLow=$i
-            #TemplateMaskLowUndil=$i
         elif [[ "$i" == *"T2w.nii.gz" ]];then
             T2wTemplateLow=$i
         else
@@ -486,22 +545,22 @@ if [[ -n "$ht" || -n "$lt" ]];then
         echo Fetching $i
     done
     if [[ -z "$T1wTemplate" ]];then
-        echo T1wTemplate not provided. Abort!
+        echo "T1wTemplate not provided. Abort!"
         exit
     fi
     if [[ -z "$T1wTemplateBrain" && -z "$TemplateMask" ]];then
-        echo T1wTemplateBrain and TemplateMask not provided. One is needed to compute the other. Abort!
+        echo "T1wTemplateBrain and TemplateMask not provided. One is needed to compute the other. Abort!"
         exit
     fi
     if [[ -z "$T1wTemplateBrain" ]];then
-        mkdir -p ${dir0}/templates
+        #mkdir -p ${dir0}/templates
         T1wTemplateBrain=${T1wTemplate##*/}
         T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain%%.nii.gz}_brain.nii.gz
         #fslmaths HEAD -mas MASK BRAIN
         fslmaths $T1wTemplate -mas $TemplateMask $T1wTemplateBrain
     fi
     if [[ -z "$TemplateMask" ]];then
-        mkdir -p ${dir0}/templates
+        #mkdir -p ${dir0}/templates
         TemplateMask=${T1wTemplate##*/}
         TemplateMask=${dir0}/templates/${TemplateMask%%.nii.gz}_brain_mask.nii.gz
         #fslmaths BRAIN -bin MASK
@@ -509,32 +568,47 @@ if [[ -n "$ht" || -n "$lt" ]];then
     fi
 
     if [[ -z "$T1wTemplateLow" ]];then
-        echo T1wTemplateLow not provided. Abort!
-        exit
-    fi
-    if [[ -z "$TemplateMaskLow" ]];then
-        echo TemplateMaskLow not provided. Abort!
+        echo "T1wTemplateLow not provided. Abort!"
         exit
     fi
 
-    if [ -n "${T2f}" ];then
+    #if [[ -z "$TemplateMaskLow" ]];then
+    #    echo TemplateMaskLow not provided. Abort!
+    #    exit
+    #fi
+    #START241228
+    if [[ -z "$TemplateMaskLow" ]];then
+        if [[ -z "$T1wTemplateBrainLow" ]];then
+            echo "TemplateMaskLow and T1wTemplateBrainLow not provided. Please provide either one. Abort!"
+            exit
+        fi
+        TemplateMaskLow=${T1wTemplateBrainLow##*/}
+        TemplateMaskLow=${dir0}/templates/${TemplateMaskLow%%.nii.gz}_mask.nii.gz
+        [[ -f "$TemplateMaskLow" ]] && TemplateMaskLow=${TemplateMaskLow%%.nii.gz}_low.nii.gz
+        echo "Writing $TemplateMask ..."
+        #fslmaths BRAIN -bin MASK
+        fslmaths $T1wTemplateBrainLow -bin $TemplateMaskLow
+    fi
+
+
+    if [[ -n "${T2f}" ]];then
         if [[ -z "$T2wTemplate" ]];then
-            echo T2wTemplate not provided. Abort!
+            echo "T2wTemplate not provided. Abort!"
             exit
         fi
         if [[ -z "$T2wTemplateBrain" ]];then
             if [[ -z "$T2wTemplateMask" ]];then
-                echo T2wTemplateMask is needed to create T2wTemplateBrain. Abort!
+                echo "T2wTemplateMask is needed to create T2wTemplateBrain. Abort!"
                 exit
             fi
-            mkdir -p ${dir0}/templates
+            #mkdir -p ${dir0}/templates
             T2wTemplateBrain=${T2wTemplate##*/}
             T2wTemplateBrain=${dir0}/templates/${T2wTemplate%%.nii.gz}_brain.nii.gz
             #fslmaths HEAD -mas MASK BRAIN
             fslmaths $T2wTemplate -mas $T2wTemplateMask $T2wTemplateBrain
         fi
         if [[ -z "$T2wTemplateLow" ]];then
-            echo T2wTemplateLow not provided. Abort!
+            echo "T2wTemplateLow not provided. Abort!"
             exit
         fi
     fi
@@ -545,38 +619,81 @@ else
     T1wTemplate="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm.nii.gz"
     ## Hires brain extracted MNI template
     T1wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain.nii.gz"
+    ## Lowres MNI brain mask template
+    TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
+
     ## Lowres T1w MNI template
     T1wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm.nii.gz"
+    ## Hires MNI brain mask template
+    TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
+
     ## Hires T2w MNI Template
     T2wTemplate="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm.nii.gz"
     ## Hires T2w brain extracted MNI Template
     T2wTemplateBrain="${HCPPIPEDIR_Templates}/MNI152_T2_${Hires}mm_brain.nii.gz"
     ## Lowres T2w MNI Template
     T2wTemplateLow="${HCPPIPEDIR_Templates}/MNI152_T2_2mm.nii.gz"
-    ## Hires MNI brain mask template
-    TemplateMask="${HCPPIPEDIR_Templates}/MNI152_T1_${Hires}mm_brain_mask.nii.gz"
-    ## Lowres MNI brain mask template
-    TemplateMaskLow="${HCPPIPEDIR_Templates}/MNI152_T1_2mm_brain_mask_dil.nii.gz"
 fi
 
+
+
+#[ -n "${t1}" ] && T1wTemplate=${t1}
+#[ -n "${t1b}" ] && T1wTemplateBrain=${t1b}
+#[ -n "${t1l}" ] && T1wTemplateLow=${t1l}
+#[ -n "${t2}" ] && T2wTemplate=${t2}
+#[ -n "${t2b}" ] && T2wTemplateBrain=${t2b}
+#[ -n "${t2l}" ] && T2wTemplateLow=${t2l}
+#[ -n "${t1bm}" ] && TemplateMask=${t1bm}
+#[ -n "${t1bml}" ] && TemplateMaskLow=${t1bml}
+#START241228
 [ -n "${t1}" ] && T1wTemplate=${t1}
 [ -n "${t1b}" ] && T1wTemplateBrain=${t1b}
+[ -n "${t1bm}" ] && TemplateMask=${t1bm}
+if [[ -n "${t1b}" && -n "${t1bm}" ]];then
+    #do nothing
+elif [[ -n "${t1b}" ]];then
+    [[ -n "$TemplateMask" ]] && echo "Overwriting $TemplateMask ..."
+    TemplateMask=${T1wTemplateBrain##*/}
+    TemplateMask=${dir0}/templates/${TemplateMask%%.nii.gz}_mask.nii.gz
+    echo "Writing $TemplateMask ..."
+    #fslmaths BRAIN -bin MASK
+    fslmaths $T1wTemplateBrain -bin $TemplateMask
+elif [[ -n "${t1bm}" ]];then
+    [[ -n "T1wTemplateBrain" ]] && echo "Overwriting $T1wTemplateBrain ..."
+    T1wTemplateBrain=${T1wTemplate##*/}
+    T1wTemplateBrain=${dir0}/templates/${T1wTemplateBrain%%.nii.gz}_brain.nii.gz
+    echo "Writing $T1wTemplateBrain ..."
+    #fslmaths HEAD -mas MASK BRAIN
+    fslmaths $T1wTemplate -mas $TemplateMask $T1wTemplateBrain
+fi
+
 [ -n "${t1l}" ] && T1wTemplateLow=${t1l}
+[ -n "${t1bl}" ] && T1wTemplateBrainLow=${t1bl}
+[ -n "${t1bml}" ] && TemplateMaskLow=${t1bml}
+if [[ -n "${t1bml}" ]];then
+    #do nothing
+elif [[ -n "${t1bl}" ]];then
+    [[ -n "$TemplateMaskLow" ]] && echo "Overwriting $TemplateMaskLow ..."
+    TemplateMaskLow=${T1wTemplateBrainLow##*/}
+    TemplateMaskLow=${dir0}/templates/${TemplateMaskLow%%.nii.gz}_mask.nii.gz
+    [[ -f "$TemplateMaskLow" ]] && TemplateMaskLow=${TemplateMaskLow%%.nii.gz}_low.nii.gz
+    echo "Writing $TemplateMask ..."
+    #fslmaths BRAIN -bin MASK
+    fslmaths $T1wTemplateBrainLow -bin $TemplateMaskLow
+fi
+
+
 [ -n "${t2}" ] && T2wTemplate=${t2}
 [ -n "${t2b}" ] && T2wTemplateBrain=${t2b}
 [ -n "${t2l}" ] && T2wTemplateLow=${t2l}
-[ -n "${t1bm}" ] && TemplateMask=${t1bm}
-[ -n "${t1bml}" ] && TemplateMaskLow=${t1bml}
 
-#START241002
-mkdir -p ${dir0}/templates
+
+#START241228
+#mkdir -p ${dir0}/templates
 
 if [[ "$TemplateMaskLow" != *"dil"* ]];then
     TemplateMaskLowUndil=$TemplateMaskLow
     echo Dilating $TemplateMaskLowUndil
-
-    #START241002
-    #mkdir -p ${dir0}/templates
 
     TemplateMaskLow=${TemplateMaskLow##*/}
     TemplateMaskLow0=templates/${TemplateMaskLow%%.nii.gz}_dil.nii.gz
@@ -586,9 +703,6 @@ if [[ "$TemplateMaskLow" != *"dil"* ]];then
     fslmaths $TemplateMaskLowUndil -dilM -bin $TemplateMaskLow
 
     TemplateMaskLow='${sf0}'/${TemplateMaskLow0}
-
-#fi
-#START241002
 else
     cp -p -f $TemplateMaskLow ${dir0}/templates
 fi
