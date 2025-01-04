@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import argparse
 import json
 import pathlib
@@ -126,14 +125,28 @@ if __name__ == "__main__":
             if dict1["HighResolutionTemplateDirectory"]: str_stru+=' -ht ' + dict1["HighResolutionTemplateDirectory"] 
             if dict1["LowResolutionTemplateDirectory"]: str_stru+=' -lt ' + dict1["LowResolutionTemplateDirectory"] 
             if dict1["Resolution"]: str_stru+=' -r ' + dict1["Resolution"]
-            if dict1["T1Template"]: str_stru+=' -t1 ' + dict1["T1Template"] 
-            if dict1["T1BrainTemplate"]: str_stru+=' -t1b ' + dict1["T1BrainTemplate"] 
-            if dict1["T1LowResolutionTemplate"]: ' -t1l ' + dict1["T1LowResolutionTemplate"]
-            if dict1["T2Template"]: str_stru+=' -t2 ' + dict1["T2Template"] 
-            if dict1["T2BrainTemplate"]: str_stru+=' -t2b ' + dict1["T2BrainTemplate"] 
-            if dict1["T2LowResolutionTemplate"]: str_stru+=' -t2l ' + dict1["T2LowResolutionTemplate"]
-            if dict1["T1BrainMaskTemplate"]: str_stru+=' -t1bm ' + dict1["T1BrainMaskTemplate"] 
-            if dict1["T1BrainMaskLowResolutionTemplate"]: str_stru+=' -t1bml ' + dict1["T1BrainMaskLowTemplate"] 
+
+
+            #if dict1["T1Template"]: str_stru+=' -t1 ' + dict1["T1Template"] 
+            #if dict1["T1BrainTemplate"]: str_stru+=' -t1b ' + dict1["T1BrainTemplate"] 
+            #if dict1["T1LowResolutionTemplate"]: ' -t1l ' + dict1["T1LowResolutionTemplate"]
+            #if dict1["T2Template"]: str_stru+=' -t2 ' + dict1["T2Template"] 
+            #if dict1["T2BrainTemplate"]: str_stru+=' -t2b ' + dict1["T2BrainTemplate"] 
+            #if dict1["T2LowResolutionTemplate"]: str_stru+=' -t2l ' + dict1["T2LowResolutionTemplate"]
+            #if dict1["T1BrainMaskTemplate"]: str_stru+=' -t1bm ' + dict1["T1BrainMaskTemplate"] 
+            #if dict1["T1BrainMaskLowResolutionTemplate"]: str_stru+=' -t1bml ' + dict1["T1BrainMaskLowTemplate"] 
+            #START250103
+            if dict1["T1HighResolutionWholeHead"]: str_stru+=' -t1 ' + dict1["T1HighResolutionWholeHead"] 
+            if dict1["T1HighResolutionBrainOnly"]: str_stru+=' -t1b ' + dict1["T1HighResolutionBrainOnly"] 
+            if dict1["T1HighResolutionBrainMask"]: str_stru+=' -t1bm ' + dict1["T1HighResolutionBrainMask"] 
+            if dict1["T1LowResolutionWholeHead"]: str_stru+=' -t1l ' + dict1["T1LowResolutionWholeHead"] 
+            if dict1["T1LowResolutionBrainOnly"]: str_stru+=' -t1bl ' + dict1["T1LowResolutionBrainOnly"] 
+            if dict1["T1LowResolutionBrainMask"]: str_stru+=' -t1bml ' + dict1["T1LowResolutionBrainMask"] 
+            if dict1["T2HighResolutionWholeHead"]: str_stru+=' -t2 ' + dict1["T2HighResolutionWholeHead"] 
+            if dict1["T2HighResolutionBrainOnly"]: str_stru+=' -t2b ' + dict1["T2HighResolutionBrainOnly"] 
+            if dict1["T2HighResolutionBrainMask"]: str_stru+=' -t2bm ' + dict1["T2HighResolutionBrainMask"] 
+            if dict1["T2LowResolutionWholeHead"]: str_stru+=' -t2l ' + dict1["T2LowResolutionWholeHead"] 
+
 
         str_func=''
         if dict1["OGREfMRIpipeSETUP"]:

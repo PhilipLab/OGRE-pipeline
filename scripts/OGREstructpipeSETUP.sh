@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#/usr/bin/env bash
 
 shebang="#!/usr/bin/env bash"
 
@@ -70,17 +70,17 @@ helpmsg(){
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
     echo "    -dil --dil -dilation --dilation"
     echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
-    echo "    -ht --ht --highres-template -highres-template"
+    echo "    -ht --ht --highres-template -highres-template --HighResolutionTemplateDirectory -HighResolutionTemplateDirectory"
     echo "        Optional. High resolution registration templates. Default is MNI152 1mm asymmetric (HCP/FSL version)"
     echo "        Full path of a folder containing 2 files: T1w (whole-head), T1w_brain and/or T1_brain_mask"
     echo "        Optionally, two T2-weighted images can be included: T2w (whole-head), T2w_brain and/or T2_brain_mask"
-    echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_1mm/"
-    echo "    -lt --lt --lowres-template -lowres-template"
+    echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_1mm"
+    echo "    -lt --lt --lowres-template -lowres-template --LowResolutionTemplateDirectory -LowResolutionTemplateDirectory"
     echo "        Optional. Low resolution registration templates. Default is MNI152 2mm asymmetric (HCP/FSL version)"
     echo "        Full path of a folder containing 2 files: T1w (whole-head), T1w_brain and/or T1w_brain_mask"
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
-    echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm/"
+    echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm"
 
     #echo "    -n --name -name"
     #echo "        Use with -pipedir to provide the subject name. Default is root of scanlist.csv."
@@ -123,28 +123,28 @@ helpmsg(){
         #echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
         #echo '        Mask is dilated if name does not include "dil".'
         #START241228
-        echo "    -T1 --T1 -t1 --t1"
+        echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
         echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
-        echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b"
+        echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b -T1HighResolutionBrainOnly --T1HighResolutionBrainOnly"
         echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz. This will overwrite -ht."
-        echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm"
+        echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm -T1HighResolutionBrainMask --T1HighResolutionBrainMask"
         echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz. This will overwrite -ht."
 
-        echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l"
+        echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l -T1LowResolutionWholeHead --T1LowResolutionWholeHead"
         echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
-        echo "    -T1brainlow --T1brainlow -t1brainlow --t1brainlow -t1bl --t1bl -T1bl --T1bl"
+        echo "    -T1brainlow --T1brainlow -t1brainlow --t1brainlow -t1bl --t1bl -T1bl --T1bl -T1LowResolutionBrainOnly --T1LowResolutionBrainOnly"
         echo "        No default. If provided, this will be used to make the low resolution mask. This will overwrite -lt."
-        echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml"
+        echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml -T1LowResolutionBrainMask --T1LowResolutionBrainMask"
         echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
         echo '        Mask is dilated if name does not include "dil".'
 
-        echo "    -T2 --T2 -t2 --t2"
+        echo "    -T2 --T2 -t2 --t2 -T2HighResolutionWholeHead --T2HighResolutionWholeHead"
         echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
-        echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b"
+        echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b -T2HighResolutionBrainOnly --T2HighResolutionBrainOnly"
         echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
-        echo "    -T2brainmask --T2brainmask -t2brainmask --t2brainmask -t2bm --t2bm -T2bm --T2bm" 
+        echo "    -T2brainmask --T2brainmask -t2brainmask --t2brainmask -t2bm --t2bm -T2bm --T2bm -T2HighResolutionBrainMask --T2HighResolutionBrainMask" 
         echo "        No default. If provided, this will be used to make the T2brain image. This will overwrite -ht."
-        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l"
+        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2HighResolutionBrainMask --T2HighResolutionBrainMask"
         echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
 
 
@@ -220,11 +220,11 @@ for((i=0;i<${#@};++i));do
             dilation=${arg[((++i))]}
             echo "dilation=$dilation"
             ;;
-        -ht | --ht | --highres-template | -highres-template)
+        -ht | --ht | --highres-template | -highres-template | --HighResolutionTemplateDirectory | -HighResolutionTemplateDirectory)
             ht=${arg[((++i))]}
             echo "ht=$ht"
             ;;
-        -lt | --lt | --lowres-template | -lowres-template)
+        -lt | --lt | --lowres-template | -lowres-template | --LowResolutionTemplateDirectory | -LowResolutionTemplateDirectory)
             lt=${arg[((++i))]}
             echo "lt=$lt"
             ;;
@@ -264,37 +264,36 @@ for((i=0;i<${#@};++i));do
         #    t1bml=${arg[((++i))]}
         #    ;;
         #START241228
-        -T1 | --T1 | -t1 | --t1)
+        -T1 | --T1 | -t1 | --t1 | --T1HighResolutionWholeHead | -T1HighResolutionWholeHead)
             t1=${arg[((++i))]}
             ;;
-        -T1brain | --T1brain | -t1brain | --t1brain | -t1b | --t1b | -T1b | --T1b)
+        -T1brain | --T1brain | -t1brain | --t1brain | -t1b | --t1b | -T1b | --T1b | -T1HighResolutionBrainOnly | --T1HighResolutionBrainOnly)
             t1b=${arg[((++i))]}
             ;;
-        -T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm)
+        -T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm | -T1HighResolutionBrainMask | --T1HighResolutionBrainMask)
             t1bm=${arg[((++i))]}
             ;;
-        -T1low | --T1low | -t1low | --t1low | -t1l | --t1l | -T1l | --T1l)
+        -T1low | --T1low | -t1low | --t1low | -t1l | --t1l | -T1l | --T1l | -T1LowResolutionWholeHead | --T1LowResolutionWholeHead)
             t1l=${arg[((++i))]}
             ;;
-        -T1brainlow | --T1brainlow | -t1brainlow | --t1brainlow | -t1bl | --t1bl | -T1bl | --T1bl)
+        -T1brainlow | --T1brainlow | -t1brainlow | --t1brainlow | -t1bl | --t1bl | -T1bl | --T1bl | -T1LowResolutionBrainOnly | --T1LowResolutionBrainOnly)
             t1bl=${arg[((++i))]}
             ;;
-        -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
+        -T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml | -T1LowResolutionBrainMask | --T1LowResolutionBrainMask)
             t1bml=${arg[((++i))]}
             ;;
-        -T2 | --T2 | -t2 | --t2)
+        -T2 | --T2 | -t2 | --t2 | -T2HighResolutionWholeHead | --T2HighResolutionWholeHead)
             t2=${arg[((++i))]}
             ;;
-        -T2brain | --T2brain | -t2brain | --t2brain | -t2b | --t2b | -T2b | --T2b)
+        -T2brain | --T2brain | -t2brain | --t2brain | -t2b | --t2b | -T2b | --T2b | -T2HighResolutionBrainOnly | --T2HighResolutionBrainOnly)
             t2b=${arg[((++i))]}
             ;;
-        -T2brainmask | --T2brainmask | -t2brainmask | --t2brainmask | -t2bm | --t2bm | -T2bm | --T2bm) 
+        -T2brainmask | --T2brainmask | -t2brainmask | --t2brainmask | -t2bm | --t2bm | -T2bm | --T2bm | -T2HighResolutionBrainMask | --T2HighResolutionBrainMask) 
             t2bm=${arg[((++i))]}
             ;;
-        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l)
+        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l | -T2HighResolutionBrainMask | --T2HighResolutionBrainMask)
             t2l=${arg[((++i))]}
             ;;
-
 
 
         #-p | --pipedir | -pipedir | -d | -directory | --directory)
