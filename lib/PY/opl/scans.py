@@ -10,7 +10,9 @@ class Scans:
 
     #def __init__(self,file):
     #START241219
-    def __init__(self,file,lcdonotsmoothrest):
+    #def __init__(self,file,lcdonotsmoothrest):
+    #START250108
+    def __init__(self,file,lcdonotsmoothrest=False):
 
         self.fmap = []
         self.sbref = []
@@ -230,8 +232,11 @@ class Par(Scans):
     #def __init__(self,file):
     #    super().__init__(file)
     #START241219
-    def __init__(self,file,lcdonotsmoothrest):
-        super().__init__(file,lcdonotsmoothrest)
+    #def __init__(self,file,lcdonotsmoothrest):
+    #    super().__init__(file,lcdonotsmoothrest)
+    #START250108
+    def __init__(self,file,lcdonotsmoothrest=False):
+        super().__init__(file,lcdonotsmoothrest=False)
 
         self.bsbref = [False]*len(self.bold)
         self.ped = []
