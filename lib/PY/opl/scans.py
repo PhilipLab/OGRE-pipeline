@@ -227,6 +227,40 @@ class Scans:
         str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
         f0.write(f'    {str0})\n')
 
+
+
+    #START250109
+    def check_IntendedFor_fmap(self):
+        for j in range(len(par.fmap)):
+            jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
+                try:
+                    with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                        print(f'Loading {jsonf}')
+                        dict0 = json.load(f0)
+                except FileNotFoundError:
+                    print(f'    INFO: {jsonf} does not exist.')
+
+                if 'IntendedFor' in dict0:
+                    print('Key IntendedFor found.')
+
+#                    for j in range(len(par.fmap)):
+#                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
+#                        try:
+#                            with open(jsonf,encoding="utf8",errors='ignore') as f0:
+#                                dict0 = json.load(f0)
+#                        except FileNotFoundError:
+#                            print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
+#                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[j]}
+#                        val=[]
+#                        val += [(f'func{par.bold[par.fmap_bold[j][k]][0].split('/func')[1]}') for k in range(len(par.fmap_bold[j]))]
+#                        dict0['IntendedFor'] = val
+#                        with open(jsonf, 'w', encoding='utf-8') as f:
+#                            json.dump(dict0, f, ensure_ascii=False, indent=4)
+#                        print(f'Output written to {jsonf}')
+
+
+
+
 class Par(Scans):
 
     #def __init__(self,file):
@@ -358,7 +392,6 @@ class Par(Scans):
                     self.fmap_bold[self.bold[j][1]*2].append(j)
                     self.fmap_bold[self.bold[j][1]*2+1].append(j)
 
-    #START240705
     def check_ped_dims_dwi(self):
         self.bdwi_fmap=[False]*len(self.dwi)
         for j in range(len(self.dwi)):
@@ -387,6 +420,37 @@ class Par(Scans):
             self.bdwi_fmap[j]=True
             self.fmap_dwi[self.dwi[j][1]].append(j)
             self.ped_dwifmap.append(ped_dwifmap)
+
+
+
+#    #START250109
+#    def check_IntendedFor_fmap(self):
+#        for j in range(len(par.fmap)):
+#            jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
+#                try:
+#                    with open(jsonf,encoding="utf8",errors='ignore') as f0:
+#                        print(f'Loading {jsonf}')
+#                        dict0 = json.load(f0)
+#                except FileNotFoundError:
+#                    print(f'    INFO: {jsonf} does not exist.')
+#
+#                if 'IntendedFor' in dict0:
+#                    print('Key IntendedFor found.')
+#
+##                    for j in range(len(par.fmap)):
+##                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
+##                        try:
+##                            with open(jsonf,encoding="utf8",errors='ignore') as f0:
+##                                dict0 = json.load(f0)
+##                        except FileNotFoundError:
+##                            print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
+##                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[j]}
+##                        val=[]
+##                        val += [(f'func{par.bold[par.fmap_bold[j][k]][0].split('/func')[1]}') for k in range(len(par.fmap_bold[j]))]
+##                        dict0['IntendedFor'] = val
+##                        with open(jsonf, 'w', encoding='utf-8') as f:
+##                            json.dump(dict0, f, ensure_ascii=False, indent=4)
+##                        print(f'Output written to {jsonf}')
 
 
 def get_TR(file):

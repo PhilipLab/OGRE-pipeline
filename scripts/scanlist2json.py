@@ -77,12 +77,12 @@ if __name__ == "__main__":
             if any(par.bfmap):
                 if any(par.bbold_fmap):
 
-                    print(f'par.fmap={par.fmap}')
-                    print(f'len(par.fmap)={len(par.fmap)}')
+                    #print(f'par.fmap={par.fmap}')
+                    #print(f'len(par.fmap)={len(par.fmap)}')
 
                     for j in range(len(par.fmap)):
 
-                        print(f'j={j}')
+                        #print(f'j={j}')
 
                         jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
 
@@ -103,10 +103,10 @@ if __name__ == "__main__":
 
             if any(par.bdwi_fmap):
 
-                print(f'par.dwifmap={par.dwifmap}')
+                #print(f'par.dwifmap={par.dwifmap}')
 
                 for j in range(len(par.dwifmap)):
-                    print(f'j={j}')
+                    #print(f'j={j}')
                     jsonf = (f'{par.dwifmap[j].split('.nii')[0]}.json')
 
                     try:
