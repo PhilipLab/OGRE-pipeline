@@ -48,12 +48,6 @@ class Scans:
                         self.sbref.append((file0,int(len(self.fmap)/2-1)))
                     else:
                         self.bold.append((file0,int(len(self.fmap)/2-1)))
-
-                        #if line2[-1].find('task-rest') != -1:
-                        #    self.restidx.append(j)
-                        #else:
-                        #    self.taskidx.append(j)
-                        #START241219
                         if lcdonotsmoothrest:
                             if line2[-1].find('task-rest') != -1:
                                 self.restidx.append(j)
@@ -61,13 +55,9 @@ class Scans:
                                 self.taskidx.append(j)
                         else:
                             self.taskidx.append(j)
-
-
                         j+=1
                 elif line2[-2] == 'dwi':
                     self.dwi.append((file0,int(len(self.dwifmap)-1))) #double parentheses for tuple
-                
-                #START240823
                 elif line2[-2] == 'anat':
                     if line2[-1].find('T2w') != -1:
                         self.T2.append(file0)
@@ -83,32 +73,34 @@ class Scans:
         #print(f'self.dwifmap={self.dwifmap}')
         #print(f'self.dwi={self.dwi}')
 
+        self.__check_IntendedFor_fmap()
+
+    #START250110
+    def __check_IntendedFor_fmap(self):
+        for j in range(len(self.fmap)):
+            jsonf = (f'{self.fmap[j].split('.nii')[0]}.json')
+            try:
+                with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                    print(f'Loading {jsonf}')
+                    dict0 = json.load(f0)
+            except FileNotFoundError:
+                print(f'    INFO: {jsonf} does not exist.')
+
+            if 'IntendedFor' in dict0:
+                print('Key IntendedFor found.')
+
+
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
         with open(file,'w') as f0:
             f0.write(f'{SHEBANG}\nset -e\n\n')
             f0.write(f'FREESURFVER={FREESURFVER}\n\n')
             f0.write(pathstr+'\n') # s0, bids and sf0
-            #f0.write('mkdir -p ${bids}/func ${bids}/anat\n\n')
             f0.write('mkdir -p ${bids}/func\n\n')
             self.write_bold_bash(f0,s0,self.bold)
-
-            #START241109
             f0.write('\nJSON=(\\\n')
             j=-1 #default value needed for a single bold
             for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split('.nii')[0]}.json \\\n')
             f0.write(f'        {self.bold[j+1][0].split('.nii')[0]}.json)\n')
-
-            #f0.write('\nfor i in ${BOLD[@]};do\n')
-            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}/${i}.nii.gz\n')
-            #f0.write('    if [ ! -f "${file}" ];then\n')
-            #f0.write('        echo ${file} not found.\n')
-            #f0.write('        continue\n')
-            #f0.write('    fi\n')
-            #f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_bold.nii.gz\n')
-            #f0.write('    cp -f -p $file ${file1}\n')
-            #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
-            #f0.write('done\n\n')
-            #START241109
             f0.write('\nfor i in "${!BOLD[@]}";do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${BOLD[i]}/${BOLD[i]}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
@@ -120,18 +112,6 @@ class Scans:
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('    OGREjson.py -f "${file1}" -j "${JSON[i]}"\n')
             f0.write('done\n')
-
-            #f0.write('for i in ${BOLD[@]};do\n')
-            #f0.write('    file=${sf0}/MNINonLinear/Results/${i}/brainmask_fs.2.nii.gz\n')
-            #f0.write('    if [ ! -f "${file}" ];then\n')
-            #f0.write('        echo ${file} not found.\n')
-            #f0.write('        continue\n')
-            #f0.write('    fi\n')
-            #f0.write('    file1=${bids}/func/${i%bold*}OGRE-preproc_res-2_label-brain_mask.nii.gz\n')
-            #f0.write('    cp -f -p $file ${file1}\n')
-            #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
-            #f0.write('done\n\n')
-            #START241109
             f0.write('\nfor i in "${!BOLD[@]}";do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${BOLD[i]}/brainmask_fs.2.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
@@ -143,27 +123,6 @@ class Scans:
             f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
             f0.write('    OGREjson.py -f "${file1}" -j "${JSON[i]}"\n')
             f0.write('done\n\n')
-
-
-
-            #START241018
-            #if self.T2:
-            #    f0.write('ANAT=(T1w_restore T1w_restore_brain T2w_restore T2w_restore_brain)\n')
-            #    f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain OGRE-preproc_desc-restore_T2w OGRE-preproc_desc-restore_T2w_brain)\n')
-            #else:
-            #    f0.write('ANAT=(T1w_restore T1w_restore_brain)\n')
-            #    f0.write('OUT=(OGRE-preproc_desc-restore_T1w OGRE-preproc_desc-restore_T1w_brain)\n')
-            #f0.write('for((i=0;i<${#ANAT[@]};++i));do\n')
-            #f0.write('    file=${sf0}/MNINonLinear/${ANAT[i]}.nii.gz\n')
-            #f0.write('    if [ ! -f "${file}" ];then\n')
-            #f0.write('        echo ${file} not found.\n')
-            #f0.write('        continue\n')
-            #f0.write('    fi\n')
-            #f0.write('    file1=${bids}/anat/${s0}_${OUT[i]}.nii.gz\n')
-            #f0.write('    cp -f -p $file ${file1}\n')
-            #f0.write('    echo -e "${file}\\n    copied to ${file1}"\n')
-            #f0.write('done\n\n')
-
             f0.write('mkdir -p ${bids}/regressors\n')
             f0.write('MC=(Movement_Regressors.txt Movement_Regressors_dt.txt)\n')
             f0.write('OUT=(mc-withderiv.txt mc-withdetrendderiv.txt)\n')
@@ -230,19 +189,19 @@ class Scans:
 
 
     #START250109
-    def check_IntendedFor_fmap(self):
-        for j in range(len(par.fmap)):
-            jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
-                try:
-                    with open(jsonf,encoding="utf8",errors='ignore') as f0:
-                        print(f'Loading {jsonf}')
-                        dict0 = json.load(f0)
-                except FileNotFoundError:
-                    print(f'    INFO: {jsonf} does not exist.')
-
-                if 'IntendedFor' in dict0:
-                    print('Key IntendedFor found.')
-
+#    def __check_IntendedFor_fmap(self):
+#        for j in range(len(par.fmap)):
+#            jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
+#            try:
+#                with open(jsonf,encoding="utf8",errors='ignore') as f0:
+#                    print(f'Loading {jsonf}')
+#                    dict0 = json.load(f0)
+#            except FileNotFoundError:
+#                print(f'    INFO: {jsonf} does not exist.')
+#
+#            if 'IntendedFor' in dict0:
+#                print('Key IntendedFor found.')
+#
 #                    for j in range(len(par.fmap)):
 #                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
 #                        try:
@@ -281,8 +240,12 @@ class Par(Scans):
         self.dim_fmap = []
         self.bbold_fmap = []
         self.bdwi_fmap = []
-        self.fmapnegidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
-        self.fmapposidx = [0]*int(len(self.fmap)/2)  #j- 0 or 1, for pos subtract 1 and take abs
+        self.fmapnegidx = [0]*int(len(self.fmap)/2)  #j-
+
+        #self.fmapposidx = [0]*int(len(self.fmap)/2)  #j+ 0 or 1, for pos subtract 1 and take abs
+        #START250110 BIG BAD BUG
+        self.fmapposidx = [1]*int(len(self.fmap)/2)  #j
+
         self.fmap_bold = [ [] for i in range(len(self.fmap))]
         self.fmap_dwi = [ [] for i in range(len(self.dwifmap))]
 
@@ -334,6 +297,9 @@ class Par(Scans):
         fmap0 = self.fmap[0::2]
         fmap1 = self.fmap[1::2]
 
+        #print(f'fmap0={fmap0}')
+        #print(f'fmap1={fmap1}')
+
         for j in range(len(fmap0)):
             self.ped_fmap.append(self.__get_phase(fmap0[j]))
             self.ped_fmap.append(self.__get_phase(fmap1[j]))
@@ -358,7 +324,12 @@ class Par(Scans):
                 continue
 
             self.bfmap[j]=True
-            if self.ped_fmap[2*j][1] == '+': 
+
+            #print(f'self.ped_fmap[{2*j}][1]={self.ped_fmap[2*j][1]}')
+            #if self.ped_fmap[2*j][1] == '+': 
+            #START250110
+            #First field map is 'j' so the second one is 'j-', so flip the index
+            if self.ped_fmap[2*j][1] != '-': 
                 self.fmapnegidx[j]=1
                 self.fmapposidx[j]=0
 
