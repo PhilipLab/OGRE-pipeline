@@ -14,9 +14,13 @@ class Scans:
     #START250108
     def __init__(self,file,lcdonotsmoothrest=False):
 
+        print(f'lcdonotsmoothrest={lcdonotsmoothrest}')
+
         self.fmap = []
-        self.sbref = []
-        self.bold = [] 
+
+        self.sbref = [] #(filename,fmap idx, OPT first fmap idx, OPT second fmap idx)
+        self.bold = []  #(filename,fmap idx, OPT first fmap idx, OPT second fmap idx) #will check PED later
+
         self.taskidx = []
         self.restidx = []
         self.dwifmap = []
@@ -75,6 +79,11 @@ class Scans:
 
         self.__check_IntendedFor_fmap()
 
+
+
+#        self.sbref = [] #(filename,fmap idx, OPT fmap neg idx, OPT fmap pos idx)
+#        self.bold = []  #(filename,fmap idx, OPT fmap neg idx, OPT fmap pos idx)
+
     #START250110
     def __check_IntendedFor_fmap(self):
         for j in range(len(self.fmap)):
@@ -88,6 +97,12 @@ class Scans:
 
             if 'IntendedFor' in dict0:
                 print('Key IntendedFor found.')
+                print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
+
+                #https://stackoverflow.com/questions/53984406/efficient-way-to-add-elements-to-a-tuple
+                #self.sbref += (j,)
+                #self.bold += (j,)
+                
 
 
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
@@ -218,6 +233,24 @@ class Scans:
 #                        print(f'Output written to {jsonf}')
 
 
+##python3 how to make function argument optional with super
+##class Parent:
+##    def __init__(self, value=None):
+##        self.value = value
+##
+##class Child(Parent):
+##    def __init__(self, child_value, **kwargs):
+##        super().__init__(**kwargs)  # Pass any keyword arguments to the parent
+##        self.child_value = child_value
+
+### Using the classes
+##child = Child("child", value="parent")
+##print(child.child_value)
+##print(child.value)
+
+##child2 = Child("child2")
+##print(child2.child_value)
+##print(child2.value)
 
 
 class Par(Scans):
@@ -228,8 +261,12 @@ class Par(Scans):
     #def __init__(self,file,lcdonotsmoothrest):
     #    super().__init__(file,lcdonotsmoothrest)
     #START250108
-    def __init__(self,file,lcdonotsmoothrest=False):
-        super().__init__(file,lcdonotsmoothrest=False)
+    #def __init__(self,file,lcdonotsmoothrest=False):
+    #    super().__init__(file,lcdonotsmoothrest=False)
+    #START250111
+    def __init__(self,file,**kwargs):
+        super().__init__(file,**kwargs)
+
 
         self.bsbref = [False]*len(self.bold)
         self.ped = []

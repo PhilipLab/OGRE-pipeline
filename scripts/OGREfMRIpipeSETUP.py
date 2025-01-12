@@ -376,6 +376,7 @@ if __name__ == "__main__":
             args.fslmo = ' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
         #print(f'args.fslmo={args.fslmo}')
 
+    print(f'args.lcdonotsmoothrest={args.lcdonotsmoothrest}')
 
     for i in args.dat:
 
@@ -386,10 +387,15 @@ if __name__ == "__main__":
         #else:
         #    par = opl.scans.Scans(i)
         #START241219
+        #if not args.lcfeatadapter:
+        #    par = opl.scans.Par(i,args.lcdonotsmoothrest)
+        #else:
+        #    par = opl.scans.Scans(i,args.lcdonotsmoothrest)
+        #START250111
         if not args.lcfeatadapter:
-            par = opl.scans.Par(i,args.lcdonotsmoothrest)
+            par = opl.scans.Par(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
         else:
-            par = opl.scans.Scans(i,args.lcdonotsmoothrest)
+            par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
 
 
         idx = i.find('sub-')
