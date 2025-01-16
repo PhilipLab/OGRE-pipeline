@@ -18,8 +18,8 @@ class Scans:
 
         self.fmap = []
 
-        self.sbref = [] #(filename,fmap idx, OPT first fmap idx, OPT second fmap idx)
-        self.bold = []  #(filename,fmap idx, OPT first fmap idx, OPT second fmap idx) #will check PED later
+        self.sbref = [] #(filename,scanlist fmap idx, json first fmap idx, json second fmap idx)
+        self.bold = []  #(filename,scanlist fmap idx, json first fmap idx, json second fmap idx) #will check PED later
 
         self.taskidx = []
         self.restidx = []
@@ -70,8 +70,8 @@ class Scans:
             print(f'There are {len(self.sbref)} reference files and {len(self.bold)} bolds. Must be equal. Abort!')
             exit()
         #print(f'self.fmap={self.fmap}')
-        #print(f'self.sbref={self.sbref}')
-        #print(f'self.bold={self.bold}')
+        print(f'self.sbref={self.sbref}')
+        print(f'self.bold={self.bold}')
         #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
         #print(f'self.dwifmap={self.dwifmap}')
@@ -80,14 +80,10 @@ class Scans:
         self.__check_IntendedFor_fmap()
 
 
-
-#        self.sbref = [] #(filename,fmap idx, OPT fmap neg idx, OPT fmap pos idx)
-#        self.bold = []  #(filename,fmap idx, OPT fmap neg idx, OPT fmap pos idx)
-
     #START250110
     def __check_IntendedFor_fmap(self):
-        for j in range(len(self.fmap)):
-            jsonf = (f'{self.fmap[j].split('.nii')[0]}.json')
+        for k in range(len(self.fmap)):
+            jsonf = (f'{self.fmap[k].split('.nii')[0]}.json')
             try:
                 with open(jsonf,encoding="utf8",errors='ignore') as f0:
                     print(f'Loading {jsonf}')
@@ -99,9 +95,28 @@ class Scans:
                 print('Key IntendedFor found.')
                 print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
 
+                #https://www.geeksforgeeks.org/python-finding-strings-with-given-substring-in-list/
                 #https://stackoverflow.com/questions/53984406/efficient-way-to-add-elements-to-a-tuple
-                #self.sbref += (j,)
-                #self.bold += (j,)
+
+                for i in range(len(dict0["IntendedFor"])):
+                    found=0
+                    for j in range(len(self.bold)):
+                        try:
+                            index = self.bold[j][0].index(dict0["IntendedFor"][i])
+                            #print(f'{i} found at {index}')
+                            self.sbref[j] += (k,)
+                            self.bold[j] += (k,)
+                            found=1
+                            break
+                        except ValueError:
+                            pass
+                    #print(f'j={j} len(self.bold)={len(self.bold)}')
+                    if found == 0:
+                        print(f'{dict0["IntendedFor"][i]} not found in bold. Abort!')
+                        exit()
+
+        print(f'self.sbref={self.sbref}')
+        print(f'self.bold={self.bold}')
                 
 
 
@@ -200,57 +215,6 @@ class Scans:
             f0.write(f'    {str0} \\\n')
         str0 = pathlib.Path(bold_bash[j+1]).name.split('.nii')[0]
         f0.write(f'    {str0})\n')
-
-
-
-    #START250109
-#    def __check_IntendedFor_fmap(self):
-#        for j in range(len(par.fmap)):
-#            jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
-#            try:
-#                with open(jsonf,encoding="utf8",errors='ignore') as f0:
-#                    print(f'Loading {jsonf}')
-#                    dict0 = json.load(f0)
-#            except FileNotFoundError:
-#                print(f'    INFO: {jsonf} does not exist.')
-#
-#            if 'IntendedFor' in dict0:
-#                print('Key IntendedFor found.')
-#
-#                    for j in range(len(par.fmap)):
-#                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
-#                        try:
-#                            with open(jsonf,encoding="utf8",errors='ignore') as f0:
-#                                dict0 = json.load(f0)
-#                        except FileNotFoundError:
-#                            print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
-#                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[j]}
-#                        val=[]
-#                        val += [(f'func{par.bold[par.fmap_bold[j][k]][0].split('/func')[1]}') for k in range(len(par.fmap_bold[j]))]
-#                        dict0['IntendedFor'] = val
-#                        with open(jsonf, 'w', encoding='utf-8') as f:
-#                            json.dump(dict0, f, ensure_ascii=False, indent=4)
-#                        print(f'Output written to {jsonf}')
-
-
-##python3 how to make function argument optional with super
-##class Parent:
-##    def __init__(self, value=None):
-##        self.value = value
-##
-##class Child(Parent):
-##    def __init__(self, child_value, **kwargs):
-##        super().__init__(**kwargs)  # Pass any keyword arguments to the parent
-##        self.child_value = child_value
-
-### Using the classes
-##child = Child("child", value="parent")
-##print(child.child_value)
-##print(child.value)
-
-##child2 = Child("child2")
-##print(child2.child_value)
-##print(child2.value)
 
 
 class Par(Scans):
