@@ -77,14 +77,14 @@ class Scans:
             jsonf = (f'{self.fmap[k].split('.nii')[0]}.json')
             try:
                 with open(jsonf,encoding="utf8",errors='ignore') as f0:
-                    print(f'Loading {jsonf}')
+                    print(f'    Loading {jsonf}')
                     dict0 = json.load(f0)
             except FileNotFoundError:
                 print(f'    INFO: {jsonf} does not exist.')
 
             if 'IntendedFor' in dict0:
-                print('Key IntendedFor found.')
-                print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
+                print('        Key IntendedFor found')
+                #print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
 
                 #https://www.geeksforgeeks.org/python-finding-strings-with-given-substring-in-list/
                 #https://stackoverflow.com/questions/53984406/efficient-way-to-add-elements-to-a-tuple
@@ -106,9 +106,9 @@ class Scans:
                         print(f'{dict0["IntendedFor"][i]} not found in bold. Abort!')
                         exit()
 
-        print(f'self.sbref={self.sbref}')
-        print(f'self.bold={self.bold}')
-        print(f'len(self.bold[0])={len(self.bold[0])}')   
+        #print(f'self.sbref={self.sbref}')
+        #print(f'self.bold={self.bold}')
+        #print(f'len(self.bold)={len(self.bold)}')   
 
 
     def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
@@ -230,6 +230,8 @@ class Par(Scans):
         self.fmap_bold = [ [] for i in range(len(self.fmap))]
         self.fmap_dwi = [ [] for i in range(len(self.dwifmap))]
 
+        #print(f'len(self.fmap_bold)={self.fmap_bold}')
+
     def __get_phase(self,file):
         jsonf = (f'{file.split('.nii')[0]}.json')
         try:
@@ -321,25 +323,10 @@ class Par(Scans):
 
 
 
-#    #START250115
-#        #Just check the first tuple. This may need to change.
-#        print(f'len(self.bold[0])={len(self.bold[0])}')   
-#        if len(self.bold[0])%2 != 0:
-#            print(f'len(self.bold[0])={len(self.bold[0])} is not divisible by two. Field maps must be in pairs. Abort!')   
-#            exit(0)
-#        elif len(self.bold[0]) == 2:
-#            fmap0 = self.fmap[0::2]
-#            fmap1 = self.fmap[1::2]
-#        else: #len(self.bold[0])==4
-#            fmap0,fmap1 = [],[]
-#            for i in range(len(self.bold)):
-#                fmap0.append(self.fmap[self.bold[2]])
-#                fmap1.append(self.fmap[self.bold[2]])
-
-
     def check_ped_dims(self):
         self.bbold_fmap=[False]*len(self.ped)
         if any(self.bfmap):
+            #print(f'self.dim_fmap={self.dim_fmap}')
             for j in range(len(self.ped)):
                 if self.bfmap[self.bold[j][1]]:
 
@@ -384,9 +371,9 @@ class Par(Scans):
                                 junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
                                 self.dim_fmap[self.bold[j][1]] = self.dim[j]
                                 self.fmap[i] = fmap0
-                            self.bbold_fmap[j]=True
-                            self.fmap_bold[self.bold[j][1]*2].append(j)
-                            self.fmap_bold[self.bold[j][1]*2+1].append(j)
+                        self.bbold_fmap[j]=True
+                        self.fmap_bold[self.bold[j][1]*2].append(j)
+                        self.fmap_bold[self.bold[j][1]*2+1].append(j)
                     else: #len(self.bold[0])==4
                         # ped letter bold != ped letter fmap
                         if self.ped[j][0] != self.ped_fmap[self.bold[j][2]][0]:
@@ -394,21 +381,23 @@ class Par(Scans):
                             print(f'    ERROR: {self.fmap[self.bold[j][2]*2]} {self.ped_fmap[self.bold[j][2]][0]}')
                             print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
                             continue
-                        if self.dim[j] != self.dim_fmap[self.bold[j][2]]:
+                        #print(f'self.bold[{j}][2]={self.bold[j][2]}')
+                        #print(f'int(self.bold[{j}][2]/2)={int(self.bold[j][2]/2)}')
+                        if self.dim[j] != self.dim_fmap[int(self.bold[j][2]/2)]:
                             print(f'    ERROR: {self.bold[j][0]} {self.dim[j]}')
                             print(f'    ERROR: {self.fmap[self.bold[j][2]*2]} {self.dim_fmap[self.bold[j][2]]}')
                             print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
                             ynq = input('    Would like to resample the field maps? y, n, q').casefold()
                             if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
                             if ynq=='n' or ynq=='no': continue
-                            for i in self.bold[j][2]*2,self.bold[j][3]*2:
+                            for i in self.bold[j][2],self.bold[j][3]:
                                 fmap0 = pathlib.Path(self.fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
                                 junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
                                 self.dim_fmap[self.bold[j][1]] = self.dim[j]
                                 self.fmap[i] = fmap0
-                            self.bbold_fmap[j]=True
-                            self.fmap_bold[self.bold[j][2]*2].append(j)
-                            self.fmap_bold[self.bold[j][3]*2].append(j)
+                        self.bbold_fmap[j]=True
+                        self.fmap_bold[self.bold[j][2]].append(j)
+                        self.fmap_bold[self.bold[j][3]].append(j)
 
 #STARTHERE
 
@@ -421,8 +410,8 @@ class Par(Scans):
             #print(f'check_ped_dims_dwi here0 j={j}')
             ped_dwi = self.__get_phase(self.dwi[j][0])
             ped_dwifmap = self.__get_phase(self.dwifmap[self.dwi[j][1]])
-            print(f'check_ped_dims_dwi {self.dwi[j][0]} {ped_dwi}')
-            print(f'check_ped_dims_dwi {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
+            #print(f'check_ped_dims_dwi {self.dwi[j][0]} {ped_dwi}')
+            #print(f'check_ped_dims_dwi {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
             if ped_dwi[0] != ped_dwifmap[0]:
                 print(f'    ERROR: {self.dwi[j][0]} {ped_dwi}')
                 print(f'    ERROR: {self.dwifmap[self.dwi[j][1]]} {ped_dwifmap}')
@@ -443,37 +432,6 @@ class Par(Scans):
             self.bdwi_fmap[j]=True
             self.fmap_dwi[self.dwi[j][1]].append(j)
             self.ped_dwifmap.append(ped_dwifmap)
-
-
-
-#    #START250109
-#    def check_IntendedFor_fmap(self):
-#        for j in range(len(par.fmap)):
-#            jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
-#                try:
-#                    with open(jsonf,encoding="utf8",errors='ignore') as f0:
-#                        print(f'Loading {jsonf}')
-#                        dict0 = json.load(f0)
-#                except FileNotFoundError:
-#                    print(f'    INFO: {jsonf} does not exist.')
-#
-#                if 'IntendedFor' in dict0:
-#                    print('Key IntendedFor found.')
-#
-##                    for j in range(len(par.fmap)):
-##                        jsonf = (f'{par.fmap[j].split('.nii')[0]}.json')
-##                        try:
-##                            with open(jsonf,encoding="utf8",errors='ignore') as f0:
-##                                dict0 = json.load(f0)
-##                        except FileNotFoundError:
-##                            print(f'    INFO: {jsonf} does not exist. Creating dictionary ...')
-##                            dict0 = {'PhaseEncodingDirection':par.ped_fmap[j]}
-##                        val=[]
-##                        val += [(f'func{par.bold[par.fmap_bold[j][k]][0].split('/func')[1]}') for k in range(len(par.fmap_bold[j]))]
-##                        dict0['IntendedFor'] = val
-##                        with open(jsonf, 'w', encoding='utf-8') as f:
-##                            json.dump(dict0, f, ensure_ascii=False, indent=4)
-##                        print(f'Output written to {jsonf}')
 
 
 def get_TR(file):
