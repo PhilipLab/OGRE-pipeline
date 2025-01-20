@@ -154,6 +154,10 @@ if __name__ == "__main__":
             if dict1["HPFcutoff"]: str_func+=' -p ' + str(dict1["HPFcutoff"])
             if dict1["SmoothOnly"]: str_func+=' -smoothonly'
             if dict1["donotsmoothrest"]: str_func+=' -donotsmoothrest'
+
+            #START250118
+            if dict1["donotuseIntendedFor"]: str_func+=' -donotuseIntendedFor'
+
             if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
             if dict1["FeatAdapter"]: str_func+=' -F'
             if dict1["UseRefinement"]: str_func+=' -userefinement'

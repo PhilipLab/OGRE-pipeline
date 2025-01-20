@@ -13,8 +13,6 @@ P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh'
 P2='OGRESmoothingProcess.sh'
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
-#P4='OGRESplitFreeSurferMasks.sh'
-#P5='OGREMasksLow.sh'
 
 from contextlib import ExitStack
 def open_files(filenames,mode):
@@ -219,6 +217,12 @@ if __name__ == "__main__":
     hlcdonotsmoothrest='Flag. Do not do SUSAN smoothing and high pass filtering on rest runs.\n' \
         + 'The default is to smooth all runs.'
     parser.add_argument('--donotsmoothrest','-donotsmoothrest','--DONOTSMOOTHREST','-DONOTSMOOTHREST',dest='lcdonotsmoothrest',action='store_true',help=hlcdonotsmoothrest)
+
+    #START250118
+    hlcdonotuseIntendedFor='Flag. Do not do use IntendedFor field map JSON to determine which bolds the fieldmap should be applied to.\n' \
+        + 'Instead use the most recent fieldmap in the scanlist.'
+    parser.add_argument('--donotuseIntendedFor','-donotuseIntendedFor','--DONOTUSEINTENDEDFOR','-DONOTUSEINTENDEDFOR',dest='lcdonotuseIntendedFor',action='store_true', \
+        help=hlcdonotuseIntendedFor)
     
 
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
@@ -376,26 +380,22 @@ if __name__ == "__main__":
             args.fslmo = ' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
         #print(f'args.fslmo={args.fslmo}')
 
-    print(f'args.lcdonotsmoothrest={args.lcdonotsmoothrest}')
+    #print(f'args.lcdonotsmoothrest={args.lcdonotsmoothrest}')
+    print(f'args.lcdonotuseIntendedFor={args.lcdonotuseIntendedFor}')
 
     for i in args.dat:
 
         print(f'Reading {i}')
 
         #if not args.lcfeatadapter:
-        #    par = opl.scans.Par(i)
+        #    par = opl.scans.Par(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
         #else:
-        #    par = opl.scans.Scans(i)
-        #START241219
-        #if not args.lcfeatadapter:
-        #    par = opl.scans.Par(i,args.lcdonotsmoothrest)
-        #else:
-        #    par = opl.scans.Scans(i,args.lcdonotsmoothrest)
-        #START250111
+        #    par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
+        #START250118
         if not args.lcfeatadapter:
-            par = opl.scans.Par(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
+            par = opl.scans.Par(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
         else:
-            par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
+            par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
 
 
         idx = i.find('sub-')

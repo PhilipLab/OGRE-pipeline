@@ -7,7 +7,10 @@ import json
 from opl.rou import run_cmd,SHEBANG
 
 class Scans:
-    def __init__(self,file,lcdonotsmoothrest=False):
+
+    #def __init__(self,file,lcdonotsmoothrest=False):
+    #START250118
+    def __init__(self,file,lcdonotsmoothrest=False,lcdonotuseIntendedFor=False):
 
         self.fmap = []
         self.sbref = [] #(filename,scanlist fmap idx, json first fmap idx, json second fmap idx)
@@ -68,7 +71,9 @@ class Scans:
         #print(f'self.dwifmap={self.dwifmap}')
         #print(f'self.dwi={self.dwi}')
 
-        self.__check_IntendedFor_fmap()
+        #self.__check_IntendedFor_fmap()
+        #START250118
+        if not lcdonotuseIntendedFor: self.__check_IntendedFor_fmap()
 
 
     #START250110
@@ -77,13 +82,14 @@ class Scans:
             jsonf = (f'{self.fmap[k].split('.nii')[0]}.json')
             try:
                 with open(jsonf,encoding="utf8",errors='ignore') as f0:
-                    print(f'    Loading {jsonf}')
+                    #print(f'    Loading {jsonf}')
                     dict0 = json.load(f0)
             except FileNotFoundError:
                 print(f'    INFO: {jsonf} does not exist.')
 
             if 'IntendedFor' in dict0:
-                print('        Key IntendedFor found')
+                #print('        Key IntendedFor found')
+                print(f'    {jsonf}: Key "IntendedFor" found')
                 #print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
 
                 #https://www.geeksforgeeks.org/python-finding-strings-with-given-substring-in-list/
