@@ -202,11 +202,11 @@ if __name__ == "__main__":
 
     hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
     mfwhm='FWHM'
-    parser.add_argument('-f','--fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+    parser.add_argument('-f','--fwhm','-fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
 
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
-    parser.add_argument('-p','--paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
 
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'

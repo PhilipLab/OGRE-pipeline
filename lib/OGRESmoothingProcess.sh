@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-#echo -e "\nRunning $0"
 echo "**** Running $0 ****"
 
 get_batch_options() {
@@ -11,8 +10,6 @@ get_batch_options() {
     unset command_line_specified_fwhm
     unset command_line_specified_paradigm_hp_sec
     unset command_line_specified_TR
-    #unset command_line_specified_SmoothFolder
-    #unset command_line_specified_EnvironmentScript
 
     local index=0
     local numArgs=${#arguments[@]}
@@ -38,14 +35,6 @@ get_batch_options() {
                 command_line_specified_TR=${argument#*=}
                 index=$(( index + 1 ))
                 ;;
-            #--SmoothFolder=*)
-            #    command_line_specified_SmoothFolder=${argument#*=}
-            #    index=$(( index + 1 ))
-            #    ;;
-            #--EnvironmentScript=*)
-            #    command_line_specified_EnvironmentScript=${argument#*=}
-            #    index=$(( index + 1 ))
-            #    ;;
             *)
                 echo ""
                 echo "ERROR: Unrecognized Option: ${argument}"

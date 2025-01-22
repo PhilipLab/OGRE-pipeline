@@ -7,7 +7,8 @@ import sys
 
 if __name__ == "__main__":
 
-    parser=argparse.ArgumentParser(description=f'Create json files. Required: OGREjson.py -f <files needing jsons> -j <json template for each file>',formatter_class=argparse.RawTextHelpFormatter)
+    parser=argparse.ArgumentParser(description=f'Create json files. Required: OGREjson.py -f <files needing jsons> -j <json template for each file>', \
+        formatter_class=argparse.RawTextHelpFormatter)
 
     hf='Files needing jsons.'
     parser.add_argument('-f','--file','-file','--files','-file',dest='files',metavar='files needing jsons',action='extend',nargs='+',help=hf)

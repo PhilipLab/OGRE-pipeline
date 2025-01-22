@@ -65,11 +65,13 @@ helpmsg(){
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
     echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename (an across-subjects script)."
     echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
-    echo "    -e --erosion -erosion --ero -ero"
-    echo "        Default is 2. For the brain mask, the number or erosions that follow the three dilations. Ex. -e 2, will result in two erosions"
-    echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
     echo "    -dil --dil -dilation --dilation"
-    echo "        Default is 3. For the brain mask, the number of dilations (fslmaths dilD) before erosions"
+    echo "        Dilate the brain mask. Default is 3. Number of dilations (fslmaths dilD) that precede the erosions."
+    echo "        Ex. -dil 3, will result in three dilations"
+    echo "    -e --erosion -erosion --ero -ero"
+    echo "        Erode the brain mask. Default is 2. Number of erosions that follow the dilations."
+    echo "        Ex. -e 2, will result in two erosions"
+    echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
     echo "    -ht --ht --highres-template -highres-template --HighResolutionTemplateDirectory -HighResolutionTemplateDirectory"
     echo "        Optional. High resolution registration templates. Default is MNI152 1mm asymmetric (HCP/FSL version)"
     echo "        Full path of a folder containing 2 files: T1w (whole-head), T1w_brain and/or T1_brain_mask"
@@ -81,21 +83,11 @@ helpmsg(){
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm"
-
-    #echo "    -n --name -name"
-    #echo "        Use with -pipedir to provide the subject name. Default is root of scanlist.csv."
-    #echo "    -d -p -directory --directory --pipedir -pipedir"
-    #echo "        OGRE pipeline output directory. Output of OGRE scripts will be written to this location at pipeline<freesurferVersion>."
-    #echo "        Optional. Default is <scanlist.csv path>."
-    #echo "    --append -append"
-    #echo "        Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug. Overridden by -d."
-    #START240813
     echo "    --container_directory -container_directory --cd -cd"
     echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
     echo "    -n --name -name"
     echo "        Use with --container_directory to provide the subject name. Default is root of scanlist.csv."
-
 
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
@@ -104,25 +96,6 @@ helpmsg(){
         echo "    -r --hires -hires"
         echo "        Resolution in mm: 0.7, 0.8 or 1. Default is 1."
 
-
-        #echo "    -T1 --T1 -t1 --t1" 
-        #echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
-        #echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b" 
-        #echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz. This will overwrite -ht."
-        #echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l" 
-        #echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
-        #echo "    -T2 --T2 -t2 --t2" 
-        #echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
-        #echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b" 
-        #echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
-        #echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l" 
-        #echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
-        #echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm" 
-        #echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz. This will overwrite -ht."
-        #echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml" 
-        #echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
-        #echo '        Mask is dilated if name does not include "dil".'
-        #START241228
         echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
         echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
         echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b -T1HighResolutionBrainOnly --T1HighResolutionBrainOnly"
@@ -146,10 +119,6 @@ helpmsg(){
         echo "        No default. If provided, this will be used to make the T2brain image. This will overwrite -ht."
         echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2HighResolutionBrainMask --T2HighResolutionBrainMask"
         echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
-
-
-
-
     fi
     echo "    -h --help -help"
     echo "        Echo this help message."
@@ -159,11 +128,7 @@ if((${#@}<1));then
     exit
 fi
 
-lcautorun=0;lchostname=0;lcdate=0;erosion=2;dilation=3 #do not set dat;unexpected
-
-#unset bs cd0 name helpall help t1 t1b t1l t2 t2b t2l t1bm t1bml ht lt
-#unset T1wTemplate T1wTemplateBrain T1wTemplateLow T2wTemplate T2wTemplateBrain T2wTemplateLow TemplateMask TemplateMaskLow 
-#START241228
+lcautorun=0;lchostname=0;lcdate=0;erosion=2;dilation=3 #DON'T SET dat unexpected
 unset bs cd0 name helpall help t1 t1b t1bm t1l t1bl t1bml t2 t2b t2bm t2l ht lt
 unset T1wTemplate T1wTemplateBrain TemplateMask T1wTemplateLow T1wTemplateBrainLow TemplateMaskLow T2wTemplate T2wTemplateBrain T2wTemplateMask T2wTemplateLow 
 
@@ -236,34 +201,6 @@ for((i=0;i<${#@};++i));do
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
             ;;
-
-
-
-        #-T1 | --T1 | -t1 | --t1)
-        #    t1=${arg[((++i))]}
-        #    ;;
-        #-T1brain | --T1brain | -t1brain | --t1brain | -t1b | --t1b | -T1b | --T1b)
-        #    t1b=${arg[((++i))]}
-        #    ;;
-        #-T1low | --T1low | -t1low | --t1low | -t1l | --t1l | -T1l | --T1l)
-        #    t1l=${arg[((++i))]}
-        #    ;;
-        #-T2 | --T2 | -t2 | --t2)
-        #    t2=${arg[((++i))]}
-        #    ;;
-        #-T2brain | --T2brain | -t2brain | --t2brain | -t2b | --t2b | -T2b | --T2b)
-        #    t2b=${arg[((++i))]}
-        #    ;;
-        #-T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l)
-        #    t2l=${arg[((++i))]}
-        #    ;;
-        #-T1brainmask | --T1brainmask | -t1brainmask | --t1brainmask | -t1bm | --t1bm | -T1bm | --T1bm)
-        #    t1bm=${arg[((++i))]}
-        #    ;;
-        #-T1brainmasklow | --T1brainmasklow | -t1brainmasklow | --t1brainmasklow | -t1bml | --t1bml | -T1bml | --T1bml)
-        #    t1bml=${arg[((++i))]}
-        #    ;;
-        #START241228
         -T1 | --T1 | -t1 | --t1 | --T1HighResolutionWholeHead | -T1HighResolutionWholeHead)
             t1=${arg[((++i))]}
             ;;
@@ -294,24 +231,6 @@ for((i=0;i<${#@};++i));do
         -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l | -T2HighResolutionBrainMask | --T2HighResolutionBrainMask)
             t2l=${arg[((++i))]}
             ;;
-
-
-        #-p | --pipedir | -pipedir | -d | -directory | --directory)
-        #    pipedir=${arg[((++i))]}
-        #    #https://stackoverflow.com/questions/17542892/how-to-get-the-last-character-of-a-string-in-a-shell
-        #    #https://stackoverflow.com/questions/27658675/how-to-remove-last-n-characters-from-a-string-in-bash
-        #    [[ ${pipedir: -1} == "/" ]] && pipedir=${pipedir::-1}
-        #    echo "pipedir=$pipedir"
-        #    ;;
-        #--append | -append)
-        #    append=${arg[((++i))]}
-        #    echo "append=$append"
-        #    ;;
-        #-n | --name | -name)
-        #    name=${arg[((++i))]}
-        #    echo "name=$name"
-        #    ;;
-        #START240813
         -p | --pipedir | -pipedir | -d | -directory | --directory)
             echo ${arg[i]} is archaic. Use --container_directory instead.
             exit
@@ -328,8 +247,6 @@ for((i=0;i<${#@};++i));do
             name=${arg[((++i))]}
             echo "name=$name"
             ;;
-
-
         -h | --help | -help)
             #helpmsg
             #exit

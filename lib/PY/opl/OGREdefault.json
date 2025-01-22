@@ -29,6 +29,7 @@
         "T2LowResolutionWholeHead": null,
         "FWHM": null,
         "HPFcutoff": null,
+        "LPFcutoff": null,
         "SmoothOnly": false,
         "donotsmoothrest": false,
         "donotuseIntendedFor": false,
