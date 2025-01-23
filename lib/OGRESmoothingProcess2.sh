@@ -24,7 +24,7 @@ if((${#@}<1));then
     exit
 fi
 
-unset paradigm_hp_sec TR #DON'T SET fwhm dat unexpected
+unset paradigm_hp_sec #DON'T SET dat fwhm TR unexpected
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -50,7 +50,12 @@ for((i=0;i<${#@};++i));do
             paradigm_hp_sec=${arg[((++i))]}
             ;;
         --TR | -TR)
-            TR=${arg[((++i))]}
+            TR+=(${arg[((++i))]})
+            for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
+                tmp=(${arg[((++j))]})
+                [ "${tmp::1}" = "-" ] && break
+                TR+=(${tmp[@]})
+            done
             ;;
         -h | --help | -help)
             helpmsg
@@ -62,133 +67,55 @@ for((i=0;i<${#@};++i));do
 done
 echo $0 $@
 
-STARTHERE
-
-
-
-
-
-
-
-
-get_batch_options() {
-    local arguments=("$@")
-
-    unset command_line_specified_fMRITimeSeriesResults
-    unset command_line_specified_fwhm
-    unset command_line_specified_paradigm_hp_sec
-    unset command_line_specified_TR
-
-    local index=0
-    local numArgs=${#arguments[@]}
-    local argument
-
-    while [ ${index} -lt ${numArgs} ]; do
-        argument=${arguments[index]}
-
-        case ${argument} in
-            --fMRITimeSeriesResults=*)
-                command_line_specified_fMRITimeSeriesResults=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
-            --fwhm=*)
-                command_line_specified_fwhm=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
-            --paradigm_hp_sec=*)
-                command_line_specified_paradigm_hp_sec=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
-            --TR=*)
-                command_line_specified_TR=${argument#*=}
-                index=$(( index + 1 ))
-                ;;
-            *)
-                echo ""
-                echo "ERROR: Unrecognized Option: ${argument}"
-                echo ""
-                exit 1
-                ;;
-        esac
-    done
-}
-get_batch_options "$@"
-
-if [ -n "${command_line_specified_fMRITimeSeriesResults}" ]; then
-
-    fMRITimeSeriesResults=($command_line_specified_fMRITimeSeriesResults)
-    #START220721
-    #prefiltered_func_data_unwarp=($command_line_specified_fMRITimeSeriesResults)
-
-else
-    echo "Need to specify --fMRITimeSeriesResults"
+[[ ${unexpected} ]] && dat+=(${unexpected[@]})
+if [[ ! ${dat} ]];then
+    echo "Need to provide --fMRITimeSeriesResults"
     exit
 fi
-if [ -n "${command_line_specified_fwhm}" ]; then
-    FWHM=($command_line_specified_fwhm)
-else
-    echo "Need to specify --fwhm"
+if [[ ! ${fwhm} ]];then
+    echo "Need to provide --fwhm"
     exit
 fi
 
-
-if [ -n "${command_line_specified_paradigm_hp_sec}" ]; then
-    PARADIGM_HP_SEC=$command_line_specified_paradigm_hp_sec
-    if [ -n "${command_line_specified_TR}" ]; then
-        TR=($command_line_specified_TR)
-
-        #START240521
-        if((${#fMRITimeSeriesResults[@]}!=${#TR[@]}));then
-            echo "fMRITimeSeriesResults has ${#fMRITimeSeriesResults[@]} elements, but TR has ${#TR[@]} elements. Must be equal. Abort!"
-            exit
-        fi
-
-    else
-        #echo "Need to specify --TR"
-        #exit
-        #START240521
+if [[ ${paradigm_hp_sec} ]];then
+    if [[ ! ${TR} ]];then
         echo "--TR not provided. Will look for it in the json files."
+    else 
+        if((${#dat[@]}!=${#TR[@]}));then
+            if((${#TR[@]}==1));then
+                echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} element with value ${TR[@]}."
+                echo "We will use TR=$TR for all fMRITimeSeriesResults."
+                for((i=0;i<${#dat[@]};++i));do
+                    TR+=(${TR[0]})
+                done
+            elif((${#dat[@]}<${#TR[@]}));then 
+                echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
+                echo "We will use the first ${#dat[@]} elements."
+            else #dat has more elements than TR, but TR has more than one element
+                echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
+                echo "The number of elements for both must be the same. Abort!"
+                exit
+            fi
+        fi
     fi
 fi
-
-
-#if [ -n "${command_line_specified_EnvironmentScript}" ]; then
-#    EnvironmentScript=$command_line_specified_EnvironmentScript
-#else
-#    echo "Need to specify --EnvironmentScript"
-#    exit
-#fi
-#if((${#fMRITimeSeriesResults[@]}!=${#TR[@]}));then
-#    echo "fMRITimeSeriesResults has ${#fMRITimeSeriesResults[@]} elements, but TR has ${#TR[@]} elements. Must be equal. Abort!"
-#    exit
-#fi
-#if [ -n "${command_line_specified_SmoothFolder}" ]; then
-#    SmoothFolder=${command_line_specified_SmoothFolder}/
-#else
-#    SmoothFolder=
-#fi
-#source $EnvironmentScript
 
 echo "**** Running $0 ****"
 
-for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
-
-    if [ ! -f "${fMRITimeSeriesResults[i]}" ];then
-        echo ${fMRITimeSeriesResults[i]} not found
+for((i=0;i<${#dat[@]};++i));do
+    if [[ ! -f ${dat[i]} ]];then
+        echo ${dat[i]} not found
         continue
     fi
 
-    #START240521
-    if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
-        if [ -n "${command_line_specified_TR}" ];then
+
+
+    if [[ $paradigm_hp_sec ]];then
+        if [[ $TR ];then
             TR0=${TR[i]}
         else
-
-            #json=${fMRITimeSeriesResults[i]%%.*}.json
-            #START241109
-            json=${fMRITimeSeriesResults[i]//nii.gz/json}
-
-            if [ ! -f $json ];then
+            json=${dat[i]//nii.gz/json}
+            if [[ ! -f $json ]];then
                 echo " $json not found"
                 continue
             fi
@@ -294,6 +221,8 @@ for((i=0;i<${#fMRITimeSeriesResults[@]};++i));do
 
         echo "Output written to ${out0}"
 
+    #Read json with jq, if not found ok, just don't output an updated json 
+    #or update OGREjson.py with additional fields 
         #START241109
         OGREjson.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}"
 
