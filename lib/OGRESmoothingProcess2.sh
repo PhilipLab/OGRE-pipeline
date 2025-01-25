@@ -108,8 +108,6 @@ for((i=0;i<${#dat[@]};++i));do
         continue
     fi
 
-
-
     if [[ $paradigm_hp_sec ]];then
         if [[ $TR ];then
             TR0=${TR[i]}
@@ -139,92 +137,89 @@ for((i=0;i<${#dat[@]};++i));do
     mkdir -p ${sd0}
 
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_unwarp -Tmean mean_func
-    #${FSLDIR}/bin/fslmaths $prefiltered_func_data_unwarp -Tmean mean_func
     ${FSLDIR}/bin/fslmaths $prefiltered_func_data_unwarp -Tmean ${sd0}/mean_func
 
     ##/usr/local/fsl/bin/bet2 mean_func mask -f 0.3 -n -m; /usr/local/fsl/bin/immv mask_mask mask
-    #${FSLDIR}/bin/bet2 mean_func mask -f 0.3 -n -m; ${FSLDIR}/bin/immv mask_mask mask
     ${FSLDIR}/bin/bet2 ${sd0}/mean_func ${sd0}/mask -f 0.3 -n -m; ${FSLDIR}/bin/immv ${sd0}/mask_mask ${sd0}/mask
 
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_unwarp -mas mask prefiltered_func_data_bet
-    #${FSLDIR}/bin/fslmaths $prefiltered_func_data_unwarp -mas mask prefiltered_func_data_bet
     ${FSLDIR}/bin/fslmaths $prefiltered_func_data_unwarp -mas ${sd0}/mask ${sd0}/prefiltered_func_data_bet
 
     #/usr/local/fsl/bin/fslstats prefiltered_func_data_bet -p 2 -p 98
-    #p98=($(${FSLDIR}/bin/fslstats prefiltered_func_data_bet -p 2 -p 98))
     p98=($(${FSLDIR}/bin/fslstats ${sd0}/prefiltered_func_data_bet -p 2 -p 98))
-    declare -p p98 
+    #declare -p p98 
+    echo "p98 = ${p98}"
 
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_bet -thr [97333.005859 / 10] -Tmin -bin mask -odt char
     thr=($(echo "scale=6; ${p98[1]} / 10" | bc))
-    declare -p thr
-    #${FSLDIR}/bin/fslmaths prefiltered_func_data_bet -thr $thr -Tmin -bin mask -odt char
+    #declare -p thr
+    echo "thr = $thr"
     ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_bet -thr $thr -Tmin -bin ${sd0}/mask -odt char
 
     ##/usr/local/fsl/bin/fslstats prefiltered_func_data_unwarp -k mask -p 50
-    #p50=($(${FSLDIR}/bin/fslstats $prefiltered_func_data_unwarp -k mask -p 50))
     p50=($(${FSLDIR}/bin/fslstats $prefiltered_func_data_unwarp -k ${sd0}/mask -p 50))
-    declare -p p50 
+    #declare -p p50 
+    echo "p50 = $p50"
 
     ##/usr/local/fsl/bin/fslmaths mask -dilF mask
-    #${FSLDIR}/bin/fslmaths mask -dilF mask
     ${FSLDIR}/bin/fslmaths ${sd0}/mask -dilF ${sd0}/mask
 
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_unwarp -mas mask prefiltered_func_data_thresh
-    #${FSLDIR}/bin/fslmaths $prefiltered_func_data_unwarp -mas mask prefiltered_func_data_thresh
     ${FSLDIR}/bin/fslmaths $prefiltered_func_data_unwarp -mas ${sd0}/mask ${sd0}/prefiltered_func_data_thresh
 
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_thresh -Tmean mean_func
-    #${FSLDIR}/bin/fslmaths prefiltered_func_data_thresh -Tmean mean_func
     ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_thresh -Tmean ${sd0}/mean_func
 
     for((j=0;j<${#FWHM[@]};++j));do
 
         ##/usr/local/fsl/bin/susan prefiltered_func_data_thresh [8218.408203 * 0.75] [filter FWHM converted to sigma] 3 1 1 mean_func [8218.408203 * 0.75] prefiltered_func_data_smooth
         bt=($(echo "scale=6; ${p50} * 0.75" | bc))
-        declare -p bt 
+        #declare -p bt 
         sigma=($(echo "scale=6; ${FWHM[j]} / 2.354820" | bc)) #https://brainder.org/2011/08/20/gaussian-kernels-convert-fwhm-to-sigma/ sigma=FWHM/sqrt(8ln2) for gaussian kernels
-        declare -p sigma 
+        #declare -p sigma 
         #${FSLDIR}/bin/susan prefiltered_func_data_thresh $bt $sigma 3 1 1 mean_func $bt prefiltered_func_data_smooth
+        echo "bt = $bt sigma = $sigma"
         ${FSLDIR}/bin/susan ${sd0}/prefiltered_func_data_thresh $bt $sigma 3 1 1 ${sd0}/mean_func $bt ${sd0}/prefiltered_func_data_smooth
 
-        #/usr/local/fsl/bin/fslmaths prefiltered_func_data_smooth -mas mask prefiltered_func_data_smooth
-        #${FSLDIR}/bin/fslmaths prefiltered_func_data_smooth -mas mask prefiltered_func_data_smooth
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_smooth -mas ${sd0}/mask ${sd0}/prefiltered_func_data_smooth
 
         ##global intensity normalize to a value of 10000
         ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_smooth -mul {10000/8218.408203=1.21678064085} prefiltered_func_data_intnorm
         mul=($(echo "scale=6; 10000 / ${p50} " | bc))
-        declare -p mul 
-        #${FSLDIR}/bin/fslmaths prefiltered_func_data_smooth -mul $mul prefiltered_func_data_intnorm
+        #declare -p mul 
+        echo "mul = $mul"
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_smooth -mul $mul ${sd0}/prefiltered_func_data_intnorm
 
         ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -Tmean tempMean
-        #${FSLDIR}/bin/fslmaths prefiltered_func_data_intnorm -Tmean tempMean
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -Tmean ${sd0}/tempMean
 
-        #/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -bptf 45.4545454545 -1 -add tempMean prefiltered_func_data_tempfilt
-        #bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR[i]})" | bc))
-        #declare -p bptf 
-        #out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
-        #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
-        #START240521
-        if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
+        #if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
+        if [[ $paradigm_hp_sec ]];then
+
+            ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -bptf 45.4545454545 -1 -add tempMean prefiltered_func_data_tempfilt
             bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR0})" | bc))
-            declare -p bptf 
-            out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
+            #declare -p bptf 
+            echo "bptf = $bptf"
+
+            #out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
+            out0=${root0}_susan-${FWHM[j]}mm_hptf-${paradigm_hp_sec}s_bold
+
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
+
+            jq -n --arg fwhm $fwhm '$ARGS.named' \
+                  --arg paradigm_hp_sec $paradigm_hp_sec '$ARGS.named' > ${sd0}/tmp.json 
+
         else
             out0=${root0}_susan-${FWHM[j]}mm_bold
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -add ${sd0}/tempMean ${out0}
+
+            jq -n --arg fwhm $fwhm '$ARGS.named' > ${sd0}/tmp.json 
         fi
 
         echo "Output written to ${out0}"
 
-    #Read json with jq, if not found ok, just don't output an updated json 
-    #or update OGREjson.py with additional fields 
-        #START241109
-        OGREjson.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}"
+        #OGREjson.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}"
+        OGREjson2.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}" ${sd0}/tmp.json
 
     done
 

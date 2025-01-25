@@ -10,11 +10,19 @@ import sys
 
 if __name__ == "__main__":
 
-    parser=argparse.ArgumentParser(description=f'Create json files. Required: OGREjson.py -f <files needing jsons> -j <json template for each file>', \
+    #parser=argparse.ArgumentParser(description=f'Create json files. Required: OGREjson.py -f <files needing jsons> -j <json template for each file>', \
+    #    formatter_class=argparse.RawTextHelpFormatter)
+    #hf='Files needing jsons.'
+    #parser.add_argument('-f','--file','-file','--files','-file',dest='files',metavar='files needing jsons',action='extend',nargs='+',help=hf)
+    #START250123
+    parser=argparse.ArgumentParser(description=f'Create json file. Required: OGREjson.py <file needing json> -j <json files>', \
         formatter_class=argparse.RawTextHelpFormatter)
 
-    hf='Files needing jsons.'
-    parser.add_argument('-f','--file','-file','--files','-file',dest='files',metavar='files needing jsons',action='extend',nargs='+',help=hf)
+    hdat='Argument without option is assumed to be the file needing json.'
+    parser.add_argument('dat0',metavar='<file needing json>',help=hdat)
+    parser.add_argument('-f','--file','-file',dest='dat',metavar='<file needing json>',help=hdat)
+    
+STARTHERE
 
     hj='json templates. One for each file.'
     parser.add_argument('-j','--json','-json','--jsons','-jsons',dest='jsons',metavar='json templates',action='extend',nargs='+',help=hj)
