@@ -125,14 +125,10 @@ for((i=0;i<${#dat[@]};++i));do
 
 
     prefiltered_func_data_unwarp=${fMRITimeSeriesResults[i]}
-    #od0=${fMRITimeSeriesResults[i]%/*}
     sd0=${fMRITimeSeriesResults[i]%/*}/SCRATCH$(date +%y%m%d%H%M%S)
     echo "sd0=${sd0}"
-    #root0=${fMRITimeSeriesResults[i]%.nii*}
     root0=${fMRITimeSeriesResults[i]%_bold.nii*}
-    #echo "od0=${od0}"
     echo "root0=${root0}"
-    #exit
 
     mkdir -p ${sd0}
 

@@ -2,7 +2,6 @@
 
 # python concatenate json files
 
-
 import argparse
 import json
 import pathlib
@@ -10,22 +9,17 @@ import sys
 
 if __name__ == "__main__":
 
-    #parser=argparse.ArgumentParser(description=f'Create json files. Required: OGREjson.py -f <files needing jsons> -j <json template for each file>', \
-    #    formatter_class=argparse.RawTextHelpFormatter)
-    #hf='Files needing jsons.'
-    #parser.add_argument('-f','--file','-file','--files','-file',dest='files',metavar='files needing jsons',action='extend',nargs='+',help=hf)
-    #START250123
-    parser=argparse.ArgumentParser(description=f'Create json file. Required: OGREjson.py <file needing json> -j <json files>', \
-        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('dat0',metavar='<file(s) needing JSON(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be files needing JSONs.')
+    hdat = 'Ex 1. '+parser.prog+' file1.nii.gz file2.nii.gz\n' \
+         + 'Ex 2. '+parser.prog+' "file1.nii.gz -s file2.nii.gz"\n' \
+         + 'Ex 3. '+parser.prog+' -s file1.nii.gz file2.nii.gz\n' \
+         + 'Ex 4. '+parser.prog+' -s "file1.nii.gz file2.nii.gz"\n' \
+         + 'Ex 5. '+parser.prog+' -s file1.nii.gz -s file2.nii.gz\n' \
+         + 'Ex 6. '+parser.prog+' file1.nii.gz -s file2.nii.gz\n'
+    parser.add_argument('-i','--in','-in','--file','-file','--files','-files',dest='dat',metavar='<file needing JSON>',action='extend',nargs='+',help=hdat)
 
-    hdat='Argument without option is assumed to be the file needing json.'
-    parser.add_argument('dat0',metavar='<file needing json>',help=hdat)
-    parser.add_argument('-f','--file','-file',dest='dat',metavar='<file needing json>',help=hdat)
-    
-STARTHERE
-
-    hj='json templates. One for each file.'
-    parser.add_argument('-j','--json','-json','--jsons','-jsons',dest='jsons',metavar='json templates',action='extend',nargs='+',help=hj)
+    hj='All JSONs are combined to a single JSON that is matched to each <file needing JSON>.'
+    parser.add_argument('-j','--json','-json','--jsons','-jsons',dest='json',metavar='JSONs',action='extend',nargs='+',help=hj)
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
     if len(sys.argv)==1:
@@ -34,44 +28,30 @@ STARTHERE
         parser.exit()
     args, unknown = parser.parse_known_args()
 
-    #print(f'args={args}')
-    #print(f'{' '.join(sys.argv)}')          
-
-    if not args.files:
-        print(f'Need to specify files in need of jsons with -f') 
+    if args.dat:
+        if args.dat0:
+            args.dat += args.dat0
+    elif args.dat0:
+        args.dat=args.dat0
+    else:
         exit()
-    if not args.jsons:
-        print(f'Need to specify json templates with -j') 
+    args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
+
+    if not args.json:
+        print(f'Need to specify JSONs with -j') 
         exit()
-
-    if len(args.files) != len(args.jsons):
-        print(f'{len(args.files)} files but {len(args.jsons)} jsons. Must be equal. Abort!')
-        exit()
-    #print(f'len(args.files)={len(args.files)} len(args.jsons)={len(args.jsons)}')
-    
-
-    args.files = [str(pathlib.Path(i).resolve()) for i in args.files]
-    args.jsons = [str(pathlib.Path(i).resolve()) for i in args.jsons]
-    #print(f'args.files={args.files}')
-    #print(f'args.jsons={args.jsons}')
-
-    for i in range(len(args.files)):
+    args.json = [str(pathlib.Path(i).resolve()) for i in args.json]
+    dict0=[]
+    for i in args.json:
         try:
-            with open(args.jsons[i],encoding="utf8",errors='ignore') as f0:
-                dict0 = json.load(f0)
+            with open(i,encoding="utf8",errors='ignore') as f0:
+                dict0.extend(json.load(f0)) 
         except FileNotFoundError:
-            print(f'    INFO: {args.jsons[i]} does not exist. Skipping {args.files[i]} ...')
-            continue
+            print(f'    ERROR: {i} does not exist. Abort!')
+            exit() 
 
-        jsonf = (f'{args.files[i].split('.nii')[0]}.json')
-        #print(f'jsonf={jsonf}')
-
-        try:
-            with open(jsonf, 'w', encoding='utf-8') as f:
-                json.dump(dict0, f, ensure_ascii=False, indent=4)
-
-        except FileNotFoundError:
-            print(f'    INFO: {args.jsons[i]} does not exist. Skipping {args.files[i]} ...')
-            continue
-
+    for i in args.dat:
+        jsonf = (f'{i.split('.nii')[0]}.json')
+        with open(jsonf, 'w', encoding='utf-8') as f0:
+            json.dump(dict0, f0, ensure_ascii=False, indent=4)
         print(f'Output written to {jsonf}')
