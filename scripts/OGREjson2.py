@@ -9,6 +9,9 @@ import sys
 
 if __name__ == "__main__":
 
+    parser=argparse.ArgumentParser(description=f'Create json files. Required: OGREjson.py <files needing jsons> -j <JSON(s)>', \
+        formatter_class=argparse.RawTextHelpFormatter)
+
     parser.add_argument('dat0',metavar='<file(s) needing JSON(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be files needing JSONs.')
     hdat = 'Ex 1. '+parser.prog+' file1.nii.gz file2.nii.gz\n' \
          + 'Ex 2. '+parser.prog+' "file1.nii.gz -s file2.nii.gz"\n' \
@@ -16,7 +19,7 @@ if __name__ == "__main__":
          + 'Ex 4. '+parser.prog+' -s "file1.nii.gz file2.nii.gz"\n' \
          + 'Ex 5. '+parser.prog+' -s file1.nii.gz -s file2.nii.gz\n' \
          + 'Ex 6. '+parser.prog+' file1.nii.gz -s file2.nii.gz\n'
-    parser.add_argument('-i','--in','-in','--file','-file','--files','-files',dest='dat',metavar='<file needing JSON>',action='extend',nargs='+',help=hdat)
+    parser.add_argument('-f','-i','--in','-in','--file','-file','--files','-files',dest='dat',metavar='<file needing JSON>',action='extend',nargs='+',help=hdat)
 
     hj='All JSONs are combined to a single JSON that is matched to each <file needing JSON>.'
     parser.add_argument('-j','--json','-json','--jsons','-jsons',dest='json',metavar='JSONs',action='extend',nargs='+',help=hj)
@@ -41,14 +44,20 @@ if __name__ == "__main__":
         print(f'Need to specify JSONs with -j') 
         exit()
     args.json = [str(pathlib.Path(i).resolve()) for i in args.json]
-    dict0=[]
+
+    print(f'Running {parser.prog}')
+    #print(f'args.json = {args.json}')
+    #print(f'args.dat = {args.dat}')
+
+    dict0={}
     for i in args.json:
         try:
             with open(i,encoding="utf8",errors='ignore') as f0:
-                dict0.extend(json.load(f0)) 
+                dict0.update(json.load(f0)) 
         except FileNotFoundError:
             print(f'    ERROR: {i} does not exist. Abort!')
             exit() 
+    #print(f'dict0 = {dict0})')
 
     for i in args.dat:
         jsonf = (f'{i.split('.nii')[0]}.json')

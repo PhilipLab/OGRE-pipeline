@@ -10,7 +10,11 @@ import sys
 import opl
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
-P2='OGRESmoothingProcess.sh'
+
+#P2='OGRESmoothingProcess.sh'
+#START250125
+P2='OGRESmoothingProcess2.sh'
+
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
 
@@ -649,7 +653,11 @@ if __name__ == "__main__":
                 if par.taskidx:
                     par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
-                    par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+
+                    #par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+                    #START250125
+                    par.write_smooth2(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+
                     write_regressors(args.fslmo,F0f[0])
 
             #if feat: F0f[0].write('${FEAT}\n\n')

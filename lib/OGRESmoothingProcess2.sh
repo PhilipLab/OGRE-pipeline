@@ -5,6 +5,8 @@ set -e
 # https://stackoverflow.com/questions/73885999/how-to-create-a-json-file-with-jq
 # https://stackoverflow.com/questions/48470049/build-a-json-string-with-bash-variables
 
+echo "**** Running $0 ****"
+
 root0=${0##*/}
 helpmsg(){
     echo "Required: ${root0} <scanlist.csv file(s)>"
@@ -100,7 +102,8 @@ if [[ ${paradigm_hp_sec} ]];then
     fi
 fi
 
-echo "**** Running $0 ****"
+#echo "TR = ${TR[@]}"
+
 
 for((i=0;i<${#dat[@]};++i));do
     if [[ ! -f ${dat[i]} ]];then
@@ -109,25 +112,38 @@ for((i=0;i<${#dat[@]};++i));do
     fi
 
     if [[ $paradigm_hp_sec ]];then
-        if [[ $TR ];then
-            TR0=${TR[i]}
-        else
+        #if [[ ${TR[i]} ]];then
+        #    TR0=${TR[i]}
+        #else
+        #    json=${dat[i]//nii.gz/json}
+        #    if [[ ! -f $json ]];then
+        #        echo " $json not found"
+        #        continue
+        #    fi
+        #    IFS=$' ,' read -ra line0 < <( grep RepetitionTime $json )
+        #    TR0=${line0[1]}
+        #    echo "Found TR=${TR0}"
+        #fi
+        if [[ ! ${TR[i]} ]];then
             json=${dat[i]//nii.gz/json}
             if [[ ! -f $json ]];then
                 echo " $json not found"
                 continue
             fi
             IFS=$' ,' read -ra line0 < <( grep RepetitionTime $json )
-            TR0=${line0[1]}
-            echo "Found TR=${TR0}"
+            TR[i]=${line0[1]}
+            echo "Found TR[$i]=${TR[i]}"
         fi
     fi
 
 
-    prefiltered_func_data_unwarp=${fMRITimeSeriesResults[i]}
-    sd0=${fMRITimeSeriesResults[i]%/*}/SCRATCH$(date +%y%m%d%H%M%S)
+    #prefiltered_func_data_unwarp=${fMRITimeSeriesResults[i]}
+    prefiltered_func_data_unwarp=${dat[i]}
+    #sd0=${fMRITimeSeriesResults[i]%/*}/SCRATCH$(date +%y%m%d%H%M%S)
+    sd0=${dat[i]%/*}/SCRATCH$(date +%y%m%d%H%M%S)
     echo "sd0=${sd0}"
-    root0=${fMRITimeSeriesResults[i]%_bold.nii*}
+    #root0=${fMRITimeSeriesResults[i]%_bold.nii*}
+    root0=${dat[i]%_bold.nii*}
     echo "root0=${root0}"
 
     mkdir -p ${sd0}
@@ -166,12 +182,14 @@ for((i=0;i<${#dat[@]};++i));do
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_thresh -Tmean mean_func
     ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_thresh -Tmean ${sd0}/mean_func
 
-    for((j=0;j<${#FWHM[@]};++j));do
+    #for((j=0;j<${#FWHM[@]};++j));do
+    for((j=0;j<${#fwhm[@]};++j));do
 
         ##/usr/local/fsl/bin/susan prefiltered_func_data_thresh [8218.408203 * 0.75] [filter FWHM converted to sigma] 3 1 1 mean_func [8218.408203 * 0.75] prefiltered_func_data_smooth
         bt=($(echo "scale=6; ${p50} * 0.75" | bc))
         #declare -p bt 
-        sigma=($(echo "scale=6; ${FWHM[j]} / 2.354820" | bc)) #https://brainder.org/2011/08/20/gaussian-kernels-convert-fwhm-to-sigma/ sigma=FWHM/sqrt(8ln2) for gaussian kernels
+        #sigma=($(echo "scale=6; ${FWHM[j]} / 2.354820" | bc)) #https://brainder.org/2011/08/20/gaussian-kernels-convert-fwhm-to-sigma/ sigma=FWHM/sqrt(8ln2) for gaussian kernels
+        sigma=($(echo "scale=6; ${fwhm[j]} / 2.354820" | bc)) #https://brainder.org/2011/08/20/gaussian-kernels-convert-fwhm-to-sigma/ sigma=FWHM/sqrt(8ln2) for gaussian kernels
         #declare -p sigma 
         #${FSLDIR}/bin/susan prefiltered_func_data_thresh $bt $sigma 3 1 1 mean_func $bt prefiltered_func_data_smooth
         echo "bt = $bt sigma = $sigma"
@@ -186,19 +204,26 @@ for((i=0;i<${#dat[@]};++i));do
         echo "mul = $mul"
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_smooth -mul $mul ${sd0}/prefiltered_func_data_intnorm
 
+        echo "here0"
+
         ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -Tmean tempMean
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -Tmean ${sd0}/tempMean
+
+        echo "here1 paradigm_hp_sec=$paradigm_hp_sec"
 
         #if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
         if [[ $paradigm_hp_sec ]];then
 
             ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -bptf 45.4545454545 -1 -add tempMean prefiltered_func_data_tempfilt
-            bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR0})" | bc))
+
+            #bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR0})" | bc))
+            bptf=($(echo "scale=6; ${paradigm_hp_sec} / (2*${TR[i]})" | bc))
+
             #declare -p bptf 
             echo "bptf = $bptf"
 
             #out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
-            out0=${root0}_susan-${FWHM[j]}mm_hptf-${paradigm_hp_sec}s_bold
+            out0=${root0}_susan-${fwhm[j]}mm_hptf-${paradigm_hp_sec}s_bold
 
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
 
@@ -206,7 +231,8 @@ for((i=0;i<${#dat[@]};++i));do
                   --arg paradigm_hp_sec $paradigm_hp_sec '$ARGS.named' > ${sd0}/tmp.json 
 
         else
-            out0=${root0}_susan-${FWHM[j]}mm_bold
+            #out0=${root0}_susan-${FWHM[j]}mm_bold
+            out0=${root0}_susan-${fwhm[j]}mm_bold
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -add ${sd0}/tempMean ${out0}
 
             jq -n --arg fwhm $fwhm '$ARGS.named' > ${sd0}/tmp.json 
@@ -215,10 +241,11 @@ for((i=0;i<${#dat[@]};++i));do
         echo "Output written to ${out0}"
 
         #OGREjson.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}"
-        OGREjson2.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}" ${sd0}/tmp.json
+        echo "OGREjson2.py ${out0}.nii.gz -j ${dat[i]//nii.gz/json} ${sd0}/tmp.json"
+        OGREjson2.py ${out0}.nii.gz -j ${dat[i]//nii.gz/json} ${sd0}/tmp.json
 
     done
 
-    rm -r ${sd0}
+#    rm -r ${sd0}
 done
 echo "**** Finished $0 ****"
