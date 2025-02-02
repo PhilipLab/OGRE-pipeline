@@ -210,7 +210,19 @@ if __name__ == "__main__":
 
     hparadigm_hp_sec='High pass filter cutoff in seconds'
     mparadigm_hp_sec='HPFcutoff'
-    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+
+    #parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+    #START250127
+    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',--hpf_sec,-hpf_sec,dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+
+    #START250127
+    hlpf_sec='Low pass filter cutoff in seconds'
+    mlpf_sec='LPFcutoff'
+    parser.add_argument(--lpf_sec,-lpf_sec,dest='lpf_sec',metavar=mlpf_sec,help=hlpf_sec)
+
+#STARTHERE need to add hpf_Hz and lpf_Hz
+
+
 
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'

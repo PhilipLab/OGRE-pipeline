@@ -151,13 +151,20 @@ if __name__ == "__main__":
         str_func=''
         if dict1["OGREfMRIpipeSETUP"]:
             if dict1["FWHM"]: str_func+=' -f ' + str(dict1["FWHM"])
-            if dict1["HPFcutoff"]: str_func+=' -p ' + str(dict1["HPFcutoff"])
+
+
+            #if dict1["HPFcutoff"]: str_func+=' -p ' + str(dict1["HPFcutoff"])
+            #START250125
+            if dict1["HPFcutoff_sec"]: str_func+=' -p ' + str(dict1["HPFcutoff_sec"])
+            if dict1["LPFcutoff_sec"]: str_func+=' -lpf_sec ' + str(dict1["LPFcutoff_sec"])
+            if dict1["HPFcutoff_Hz"]: str_func+=' -hpf_Hz ' + str(dict1["HPFcutoff_Hz"])
+            if dict1["LPFcutoff_Hz"]: str_func+=' -lpf_Hz ' + str(dict1["LPFcutoff_Hz"])
+
+
+
             if dict1["SmoothOnly"]: str_func+=' -smoothonly'
             if dict1["donotsmoothrest"]: str_func+=' -donotsmoothrest'
-
-            #START250118
             if dict1["donotuseIntendedFor"]: str_func+=' -donotuseIntendedFor'
-
             if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
             if dict1["FeatAdapter"]: str_func+=' -F'
             if dict1["UseRefinement"]: str_func+=' -userefinement'
