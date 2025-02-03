@@ -3,7 +3,7 @@
 import argparse
 from datetime import datetime
 import glob
-#import os
+import math
 import pathlib
 import sys
 
@@ -208,19 +208,26 @@ if __name__ == "__main__":
     mfwhm='FWHM'
     parser.add_argument('-f','--fwhm','-fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
 
-    hparadigm_hp_sec='High pass filter cutoff in seconds'
-    mparadigm_hp_sec='HPFcutoff'
-
+    #hparadigm_hp_sec='High pass filter cutoff in seconds'
+    #mparadigm_hp_sec='HPFcutoff'
     #parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
-    #START250127
-    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',--hpf_sec,-hpf_sec,dest='paradigm_hp_sec',metavar=mparadigm_hp_sec,help=hparadigm_hp_sec)
+    #START250201
+    hhpf_sec='High pass filter cutoff in seconds'
+    mhpf_sec='HPFcutoff(s)'
+    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',--hpf_sec,-hpf_sec,dest='hpf_sec',metavar=mhpf_sec,help=hhpf_sec)
 
-    #START250127
     hlpf_sec='Low pass filter cutoff in seconds'
-    mlpf_sec='LPFcutoff'
+    mlpf_sec='LPFcutoff(s)'
     parser.add_argument(--lpf_sec,-lpf_sec,dest='lpf_sec',metavar=mlpf_sec,help=hlpf_sec)
 
-#STARTHERE need to add hpf_Hz and lpf_Hz
+    hhpf_Hz='High pass filter cutoff in Hz'
+    mhpf_Hz='HPFcutoff(Hz)'
+    parser.add_argument(--hpf_Hz,-hpf_Hz,dest='hpf_Hz',metavar=mhpf_Hz,help=hhpf_Hz)
+
+    hlpf_Hz='Low pass filter cutoff in Hz'
+    mlpf_Hz='LPFcutoff(Hz)'
+    parser.add_argument(--lpf_Hz,-lpf_Hz,dest='lpf_Hz',metavar=mlpf_Hz,help=hlpf_Hz)
+
 
 
 
@@ -315,7 +322,6 @@ if __name__ == "__main__":
     #START240923
     #print(f'args={args}')
 
-#STARTHERE
     if args.dir:
         #print(f'sys.argv={sys.argv}')
         matches = [x for x in flagsdir if x in sys.argv]
@@ -329,10 +335,7 @@ if __name__ == "__main__":
         print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --container_directory instead. Abort!\n')
         exit()
 
-  
-    #START240914
     print(f'{' '.join(sys.argv)}')          
-
 
     if args.dat:
         if args.dat0:
@@ -348,12 +351,34 @@ if __name__ == "__main__":
     gev = opl.rou.get_env_vars(args)
     if not gev: exit()
 
+    #START250201
+    if args.hpf_Hz:
+        hpf_sec = 1/args.hpf_Hz
+        if args.hpf_sec:
+            if not math.isclose(args.hpf_sec,hpf_sec,rel_tol=1e-5):
+                print(f'You have provided hpf cutoff = {args.hpf_sec} s and {args.hpf_Hz} Hz which equal {hpf_sec} s. Inconsistent. Abort!')
+                exit()
+        args.hpf_sec = hpf_sec
+    if args.lpf_Hz:
+        lpf_sec = 1/args.lpf_Hz
+        if args.lpf_sec:
+            if not math.isclose(args.lpf_sec,lpf_sec,rel_tol=1e-5):
+                print(f'You have provided lpf cutoff = {args.lpf_sec} s and {args.lpf_Hz} Hz which equal {lpf_sec} s. Inconsistent. Abort!')
+                exit()
+        args.lpf_sec = lpf_sec
+
+
     if not args.lcfeatadapter: 
         if not args.fwhm: 
             print(f'{mfwhm} has not been specified. SUSAN noise reduction will not be performed.') 
         else:
             args.fwhm = sum(args.fwhm,[])
-        if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+
+        #if not args.paradigm_hp_sec: print(f'{mparadigm_hp_sec} has not been specified. High pass filtering will not be performed.') 
+        #START250201
+        if not args.hpf_sec: print(f'{mhpf_sec} has not been specified. High pass filtering will not be performed.') 
+        if not args.lpf_sec: print(f'{mlpf_sec} has not been specified. Low pass filtering will not be performed.') 
+
 
     feat = get_feat(args.feat)
 
@@ -396,8 +421,10 @@ if __name__ == "__main__":
             args.fslmo = ' '.join(c.strip() for c in ' '.join(i for i in unknown).split(',') if not c.isspace())
         #print(f'args.fslmo={args.fslmo}')
 
+
+
     #print(f'args.lcdonotsmoothrest={args.lcdonotsmoothrest}')
-    print(f'args.lcdonotuseIntendedFor={args.lcdonotuseIntendedFor}')
+    #print(f'args.lcdonotuseIntendedFor={args.lcdonotuseIntendedFor}')
 
     for i in args.dat:
 
@@ -581,8 +608,13 @@ if __name__ == "__main__":
 
             if not feat:
                 if not args.lcfeatadapter:
-                    if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+
+                    #if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+                    #    F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+                    #START250201
+                    if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
                         F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
+
             else:
                 feat.write_script(Ffeat,gev)
 
@@ -592,8 +624,13 @@ if __name__ == "__main__":
                 fi0+=1
                 if not args.lcsmoothonly: 
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
-                if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+
+                #if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
+                #    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
+                #START250201
+                if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
                     F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
+
             if not args.lcfeatadapter:
                 if not args.lcsmoothonly: 
                     F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n')
@@ -663,12 +700,18 @@ if __name__ == "__main__":
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
                 if par.taskidx:
-                    par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
+
+                    #par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
+                    #START250201
+                    par.write_copy_script(F2,s0,pathstr,args.fwhm,args.hpf_sec,args.lpf_sec,gev.FREESURFVER)
+
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
 
                     #par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
                     #START250125
-                    par.write_smooth2(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+                    #par.write_smooth2(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
+                    #START250201
+                    par.write_smooth2(F0f[0],s0,args.fwhm,args.hpf_sec,args.lpf_sec)
 
                     write_regressors(args.fslmo,F0f[0])
 

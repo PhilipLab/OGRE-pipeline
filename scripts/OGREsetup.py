@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
             #if dict1["HPFcutoff"]: str_func+=' -p ' + str(dict1["HPFcutoff"])
             #START250125
-            if dict1["HPFcutoff_sec"]: str_func+=' -p ' + str(dict1["HPFcutoff_sec"])
+            if dict1["HPFcutoff_sec"]: str_func+=' -hpf_sec ' + str(dict1["HPFcutoff_sec"])
             if dict1["LPFcutoff_sec"]: str_func+=' -lpf_sec ' + str(dict1["LPFcutoff_sec"])
             if dict1["HPFcutoff_Hz"]: str_func+=' -hpf_Hz ' + str(dict1["HPFcutoff_Hz"])
             if dict1["LPFcutoff_Hz"]: str_func+=' -lpf_Hz ' + str(dict1["LPFcutoff_Hz"])
