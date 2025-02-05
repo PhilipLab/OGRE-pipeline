@@ -214,19 +214,19 @@ if __name__ == "__main__":
     #START250201
     hhpf_sec='High pass filter cutoff in seconds'
     mhpf_sec='HPFcutoff(s)'
-    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec',--hpf_sec,-hpf_sec,dest='hpf_sec',metavar=mhpf_sec,help=hhpf_sec)
+    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec','--hpf_sec','-hpf_sec',dest='hpf_sec',metavar=mhpf_sec,help=hhpf_sec)
 
     hlpf_sec='Low pass filter cutoff in seconds'
     mlpf_sec='LPFcutoff(s)'
-    parser.add_argument(--lpf_sec,-lpf_sec,dest='lpf_sec',metavar=mlpf_sec,help=hlpf_sec)
+    parser.add_argument('--lpf_sec','-lpf_sec',dest='lpf_sec',metavar=mlpf_sec,help=hlpf_sec)
 
     hhpf_Hz='High pass filter cutoff in Hz'
     mhpf_Hz='HPFcutoff(Hz)'
-    parser.add_argument(--hpf_Hz,-hpf_Hz,dest='hpf_Hz',metavar=mhpf_Hz,help=hhpf_Hz)
+    parser.add_argument('--hpf_Hz','-hpf_Hz',dest='hpf_Hz',metavar=mhpf_Hz,help=hhpf_Hz)
 
     hlpf_Hz='Low pass filter cutoff in Hz'
     mlpf_Hz='LPFcutoff(Hz)'
-    parser.add_argument(--lpf_Hz,-lpf_Hz,dest='lpf_Hz',metavar=mlpf_Hz,help=hlpf_Hz)
+    parser.add_argument('--lpf_Hz','-lpf_Hz',dest='lpf_Hz',metavar=mlpf_Hz,help=hlpf_Hz)
 
 
 
@@ -702,8 +702,8 @@ if __name__ == "__main__":
                 if par.taskidx:
 
                     #par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
-                    #START250201
-                    par.write_copy_script(F2,s0,pathstr,args.fwhm,args.hpf_sec,args.lpf_sec,gev.FREESURFVER)
+                    #START250202
+                    par.write_copy_script(F2,s0,pathstr,gev.FREESURFVER)
 
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
 

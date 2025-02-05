@@ -14,8 +14,10 @@ helpmsg(){
     echo "        Time series files (eg BOLD.ni or BOLD.nii.gz). Arguments without options are assumed to be scanlist.csv files."
     echo "    -f --fwhm -fwhm"
     echo "        Smoothing (mm) for SUSAN. Multiple values ok." 
-    echo "    -p --paradigm_hp_sec -paradigm_hp_sec"
+    echo "    --hpf_sec -hpf_sec -p --paradigm_hp_sec -paradigm_hp_sec"
     echo "        High pass filter cutoff in seconds. Optional." 
+    echo "    --lpf_sec -lpf_sec"
+    echo "        Low pass filter cutoff in seconds. Optional." 
     echo "    --TR -TR"
     echo "        Sampling rate. Optional if time series includes JSON." 
     echo "    -h --help -help"
@@ -26,7 +28,7 @@ if((${#@}<1));then
     exit
 fi
 
-unset paradigm_hp_sec #DON'T SET dat fwhm TR unexpected
+unset hpf_sec lpf_sec #DON'T SET dat fwhm TR unexpected
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -48,8 +50,11 @@ for((i=0;i<${#@};++i));do
                 fwhm+=(${tmp[@]})
             done
             ;;
-        -p | --paradigm_hp_sec | -paradigm_hp_sec)
-            paradigm_hp_sec=${arg[((++i))]}
+        --hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
+            hpf_sec=${arg[((++i))]}
+            ;;
+        --lpf_sec | -lpf_sec)
+            lpf_sec=${arg[((++i))]}
             ;;
         --TR | -TR)
             TR+=(${arg[((++i))]})
@@ -79,10 +84,35 @@ if [[ ! ${fwhm} ]];then
     exit
 fi
 
-if [[ ${paradigm_hp_sec} ]];then
+
+
+#if [[ ${paradigm_hp_sec} ]];then
+#    if [[ ! ${TR} ]];then
+#        echo "--TR not provided. Will look for it in the json files."
+#    else 
+#        if((${#dat[@]}!=${#TR[@]}));then
+#            if((${#TR[@]}==1));then
+#                echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} element with value ${TR[@]}."
+#                echo "We will use TR=$TR for all fMRITimeSeriesResults."
+#                for((i=0;i<${#dat[@]};++i));do
+#                    TR+=(${TR[0]})
+#                done
+#            elif((${#dat[@]}<${#TR[@]}));then 
+#                echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
+#                echo "We will use the first ${#dat[@]} elements."
+#            else #dat has more elements than TR, but TR has more than one element
+#                echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
+#                echo "The number of elements for both must be the same. Abort!"
+#                exit
+#            fi
+#        fi
+#    fi
+#fi
+#START250202
+if [[ ${hpf_sec} || ${lpf_sec} ]];then
     if [[ ! ${TR} ]];then
         echo "--TR not provided. Will look for it in the json files."
-    else 
+    else
         if((${#dat[@]}!=${#TR[@]}));then
             if((${#TR[@]}==1));then
                 echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} element with value ${TR[@]}."
@@ -90,7 +120,7 @@ if [[ ${paradigm_hp_sec} ]];then
                 for((i=0;i<${#dat[@]};++i));do
                     TR+=(${TR[0]})
                 done
-            elif((${#dat[@]}<${#TR[@]}));then 
+            elif((${#dat[@]}<${#TR[@]}));then
                 echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
                 echo "We will use the first ${#dat[@]} elements."
             else #dat has more elements than TR, but TR has more than one element
@@ -102,6 +132,7 @@ if [[ ${paradigm_hp_sec} ]];then
     fi
 fi
 
+
 #echo "TR = ${TR[@]}"
 
 
@@ -111,19 +142,7 @@ for((i=0;i<${#dat[@]};++i));do
         continue
     fi
 
-    if [[ $paradigm_hp_sec ]];then
-        #if [[ ${TR[i]} ]];then
-        #    TR0=${TR[i]}
-        #else
-        #    json=${dat[i]//nii.gz/json}
-        #    if [[ ! -f $json ]];then
-        #        echo " $json not found"
-        #        continue
-        #    fi
-        #    IFS=$' ,' read -ra line0 < <( grep RepetitionTime $json )
-        #    TR0=${line0[1]}
-        #    echo "Found TR=${TR0}"
-        #fi
+    if [[ $hpf_sec || $lpf_sec ]];then
         if [[ ! ${TR[i]} ]];then
             json=${dat[i]//nii.gz/json}
             if [[ ! -f $json ]];then
@@ -204,34 +223,40 @@ for((i=0;i<${#dat[@]};++i));do
         echo "mul = $mul"
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_smooth -mul $mul ${sd0}/prefiltered_func_data_intnorm
 
-        echo "here0"
 
         ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -Tmean tempMean
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -Tmean ${sd0}/tempMean
 
-        echo "here1 paradigm_hp_sec=$paradigm_hp_sec"
 
-        #if [ -n "${command_line_specified_paradigm_hp_sec}" ];then
-        if [[ $paradigm_hp_sec ]];then
+        if [[ $hpf_sec || $lpf_sec ]];then
 
             ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -bptf 45.4545454545 -1 -add tempMean prefiltered_func_data_tempfilt
 
-            #bptf=($(echo "scale=6; ${PARADIGM_HP_SEC} / (2*${TR0})" | bc))
-            bptf=($(echo "scale=6; ${paradigm_hp_sec} / (2*${TR[i]})" | bc))
+            #bptf=($(echo "scale=6; ${hpf_sec} / (2*${TR[i]})" | bc))
+            #echo "bptf = $bptf"
+            #out0=${root0}_susan-${fwhm[j]}mm_hptf-${hpf_sec}s_bold
+            #${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
+            #START
+            hp_sigma=-1;lp_sigma=-1 #sigmas in volumes, set either sigma<0 to skip that filter
+            unset jq_arg
+            out0=${root0}_susan-${fwhm[j]}mm
+            if(($hpf_sec>=0));then
+                hp_sigma=($(echo "scale=6; ${hpf_sec} / (2*${TR[i]})" | bc))
+                out0+=_hptf-${hpf_sec}s
+                jq_arg+="--arg hpf_sec $hpf_sec "'$ARGS.named'
+            fi
+            if(($lpf_sec>=0));then
+                lp_sigma=($(echo "scale=6; ${lpf_sec} / (2*${TR[i]})" | bc))
+                out0+=_lptf-${lpf_sec}s
+                jq_arg+="--arg lpf_sec $lpf_sec "'$ARGS.named'
+            fi
+            echo "hp_sigma = $hp_sigman  lp_sigma = $lp_sigma"
+            out0+=_bold
+            ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf $hp_sigma $lp_sigma -add ${sd0}/tempMean ${out0}
 
-            #declare -p bptf 
-            echo "bptf = $bptf"
-
-            #out0=${root0}_susan-${FWHM[j]}mm_hptf-${PARADIGM_HP_SEC}s_bold
-            out0=${root0}_susan-${fwhm[j]}mm_hptf-${paradigm_hp_sec}s_bold
-
-            ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf ${bptf} -1 -add ${sd0}/tempMean ${out0}
-
-            jq -n --arg fwhm $fwhm '$ARGS.named' \
-                  --arg paradigm_hp_sec $paradigm_hp_sec '$ARGS.named' > ${sd0}/tmp.json 
+            jq -n --arg fwhm $fwhm '$ARGS.named' $jq_arg > ${sd0}/tmp.json 
 
         else
-            #out0=${root0}_susan-${FWHM[j]}mm_bold
             out0=${root0}_susan-${fwhm[j]}mm_bold
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -add ${sd0}/tempMean ${out0}
 
