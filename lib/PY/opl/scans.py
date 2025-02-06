@@ -1,15 +1,11 @@
 #/usr/bin/env python3
 
-import re
-import pathlib
 import json
-
+import pathlib
+import re
 from opl.rou import run_cmd,SHEBANG
 
 class Scans:
-
-    #def __init__(self,file,lcdonotsmoothrest=False):
-    #START250118
     def __init__(self,file,lcdonotsmoothrest=False,lcdonotuseIntendedFor=False):
 
         self.fmap = []
@@ -223,13 +219,13 @@ class Scans:
     #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
     #START250202
     def write_smooth2(self,f0,s0,fwhm,hpf_sec,lpf_sec):
-        f0.write("# --TR is only needed for high pass filtering --paradigm_hp_sec\n")
-        f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR can be omitted.\n")
+        f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
+        f0.write("# If the files have json's that include the TR as the field RepetitionTime, then -TR can be omitted.\n")
         f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
         f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-        f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm 6 --paradigm_hp_sec 60\n")
+        f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hp_sec 60\n")
         f0.write("# Ex.2  6 mm SUSAN smoothing only\n")
-        f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm 6\n")
+        f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6\n")
         f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)

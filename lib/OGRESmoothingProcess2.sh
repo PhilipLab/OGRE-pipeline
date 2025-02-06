@@ -52,9 +52,11 @@ for((i=0;i<${#@};++i));do
             ;;
         --hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
             hpf_sec=${arg[((++i))]}
+            echo "hpf_sec = $hpf_sec"
             ;;
         --lpf_sec | -lpf_sec)
             lpf_sec=${arg[((++i))]}
+            echo "lpf_sec = $lpf_sec"
             ;;
         --TR | -TR)
             TR+=(${arg[((++i))]})
@@ -227,6 +229,7 @@ for((i=0;i<${#dat[@]};++i));do
         ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_intnorm -Tmean tempMean
         ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -Tmean ${sd0}/tempMean
 
+        #https://web.archive.org/web/20230224010517/https://wiki.bash-hackers.org/syntax/arith_expr
 
         if [[ $hpf_sec || $lpf_sec ]];then
 
@@ -240,27 +243,35 @@ for((i=0;i<${#dat[@]};++i));do
             hp_sigma=-1;lp_sigma=-1 #sigmas in volumes, set either sigma<0 to skip that filter
             unset jq_arg
             out0=${root0}_susan-${fwhm[j]}mm
-            if(($hpf_sec>=0));then
+
+            #if(($hpf_sec>=0));then
+            #if((hpf_sec>=0));then
+            if [[ $hpf_sec ]];then
+                #See https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A2=FSL;f721c011.1001 for the explantion of why TR is multiplied by a factor of 2 in calculating sigma."
                 hp_sigma=($(echo "scale=6; ${hpf_sec} / (2*${TR[i]})" | bc))
                 out0+=_hptf-${hpf_sec}s
-                jq_arg+="--arg hpf_sec $hpf_sec "'$ARGS.named'
+                jq_arg+="--arg HPFcutoff_sec $hpf_sec "'$ARGS.named'
             fi
-            if(($lpf_sec>=0));then
+
+            #if(($lpf_sec>=0));then
+            #if((lpf_sec>=0));then
+            if [[ $lpf_sec ]];then
+                #See https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A2=FSL;f721c011.1001 for the explantion of why TR is multiplied by a factor of 2 in calculating sigma."
                 lp_sigma=($(echo "scale=6; ${lpf_sec} / (2*${TR[i]})" | bc))
                 out0+=_lptf-${lpf_sec}s
-                jq_arg+="--arg lpf_sec $lpf_sec "'$ARGS.named'
+                jq_arg+="--arg LPFcutoff_sec $lpf_sec "'$ARGS.named'
             fi
-            echo "hp_sigma = $hp_sigman  lp_sigma = $lp_sigma"
+            echo "hp_sigma = $hp_sigma  lp_sigma = $lp_sigma"
             out0+=_bold
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf $hp_sigma $lp_sigma -add ${sd0}/tempMean ${out0}
 
-            jq -n --arg fwhm $fwhm '$ARGS.named' $jq_arg > ${sd0}/tmp.json 
+            jq -n --arg FWHM $fwhm '$ARGS.named' $jq_arg > ${sd0}/tmp.json 
 
         else
             out0=${root0}_susan-${fwhm[j]}mm_bold
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -add ${sd0}/tempMean ${out0}
 
-            jq -n --arg fwhm $fwhm '$ARGS.named' > ${sd0}/tmp.json 
+            jq -n --arg FWHM $fwhm '$ARGS.named' > ${sd0}/tmp.json 
         fi
 
         echo "Output written to ${out0}"

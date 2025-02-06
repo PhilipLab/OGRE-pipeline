@@ -353,14 +353,14 @@ if __name__ == "__main__":
 
     #START250201
     if args.hpf_Hz:
-        hpf_sec = 1/args.hpf_Hz
+        hpf_sec = 1/float(args.hpf_Hz)
         if args.hpf_sec:
             if not math.isclose(args.hpf_sec,hpf_sec,rel_tol=1e-5):
                 print(f'You have provided hpf cutoff = {args.hpf_sec} s and {args.hpf_Hz} Hz which equal {hpf_sec} s. Inconsistent. Abort!')
                 exit()
         args.hpf_sec = hpf_sec
     if args.lpf_Hz:
-        lpf_sec = 1/args.lpf_Hz
+        lpf_sec = 1/float(args.lpf_Hz)
         if args.lpf_sec:
             if not math.isclose(args.lpf_sec,lpf_sec,rel_tol=1e-5):
                 print(f'You have provided lpf cutoff = {args.lpf_sec} s and {args.lpf_Hz} Hz which equal {lpf_sec} s. Inconsistent. Abort!')
