@@ -250,7 +250,7 @@ for((i=0;i<${#dat[@]};++i));do
                 #See https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A2=FSL;f721c011.1001 for the explantion of why TR is multiplied by a factor of 2 in calculating sigma."
                 hp_sigma=($(echo "scale=6; ${hpf_sec} / (2*${TR[i]})" | bc))
                 out0+=_hptf-${hpf_sec}s
-                jq_arg+="--arg HPFcutoff_sec $hpf_sec "'$ARGS.named'
+                jq_arg+=" --arg HPFcutoff_sec $hpf_sec "'$ARGS.named'
             fi
 
             #if(($lpf_sec>=0));then
@@ -259,11 +259,13 @@ for((i=0;i<${#dat[@]};++i));do
                 #See https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A2=FSL;f721c011.1001 for the explantion of why TR is multiplied by a factor of 2 in calculating sigma."
                 lp_sigma=($(echo "scale=6; ${lpf_sec} / (2*${TR[i]})" | bc))
                 out0+=_lptf-${lpf_sec}s
-                jq_arg+="--arg LPFcutoff_sec $lpf_sec "'$ARGS.named'
+                jq_arg+=" --arg LPFcutoff_sec $lpf_sec "'$ARGS.named'
             fi
             echo "hp_sigma = $hp_sigma  lp_sigma = $lp_sigma"
             out0+=_bold
             ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_intnorm -bptf $hp_sigma $lp_sigma -add ${sd0}/tempMean ${out0}
+
+            echo "jq_arg = $jq_arg"
 
             jq -n --arg FWHM $fwhm '$ARGS.named' $jq_arg > ${sd0}/tmp.json 
 
@@ -282,6 +284,6 @@ for((i=0;i<${#dat[@]};++i));do
 
     done
 
-#    rm -r ${sd0}
+    rm -r ${sd0}
 done
 echo "**** Finished $0 ****"
