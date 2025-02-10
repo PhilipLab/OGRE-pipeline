@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# python concatenate json files
-
 import argparse
 import json
 import pathlib
@@ -14,11 +12,11 @@ if __name__ == "__main__":
 
     parser.add_argument('dat0',metavar='<file(s) needing JSON(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be files needing JSONs.')
     hdat = 'Ex 1. '+parser.prog+' file1.nii.gz file2.nii.gz\n' \
-         + 'Ex 2. '+parser.prog+' "file1.nii.gz -s file2.nii.gz"\n' \
-         + 'Ex 3. '+parser.prog+' -s file1.nii.gz file2.nii.gz\n' \
-         + 'Ex 4. '+parser.prog+' -s "file1.nii.gz file2.nii.gz"\n' \
-         + 'Ex 5. '+parser.prog+' -s file1.nii.gz -s file2.nii.gz\n' \
-         + 'Ex 6. '+parser.prog+' file1.nii.gz -s file2.nii.gz\n'
+         + 'Ex 2. '+parser.prog+' "file1.nii.gz -i file2.nii.gz"\n' \
+         + 'Ex 3. '+parser.prog+' -i file1.nii.gz file2.nii.gz\n' \
+         + 'Ex 4. '+parser.prog+' -i "file1.nii.gz file2.nii.gz"\n' \
+         + 'Ex 5. '+parser.prog+' -i file1.nii.gz -i file2.nii.gz\n' \
+         + 'Ex 6. '+parser.prog+' file1.nii.gz -i file2.nii.gz\n'
     parser.add_argument('-f','-i','--in','-in','--file','-file','--files','-files',dest='dat',metavar='<file needing JSON>',action='extend',nargs='+',help=hdat)
 
     hj='All JSONs are combined to a single JSON that is matched to each <file needing JSON>.'
