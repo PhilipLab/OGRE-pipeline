@@ -58,7 +58,8 @@ if __name__ == "__main__":
     #print(f'dict0 = {dict0})')
 
     for i in args.dat:
-        jsonf = (f'{i.split('.nii')[0]}.json')
+        #jsonf = (f'{i.split('.nii')[0]}.json')
+        jsonf = f'{i.split('.nii')[0]}.json'
         with open(jsonf, 'w', encoding='utf-8') as f0:
             json.dump(dict0, f0, ensure_ascii=False, indent=4)
         print(f'Output written to {jsonf}')

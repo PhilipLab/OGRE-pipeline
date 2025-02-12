@@ -430,16 +430,10 @@ if __name__ == "__main__":
 
         print(f'Reading {i}')
 
-        #if not args.lcfeatadapter:
-        #    par = opl.scans.Par(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
-        #else:
-        #    par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest)
-        #START250118
         if not args.lcfeatadapter:
             par = opl.scans.Par(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
         else:
             par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
-
 
         idx = i.find('sub-')
 
