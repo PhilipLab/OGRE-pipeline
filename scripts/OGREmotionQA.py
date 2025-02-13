@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import pandas as pd
 import pathlib
 import sys
 
@@ -50,27 +51,36 @@ if __name__ == "__main__":
         #jsonf = f'{args.fmospikes.split('fmo')[0]}fmoQA.json'
         jsonf = f'{str(pspi).split('fmo')[0]}fmoQA.json'
 
-    print(f'jsonf = {jsonf}')
+    #print(f'jsonf = {jsonf}')
 
     try:
-        print(f'here0')
         with open(jsonf,'w',encoding="utf8",errors='ignore') as f0:
-
+            dict0={}
             if args.fmovalues:
-                print(f'here1')
-                try:
-                    print(f'args.fmovalues = {args.fmovalues}')
-                    with open(args.fmovalues,'r',encoding="utf8",errors='ignore') as f0:
-                        pass
-                except Exception as e:
-                    print(f'Error: Unable to open {args.fmovalues}: {e}')
-                    
-        
+                df = pd.read_fwf(args.fmovalues) #don't set header=None because we want to ignore the first value which is always 0
+                #print(f'df[df.keys()[0]].mean()={df[df.keys()[0]].mean()}')
+                #print(f'df[df.keys()[0]].max()={df[df.keys()[0]].max()}')
+                dict0['MeanMotion'] = df[df.keys()[0]].mean()
+                dict0['MaxMotion'] = df[df.keys()[0]].max() 
         
             if args.fmospikes:
-                pass
+                df = pd.read_fwf(args.fmospikes,header=None)
+                #print(f'df={df}')
+                #The number of columns equals the number of InvalidScans, but we're going to play it safe and sum all the values in the dataframe.
+                #print(f'df.to_numpy().sum()={df.to_numpy().sum()}')
+                dict0['InvalidScans'] = df.to_numpy().sum()
+                dict0['ValidScans'] = len(df.index) - dict0['InvalidScans']
+                dict0['ProbValidScans'] = dict0['ValidScans'] / len(df.index)
+
+            #print(f'dict0={dict0}')
+            #print(f"dict0['InvalidScans']={dict0['InvalidScans']}")
+            #https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable
+            json.dump(dict0, f0, ensure_ascii=False, indent=4, default=int)
+            
 
     except Exception as e:
         print(f'Error: Unable to write to {jsonf}: {e}')
+
+    print(f'Output written to {jsonf}') 
 
 
