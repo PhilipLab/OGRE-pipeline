@@ -10,11 +10,8 @@ import sys
 import opl
 
 P0='OGREGenericfMRIVolumeProcessingPipelineBatch.sh' 
-
-#P2='OGRESmoothingProcess.sh'
-#START250125
-P2='OGRESmoothingProcess2.sh'
-
+P1='OGRESmoothingProcess2.sh'
+P2='OGREmotionQA.py'
 P3='OGREmakeregdir.sh'
 SETUP='OGRESetUpHCPPipeline.sh'
 
@@ -139,14 +136,31 @@ def write_regressors(fslmo,f0):
         f0.write('    fi\n')
         f0.write('    root=${i##*/}\n')
         f0.write('    root=${root%.nii*}\n')
+
+        #f0.write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+        #f0.write('    cmd="fsl_motion_outliers -i ${i} -s ${bids}/regressors/${root}_fmovalues.txt -o ${fmospikes} $OPTIONS"\n')
+        #START250212
+        f0.write('    fmovalues=${bids}/regressors/${root}_fmovalues.txt\n')
         f0.write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-        f0.write('    cmd="fsl_motion_outliers -i ${i} -s ${bids}/regressors/${root}_fmovalues.txt -o ${fmospikes} $OPTIONS"\n')
+        f0.write("    fmospikesopt='-o ${fmospikes}'\n")
+        #f0.write('    cmd="fsl_motion_outliers -i ${i} -s ${fmovalues} -o ${fmospikes} $OPTIONS"\n')
+        f0.write('    cmd="fsl_motion_outliers -i ${i} -s ${fmovalues} ${fmospikesopt} $OPTIONS"\n')
+
         f0.write('    echo -e "\\nRunning ${cmd}"\n')
         f0.write('    ${cmd}\n')
-        f0.write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
+
+        #f0.write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
+        #START250212
+        f0.write('    [ ! -f "${fmospikes}" ] && unset fmospikes fmospikesopt\n')
+
         f0.write('    for j in ${SUFFIXES[@]};do\n')
         f0.write('        paste ${bids}/regressors/${root}_${j} ${fmospikes} > ${bids}/regressors/${root}_${j%.*}_confoundevs.txt\n')
         f0.write('    done\n')
+
+        #START250212
+        f0.write('    ${MOTIONQA} -s ${fmovalues} ${fmospikesopt}\n')
+
+
         f0.write('done\n\n')
     else:
         #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
@@ -154,14 +168,22 @@ def write_regressors(fslmo,f0):
         f0.write('\nfor i in ${RAW_BOLD[@]};do\n')
         f0.write('    root=${i##*/}\n')
         f0.write('    root=${root%.nii*}\n')
+
+        #START250212
+        f0.write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+        f0.write('    [ ! -f "${fmospikes}" ] && unset fmospikes || ${MOTIONQA} -o ${fmospikes}\n')
+
         f0.write('    for j in ${SUFFIXES[@]};do\n')
         f0.write('        file=${bids}/regressors/${root}_${j}\n')
         f0.write('        if [ ! -f "${file}" ];then\n')
         f0.write('            echo ${file} not found.\n')
         f0.write('            continue\n')
         f0.write('        fi\n')
-        f0.write('        fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-        f0.write('        [ ! -f "${fmospikes}" ] && unset fmospikes\n')
+
+        #START250212
+        #f0.write('        fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
+        #f0.write('        [ ! -f "${fmospikes}" ] && unset fmospikes\n')
+
         f0.write('        paste ${file} ${fmospikes} > ${bids}/regressors/${root}_${j%.*}_confoundevs.txt\n')
         f0.write('    done\n')
         f0.write('done\n\n')
@@ -579,8 +601,6 @@ if __name__ == "__main__":
                 par.check_phase_dims_fmap()
                 par.check_ped_dims()
 
-        #os.makedirs(pathlib.Path(F0[0]).parent, exist_ok=True)
-        #START241214
         pathlib.Path(F0[0]).parent.mkdir(exist_ok=True)
 
         from contextlib import ExitStack
@@ -618,12 +638,12 @@ if __name__ == "__main__":
                 fi0+=1
                 if not args.lcsmoothonly: 
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
-
-                #if par.taskidx and (args.fwhm or args.paradigm_hp_sec):
-                #    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
-                #START250201
                 if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
-                    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P2+'\n')
+                    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P1+'\n')
+
+                #START250211
+                if not args.lcsmoothonly: 
+                    F0f[0].write('MOTIONQA=${OGREDIR}/lib/'+P2+'\n')
 
             if not args.lcfeatadapter:
                 if not args.lcsmoothonly: 
@@ -694,96 +714,15 @@ if __name__ == "__main__":
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
                 if par.taskidx:
-
-                    #par.write_copy_script(F2,s0,pathstr,args.fwhm,args.paradigm_hp_sec,gev.FREESURFVER)
-                    #START250202
                     par.write_copy_script(F2,s0,pathstr,gev.FREESURFVER)
-
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
-
-                    #par.write_smooth(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
-                    #START250125
-                    #par.write_smooth2(F0f[0],s0,args.fwhm,args.paradigm_hp_sec)
-                    #START250201
                     par.write_smooth2(F0f[0],s0,args.fwhm,args.hpf_sec,args.lpf_sec)
 
-                    write_regressors(args.fslmo,F0f[0])
+                #    write_regressors(args.fslmo,F0f[0])
+                #START250212
+                write_regressors(args.fslmo,F0f[0])
 
-            #if feat: F0f[0].write('${FEAT}\n\n')
-            #if args.fslmo:
-            #    F0f[0].write('mkdir -p ${bids}/regressors\n\n')
-            #    F0f[0].write(f'OPTIONS="-v {args.fslmo}"\n')
-            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
-            #    F0f[0].write('    if [ ! -f "${i}" ];then\n')
-            #    F0f[0].write('        echo ${i} not found.\n')
-            #    F0f[0].write('        continue\n')
-            #    F0f[0].write('    fi\n')
-            #    F0f[0].write('    root=${i##*/}\n')
-            #    F0f[0].write('    root=${root%.nii*}\n')
-            #    F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-            #    F0f[0].write('    cmd="fsl_motion_outliers -i ${i} -s ${bids}/regressors/${root}_fmovalues.txt -o ${fmospikes} $OPTIONS"\n')
-            #    F0f[0].write('    echo -e "\\nRunning ${cmd}"\n')
-            #    F0f[0].write('    ${cmd}\n')
-            #    F0f[0].write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
-            #    F0f[0].write('    paste ${bids}/regressors/${root}_mc.par ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
-            #    F0f[0].write('done\n\n')
-            #else:
-            #    #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
-            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
-            #    F0f[0].write('    root=${i##*/}\n')
-            #    F0f[0].write('    root=${root%.nii*}\n')
-            #    F0f[0].write('    mcpar=${bids}/regressors/${root}_mc.par\n')
-            #    F0f[0].write('    if [ ! -f "${mcpar}" ];then\n')
-            #    F0f[0].write('        echo ${mcpar} not found.\n')
-            #    F0f[0].write('        continue\n')
-            #    F0f[0].write('    fi\n')
-            #    F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-            #    F0f[0].write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
-            #    F0f[0].write('    paste ${mcpar} ${fmospikes} > ${bids}/regressors/${root}_confoundevs.txt\n')
-            #    F0f[0].write('done\n\n')
-            #START241224
-            #if args.fslmo:
-            #    F0f[0].write('mkdir -p ${bids}/regressors\n')
-            #    F0f[0].write(f'OPTIONS="-v {args.fslmo}"\n')
-            #    F0f[0].write(f'SUFFIXES=(mc.par mc-withderiv.txt mc-withdetrendderiv.txt)\n')
-            #    F0f[0].write('for i in ${RAW_BOLD[@]};do\n')
-            #    F0f[0].write('    if [ ! -f "${i}" ];then\n')
-            #    F0f[0].write('        echo ${i} not found.\n')
-            #    F0f[0].write('        continue\n')
-            #    F0f[0].write('    fi\n')
-            #    F0f[0].write('    root=${i##*/}\n')
-            #    F0f[0].write('    root=${root%.nii*}\n')
-            #    F0f[0].write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-            #    F0f[0].write('    cmd="fsl_motion_outliers -i ${i} -s ${bids}/regressors/${root}_fmovalues.txt -o ${fmospikes} $OPTIONS"\n')
-            #    F0f[0].write('    echo -e "\\nRunning ${cmd}"\n')
-            #    F0f[0].write('    ${cmd}\n')
-            #    F0f[0].write('    [ ! -f "${fmospikes}" ] && unset fmospikes\n')
-            #    F0f[0].write('    for j in ${SUFFIXES[@]};do\n')
-            #    F0f[0].write('        paste ${bids}/regressors/${root}_${j} ${fmospikes} > ${bids}/regressors/${root}_${j%.*}_confoundevs.txt\n')
-            #    F0f[0].write('    done\n')
-            #    F0f[0].write('done\n\n')
-            #else:
-            #    #https://stackoverflow.com/questions/11795181/merging-two-files-horizontally-and-formatting
-            #    F0f[0].write(f'SUFFIXES=(mc.par mc-withderiv.txt mc-withdetrendderiv.txt)\n')
-            #    F0f[0].write('\nfor i in ${RAW_BOLD[@]};do\n')
-            #    F0f[0].write('    root=${i##*/}\n')
-            #    F0f[0].write('    root=${root%.nii*}\n')
-            #    F0f[0].write('    for j in ${SUFFIXES[@]};do\n')
-            #    F0f[0].write('        file=${bids}/regressors/${root}_${j}\n')
-            #    F0f[0].write('        if [ ! -f "${file}" ];then\n')
-            #    F0f[0].write('            echo ${file} not found.\n')
-            #    F0f[0].write('            continue\n')
-            #    F0f[0].write('        fi\n')
-            #    F0f[0].write('        fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-            #    F0f[0].write('        [ ! -f "${fmospikes}" ] && unset fmospikes\n')
-            #    F0f[0].write('        paste ${file} ${fmospikes} > ${bids}/regressors/${root}_${j%.*}_confoundevs.txt\n')
-            #    F0f[0].write('    done\n')
-            #    F0f[0].write('done\n\n')
-            #if feat: F0f[0].write('${FEAT}\n\n')
-            #START241224
             if feat: F0f[0].write('${FEAT}\n\n')
-
-
 
 
             F0f[0].write('echo -e "Finshed $0\\nOGRE functional pipeline completed."')

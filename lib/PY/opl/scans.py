@@ -174,6 +174,7 @@ class Scans:
             f0.write('done\n')
 
     def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
+
         f0.write("# --TR= is only needed for high pass filtering --paradigm_hp_sec\n")
         f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR= can be omitted.\n")
         f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
@@ -182,6 +183,7 @@ class Scans:
         f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
         f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n")
         f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
+
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
 
@@ -219,14 +221,26 @@ class Scans:
     #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
     #START250202
     def write_smooth2(self,f0,s0,fwhm,hpf_sec,lpf_sec):
+
+        #f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
+        #f0.write("# If the files have json's that include the TR as the field RepetitionTime, then -TR can be omitted.\n")
+        #f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
+        #f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+        #f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hp_sec 60\n")
+        #f0.write("# Ex.2  6 mm SUSAN smoothing only\n")
+        #f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6\n")
+        #f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
+        #START250212
         f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
-        f0.write("# If the files have json's that include the TR as the field RepetitionTime, then -TR can be omitted.\n")
-        f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
-        f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-        f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hp_sec 60\n")
-        f0.write("# Ex.2  6 mm SUSAN smoothing only\n")
-        f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6\n")
+        f0.write("# If the file to be filtered has a JSON that includes the TR as the field RepetitionTime, then -TR can be omitted, and the TR is read from the JSON.\n")
+        f0.write("# Ex1. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
+        f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+        f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60\n")
+        f0.write("# Ex2. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json does not include the field RepetitionTime.\n")
+        f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+        f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n")
         f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
+
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
         cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
