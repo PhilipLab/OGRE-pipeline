@@ -142,7 +142,7 @@ def write_regressors(fslmo,f0):
         #START250212
         f0.write('    fmovalues=${bids}/regressors/${root}_fmovalues.txt\n')
         f0.write('    fmospikes=${bids}/regressors/${root}_fmospikes.txt\n')
-        f0.write("    fmospikesopt='-o ${fmospikes}'\n")
+        f0.write('    fmospikesopt="-o ${fmospikes}"\n')
         #f0.write('    cmd="fsl_motion_outliers -i ${i} -s ${fmovalues} -o ${fmospikes} $OPTIONS"\n')
         f0.write('    cmd="fsl_motion_outliers -i ${i} -s ${fmovalues} ${fmospikesopt} $OPTIONS"\n')
 
