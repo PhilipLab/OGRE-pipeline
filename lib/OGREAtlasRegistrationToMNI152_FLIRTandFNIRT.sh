@@ -2,6 +2,8 @@
 
 set -e
 
+echo -e "\n***** START $0 *****"
+
 # Requirements for this script
 #  installed versions of: FSL (version 5.0.6)
 #  environment: FSLDIR
@@ -152,7 +154,7 @@ T1wRestoreBasename=`basename $T1wRestoreBasename`;
 T1wRestoreBrainBasename=`remove_ext $T1wRestoreBrain`;
 T1wRestoreBrainBasename=`basename $T1wRestoreBrainBasename`;
 
-echo "    START: AtlasRegistration to MNI152 $0"
+#echo "    START: AtlasRegistration to MNI152 $0"
 
 mkdir -p $WD
 
@@ -205,4 +207,5 @@ fi
 
 ##############################################################################################
 
-echo -e "    END: AtlasRegistration to MNI152 $0"
+#echo -e "    END: AtlasRegistration to MNI152 $0"
+echo -e "\n***** END $0 *****"
