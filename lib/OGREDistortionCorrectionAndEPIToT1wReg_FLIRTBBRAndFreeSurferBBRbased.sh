@@ -537,8 +537,6 @@ if [ -e ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm ] ; then
   # Use "hidden" bbregister DOF options
   log_Msg "Use \"hidden\" bbregister DOF options"
 
-  #${FREESURFER_HOME}/bin/bbregister --s "${FreeSurferSubjectID}_1mm" --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --surf white.deformed --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
-  #START221103
   if [[ "$freesurferVersion" = "5.3.0-HCP" ]];then 
       ${FREESURFER_HOME}/bin/bbregister --s "${FreeSurferSubjectID}_1mm" --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --surf white.deformed --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
   else
@@ -572,11 +570,17 @@ else
 
   #${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
   #START240427
-  [[ $UseRefinement == "true" ]] && ${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
+  #START250216
+  #[[ $UseRefinement == "true" ]] && ${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
 
 fi
 
 if [[ $UseRefinement == "true" ]];then
+
+    #START250216
+    ${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
+
+
     ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
     fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
     fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
@@ -678,8 +682,7 @@ fi
 
 if [[ $UseJacobian == "true" ]];then
     log_Msg "applying Jacobian modulation"
-    if [[ "$UseBiasField" != "" ]]
-    then
+    if [[ "$UseBiasField" != "" ]];then
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w -div ${UseBiasField} -mul ${WD}/Jacobian2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w
     else
         ${FSLDIR}/bin/fslmaths ${WD}/${ScoutInputFile}_undistorted2T1w -mul ${WD}/Jacobian2T1w.nii.gz ${WD}/${ScoutInputFile}_undistorted2T1w
