@@ -461,34 +461,6 @@ if [ "$do_P0" -eq "1" ];then
 fi
 
 #One Step Resampling
-#if [ "$do_P1" -eq "1" ];then
-#    log_Msg "One Step Resampling"
-#    log_Msg "mkdir -p ${fMRIFolder}/OneStepResampling"
-#    mkdir -p ${fMRIFolder}/OneStepResampling
-#    ${RUN} ${P1} \
-#           --workingdir=${fMRIFolder}/OneStepResampling \
-#           --infmri=${fMRIFolder}/${OrigTCSName}.nii.gz \
-#           --t1=${AtlasSpaceFolder}/${T1wAtlasName} \
-#           --fmriresout=${FinalfMRIResolution} \
-#           --fmrifolder=${fMRIFolder} \
-#           --fmri2structin=${T1wFolder}/xfms/${fMRI2strOutputTransform} \
-#           --struct2std=${AtlasSpaceFolder}/xfms/${AtlasTransform} \
-#           --owarp=${AtlasSpaceFolder}/xfms/${OutputfMRI2StandardTransform} \
-#           --oiwarp=${AtlasSpaceFolder}/xfms/${Standard2OutputfMRITransform} \
-#           --motionmatdir=${fMRIFolder}/${MotionMatrixFolder} \
-#           --motionmatprefix=${MotionMatrixPrefix} \
-#           --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin \
-#           --freesurferbrainmask=${AtlasSpaceFolder}/${FreeSurferBrainMask} \
-#           --biasfield=${AtlasSpaceFolder}/${BiasFieldMNI} \
-#           --gdfield=${fMRIFolder}/${NameOffMRI}_gdc_warp \
-#           --scoutin=${fMRIFolder}/${OrigScoutName} \
-#           --scoutgdcin=${fMRIFolder}/${ScoutName}_gdc \
-#           --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
-#           --ojacobian=${fMRIFolder}/${JacobianOut}_MNI.${FinalfMRIResolution} \
-#           --analysis=${Analysis} \
-#           --StudyFolder=${Path}    #START241007
-#fi
-#START241013
 if [ "$do_P1" -eq "1" ];then
     log_Msg "One Step Resampling"
     log_Msg "mkdir -p ${fMRIFolder}/OneStepResampling"
@@ -516,10 +488,6 @@ if [ "$do_P1" -eq "1" ];then
            --StudyFolder=${Path}
 fi
 
-
-
-
-
 log_Msg "mkdir -p ${ResultsFolder}"
 mkdir -p ${ResultsFolder}
 
@@ -527,7 +495,7 @@ mkdir -p ${ResultsFolder}
 #the alternative is to add a bunch of optional arguments to OneStepResampling that just do the same thing
 #we need to do this before intensity normalization, as it uses the bias field output
 
-if [[ ${DistortionCorrection} == "TOPUP" && "${Analysis}" != "NATIVE" ]]; then
+if [[ ${DistortionCorrection} == "TOPUP" && "${Analysis}" != "NATIVE" ]];then
 
     #create MNI space corrected fieldmap images
     ${FSLDIR}/bin/applywarp --rel --interp=spline --in=${DCFolder}/PhaseOne_gdc_dc_unbias -w ${AtlasSpaceFolder}/xfms/${AtlasTransform} -r ${fMRIFolder}/${NameOffMRI}_SBRef_nonlin -o ${ResultsFolder}/${NameOffMRI}_PhaseOne_gdc_dc
@@ -554,17 +522,6 @@ fi
 
 if [ "$do_P2" -eq "1" ];then
     log_Msg "Intensity Normalization and Bias Removal"
-
-    #${RUN} ${P2} \
-    #       --infmri=${fMRIFolder}/${NameOffMRI}_nonlin \
-    #       --biasfield=${UseBiasFieldMNI} \
-    #       --jacobian=${fMRIFolder}/${jacobian0} \
-    #       --brainmask=${fMRIFolder}/${FreeSurferBrainMask}.${FinalfMRIResolution} \
-    #       --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin_norm \
-    #       --inscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
-    #       --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm \
-    #       --usejacobian=${UseJacobian}
-    #START240730
     ${RUN} ${P2} \
            --infmri=${fMRIFolder}/${NameOffMRI}_nonlin \
            --biasfield=${UseBiasFieldMNI} \
@@ -575,11 +532,6 @@ if [ "$do_P2" -eq "1" ];then
            --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm \
            --usejacobian=${UseJacobian} \
            --dilation=${dilation}
-
-
-
-
-
 fi
 
 

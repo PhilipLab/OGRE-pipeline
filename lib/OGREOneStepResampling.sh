@@ -157,9 +157,6 @@ if [ "${Analysis}" != "NATIVE" ] ; then
     ResampRefIm=$T1wTemplateLow
 
 
-
-
-
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1wImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wImageFile}.${FinalfMRIResolution}
 
     # Create brain masks in this space from the FreeSurfer output (changing resolution)
