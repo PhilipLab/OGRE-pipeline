@@ -156,6 +156,9 @@ if [ "${Analysis}" != "NATIVE" ] ; then
     #echo "TemplateMaskLow = $TemplateMaskLow"
     ResampRefIm=$T1wTemplateLow
 
+    #START250220
+    echo "Finished $StudyFolder/templates/export_templates.sh"
+
 
     ${FSLDIR}/bin/applywarp --rel --interp=spline -i ${T1wImage} -r ${ResampRefIm} --premat=$FSLDIR/etc/flirtsch/ident.mat -o ${WD}/${T1wImageFile}.${FinalfMRIResolution}
 
@@ -243,17 +246,15 @@ done
 
 # Merge together results and restore the TR (saved beforehand)
 
-#START200915
-#echo "****************** here0 start ***********************"
-#echo "${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} $FrameMergeSTRING $TR_vol"
+echo "****************** Starting fslmerge fMRI ***********************"
+echo "${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} $FrameMergeSTRING $TR_vol"
 ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI} $FrameMergeSTRING $TR_vol
-#echo "****************** here0 end ***********************"
+echo "****************** Finished fslmerge fMRI ***********************"
 
-#START200915
-#echo "****************** here1 start ***********************"
-#echo "${FSLDIR}/bin/fslmerge -tr ${OutputfMRI}_mask $FrameMergeSTRINGII $TR_vol"
+echo "****************** Starting fslmerge mask ***********************"
+echo "${FSLDIR}/bin/fslmerge -tr ${OutputfMRI}_mask $FrameMergeSTRINGII $TR_vol"
 ${FSLDIR}/bin/fslmerge -tr ${OutputfMRI}_mask $FrameMergeSTRINGII $TR_vol
-#echo "****************** here1 end ***********************"
+echo "****************** Finished fslmerge mask ***********************"
 
 #START231009 added, debugging 1018_run3_LH
 #${FSLDIR}/bin/imcp ${OutputfMRI}_mask ${OutputfMRI}_mask_frames
