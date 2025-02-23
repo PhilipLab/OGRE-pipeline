@@ -1,18 +1,19 @@
 #!/usr/bin/env bash 
 set -e
 
+echo "******  START $0 ******"
+
 P0=${OGREDIR}/lib/OGREDistortionCorrectionAndEPIToT1wReg_FLIRTBBRAndFreeSurferBBRbased.sh
 P1=${OGREDIR}/lib/OGREOneStepResampling.sh
 P2=${OGREDIR}/lib/OGREIntensityNormalization.sh
 P3=${OGREDIR}/lib/OGREMotionCorrection.sh
-
-echo "******  START $0 ******"
 
 do_GradientDistortionCorrection=1
 do_MotionCorrection=1
 do_P0=1
 do_P1=1
 do_P2=1
+
 
 # Requirements for this script
 #  installed versions of: FSL (version 5.0.6), FreeSurfer (version 5.3.0-HCP) , gradunwarp (HCP version 1.0.2) 
@@ -32,9 +33,6 @@ do_P2=1
 
 source $HCPPIPEDIR/global/scripts/log.shlib  # Logging related functions
 source $HCPPIPEDIR/global/scripts/opts.shlib # Command line option functions
-
-
-
 
 
 ################################################ SUPPORT FUNCTIONS ##################################################

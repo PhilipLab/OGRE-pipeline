@@ -262,9 +262,9 @@ fi
 
 #cp ${T1wBrainImage}.nii.gz ${WD}/${T1wBrainImageFile}.nii.gz
 #START191112
-echo ''
-echo "**************************** here50 ***********************************"
-echo ''
+#echo ''
+#echo "**************************** here50 ***********************************"
+#echo ''
 c0="cp ${T1wBrainImage}.nii.gz ${WD}/${T1wBrainImageFile}.nii.gz";echo -e "\n${c0}"
 $c0
 echo ''
