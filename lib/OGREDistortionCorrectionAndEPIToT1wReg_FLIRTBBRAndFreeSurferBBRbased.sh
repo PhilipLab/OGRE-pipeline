@@ -485,70 +485,64 @@ export SUBJECTS_DIR
 #Check to see if FreeSurferNHP.sh was used
 log_Msg "Check to see if FreeSurferNHP.sh was used"
 if [ -e ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm ] ; then
-  #Perform Registration in FreeSurferNHP 1mm Space
-  log_Msg "${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm exists. FreeSurferNHP.sh was used."
-  log_Msg "Perform Registration in FreeSurferNHP 1mm Space"
-  ScoutImage="${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz"
-  ScoutImageFile="${WD}/${ScoutInputFile}_undistorted2T1w_init"
+    #Perform Registration in FreeSurferNHP 1mm Space
+    log_Msg "${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm exists. FreeSurferNHP.sh was used."
+    log_Msg "Perform Registration in FreeSurferNHP 1mm Space"
+    ScoutImage="${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz"
+    ScoutImageFile="${WD}/${ScoutInputFile}_undistorted2T1w_init"
 
-  res=`fslorient -getsform $ScoutImage | cut -d " " -f 1 | cut -d "-" -f 2`
-  oldsform=`fslorient -getsform $ScoutImage`
-  newsform=""
-  i=1
-  while [ $i -le 12 ] ; do
-    oldelement=`echo $oldsform | cut -d " " -f $i`
-    newelement=`echo "scale=1; $oldelement / $res" | bc -l`
-    newsform=`echo "$newsform""$newelement"" "`
-    if [ $i -eq 4 ] ; then
-      originx="$newelement"
+    res=`fslorient -getsform $ScoutImage | cut -d " " -f 1 | cut -d "-" -f 2`
+    oldsform=`fslorient -getsform $ScoutImage`
+    newsform=""
+    i=1
+    while [ $i -le 12 ] ; do
+        oldelement=`echo $oldsform | cut -d " " -f $i`
+        newelement=`echo "scale=1; $oldelement / $res" | bc -l`
+        newsform=`echo "$newsform""$newelement"" "`
+        [ $i -eq 4 ] && originx="$newelement"
+        [ $i -eq 8 ] && originy="$newelement"
+        [ $i -eq 12 ] && originz="$newelement"
+        i=$(($i+1))
+    done
+    newsform=`echo "$newsform""0 0 0 1" | sed 's/  / /g'`
+
+    cp "$ScoutImage" "$ScoutImageFile"_1mm.nii.gz
+    fslorient -setsform $newsform "$ScoutImageFile"_1mm.nii.gz
+    fslhd -x "$ScoutImageFile"_1mm.nii.gz | sed s/"dx = '${res}'"/"dx = '1'"/g | sed s/"dy = '${res}'"/"dy = '1'"/g | sed s/"dz = '${res}'"/"dz = '1'"/g | fslcreatehd - "$ScoutImageFile"_1mm_head.nii.gz
+    fslmaths "$ScoutImageFile"_1mm_head.nii.gz -add "$ScoutImageFile"_1mm.nii.gz "$ScoutImageFile"_1mm.nii.gz
+    fslorient -copysform2qform "$ScoutImageFile"_1mm.nii.gz
+    rm "$ScoutImageFile"_1mm_head.nii.gz
+    dimex=`fslval "$ScoutImageFile"_1mm dim1`
+    dimey=`fslval "$ScoutImageFile"_1mm dim2`
+    dimez=`fslval "$ScoutImageFile"_1mm dim3`
+    padx=`echo "(256 - $dimex) / 2" | bc`
+    pady=`echo "(256 - $dimey) / 2" | bc`
+    padz=`echo "(256 - $dimez) / 2" | bc`
+    fslcreatehd $padx $dimey $dimez 1 1 1 1 1 0 0 0 16 "$ScoutImageFile"_1mm_padx
+    fslmerge -x "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padx "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padx
+    fslcreatehd 256 $pady $dimez 1 1 1 1 1 0 0 0 16 "$ScoutImageFile"_1mm_pady
+    fslmerge -y "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_pady "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_pady
+    fslcreatehd 256 256 $padz 1 1 1 1 1 0 0 0 16 "$ScoutImageFile"_1mm_padz
+    fslmerge -z "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padz "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padz
+    fslorient -setsformcode 1 "$ScoutImageFile"_1mm
+    fslorient -setsform -1 0 0 `echo "$originx + $padx" | bc -l` 0 1 0 `echo "$originy - $pady" | bc -l` 0 0 1 `echo "$originz - $padz" | bc -l` 0 0 0 1 "$ScoutImageFile"_1mm
+    rm "$ScoutImageFile"_1mm_padx.nii.gz "$ScoutImageFile"_1mm_pady.nii.gz "$ScoutImageFile"_1mm_padz.nii.gz
+
+    # Use "hidden" bbregister DOF options
+    log_Msg "Use \"hidden\" bbregister DOF options"
+
+    if [[ "$freesurferVersion" = "5.3.0-HCP" ]];then 
+        ${FREESURFER_HOME}/bin/bbregister --s "${FreeSurferSubjectID}_1mm" --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --surf white.deformed --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
+    else
+        ${FREESURFER_HOME}/bin/bbregister --s "${FreeSurferSubjectID}_1mm" --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
     fi
-    if [ $i -eq 8 ] ; then
-      originy="$newelement"
-    fi
-    if [ $i -eq 12 ] ; then
-      originz="$newelement"
-    fi
-    i=$(($i+1))
-  done
-  newsform=`echo "$newsform""0 0 0 1" | sed 's/  / /g'`
 
-  cp "$ScoutImage" "$ScoutImageFile"_1mm.nii.gz
-  fslorient -setsform $newsform "$ScoutImageFile"_1mm.nii.gz
-  fslhd -x "$ScoutImageFile"_1mm.nii.gz | sed s/"dx = '${res}'"/"dx = '1'"/g | sed s/"dy = '${res}'"/"dy = '1'"/g | sed s/"dz = '${res}'"/"dz = '1'"/g | fslcreatehd - "$ScoutImageFile"_1mm_head.nii.gz
-  fslmaths "$ScoutImageFile"_1mm_head.nii.gz -add "$ScoutImageFile"_1mm.nii.gz "$ScoutImageFile"_1mm.nii.gz
-  fslorient -copysform2qform "$ScoutImageFile"_1mm.nii.gz
-  rm "$ScoutImageFile"_1mm_head.nii.gz
-  dimex=`fslval "$ScoutImageFile"_1mm dim1`
-  dimey=`fslval "$ScoutImageFile"_1mm dim2`
-  dimez=`fslval "$ScoutImageFile"_1mm dim3`
-  padx=`echo "(256 - $dimex) / 2" | bc`
-  pady=`echo "(256 - $dimey) / 2" | bc`
-  padz=`echo "(256 - $dimez) / 2" | bc`
-  fslcreatehd $padx $dimey $dimez 1 1 1 1 1 0 0 0 16 "$ScoutImageFile"_1mm_padx
-  fslmerge -x "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padx "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padx
-  fslcreatehd 256 $pady $dimez 1 1 1 1 1 0 0 0 16 "$ScoutImageFile"_1mm_pady
-  fslmerge -y "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_pady "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_pady
-  fslcreatehd 256 256 $padz 1 1 1 1 1 0 0 0 16 "$ScoutImageFile"_1mm_padz
-  fslmerge -z "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padz "$ScoutImageFile"_1mm "$ScoutImageFile"_1mm_padz
-  fslorient -setsformcode 1 "$ScoutImageFile"_1mm
-  fslorient -setsform -1 0 0 `echo "$originx + $padx" | bc -l` 0 1 0 `echo "$originy - $pady" | bc -l` 0 0 1 `echo "$originz - $padz" | bc -l` 0 0 0 1 "$ScoutImageFile"_1mm
-  rm "$ScoutImageFile"_1mm_padx.nii.gz "$ScoutImageFile"_1mm_pady.nii.gz "$ScoutImageFile"_1mm_padz.nii.gz
+    tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --targ ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/T1w_hires.nii.gz --fslregout ${WD}/fMRI2str_1mm.mat
+    applywarp --interp=spline -i ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz -r ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/T1w_hires.nii.gz --premat=${WD}/fMRI2str_1mm.mat -o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
 
-  # Use "hidden" bbregister DOF options
-  log_Msg "Use \"hidden\" bbregister DOF options"
-
-  if [[ "$freesurferVersion" = "5.3.0-HCP" ]];then 
-      ${FREESURFER_HOME}/bin/bbregister --s "${FreeSurferSubjectID}_1mm" --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --surf white.deformed --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
-  else
-      ${FREESURFER_HOME}/bin/bbregister --s "${FreeSurferSubjectID}_1mm" --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
-  fi
-
-  tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz --targ ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/T1w_hires.nii.gz --fslregout ${WD}/fMRI2str_1mm.mat
-  applywarp --interp=spline -i ${WD}/${ScoutInputFile}_undistorted2T1w_init_1mm.nii.gz -r ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/T1w_hires.nii.gz --premat=${WD}/fMRI2str_1mm.mat -o ${WD}/${ScoutInputFile}_undistorted2T1w_1mm.nii.gz
-
-  convert_xfm -omat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/temp.mat -concat ${WD}/fMRI2str_1mm.mat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/real2fs.mat
-  convert_xfm -omat ${WD}/fMRI2str_refinement.mat -concat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/fs2real.mat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/temp.mat
-  rm ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/temp.mat
+    convert_xfm -omat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/temp.mat -concat ${WD}/fMRI2str_1mm.mat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/real2fs.mat
+    convert_xfm -omat ${WD}/fMRI2str_refinement.mat -concat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/fs2real.mat ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/temp.mat
+    rm ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm/mri/transforms/temp.mat
 
 else
     log_Msg "${FreeSurferSubjectFolder}/${FreeSurferSubjectID}_1mm does not exist. FreeSurferNHP.sh was not used."
@@ -564,23 +558,13 @@ else
         ${FREESURFER_HOME}/bin/bbregister --s ${FreeSurferSubjectID} --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --init-reg ${FreeSurferSubjectFolder}/${FreeSurferSubjectID}/mri/transforms/eye.dat --bold --reg ${WD}/EPItoT1w.dat --${dof} --o ${WD}/${ScoutInputFile}_undistorted2T1w.nii.gz
     fi
 
-  # Create FSL-style matrix and then combine with existing warp fields
-  log_Msg "Create FSL-style matrix and then combine with existing warp fields"
+    # Create FSL-style matrix and then combine with existing warp fields
+    log_Msg "Create FSL-style matrix and then combine with existing warp fields"
 
-
-  #${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
-  #START240427
-  #START250216
-  #[[ $UseRefinement == "true" ]] && ${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
-
+    [[ $UseRefinement == "true" ]] && ${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
 fi
 
 if [[ $UseRefinement == "true" ]];then
-
-    #START250216
-    ${FREESURFER_HOME}/bin/tkregister2 --noedit --reg ${WD}/EPItoT1w.dat --mov ${WD}/${ScoutInputFile}_undistorted2T1w_init.nii.gz --targ ${T1wImage}.nii.gz --fslregout ${WD}/fMRI2str_refinement.mat
-
-
     ${FSLDIR}/bin/convertwarp --relout --rel --warp1=${WD}/${ScoutInputFile}_undistorted2T1w_init_warp.nii.gz --ref=${T1wImage} --postmat=${WD}/fMRI2str_refinement.mat --out=${WD}/fMRI2str.nii.gz
     fslroi ${WD}/fMRI2str.nii.gz ${WD}/fMRI2str_vol1.nii.gz 1 1
     fMRI2str_vol1_M=$(fslstats ${WD}/fMRI2str_vol1.nii.gz -M)
