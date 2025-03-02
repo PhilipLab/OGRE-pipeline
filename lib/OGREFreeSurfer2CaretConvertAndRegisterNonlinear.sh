@@ -353,10 +353,6 @@ for Hemisphere in L R ; do
 		fsname=$(echo $Map | cut -d "@" -f 1)
 		wbname=$(echo $Map | cut -d "@" -f 2)
 		mapname=$(echo $Map | cut -d "@" -f 3)
-
-                #START230614
-                #echo "here9 mris_convert -c "$FreeSurferFolder"/surf/"$hemisphere"h."$fsname" "$FreeSurferFolder"/surf/"$hemisphere"h.white "$AtlasSpaceFolder"/"$NativeFolder"/"$Subject"."$Hemisphere"."$wbname".native.shape.gii"
-
 		mris_convert -c "$FreeSurferFolder"/surf/"$hemisphere"h."$fsname" "$FreeSurferFolder"/surf/"$hemisphere"h.white "$AtlasSpaceFolder"/"$NativeFolder"/"$Subject"."$Hemisphere"."$wbname".native.shape.gii
 
  
@@ -374,10 +370,6 @@ for Hemisphere in L R ; do
                     #echo "WARNING: ${f0} not found. Moved ${a0[0]}"
                     echo -e "    WARNING: ${f0} not found.\n    WARNING: Moved ${a0[0]}"
                 fi
-
-
-                #START230614
-                #echo "here10 ${CARET7DIR}/wb_command -set-structure "$AtlasSpaceFolder"/"$NativeFolder"/"$Subject"."$Hemisphere"."$wbname".native.shape.gii ${Structure}"
 
 		${CARET7DIR}/wb_command -set-structure "$AtlasSpaceFolder"/"$NativeFolder"/"$Subject"."$Hemisphere"."$wbname".native.shape.gii ${Structure}
 
@@ -719,8 +711,5 @@ for LowResMesh in ${LowResMeshes} ; do
 done
 
 log_Msg "Done creating midthickness Vertex Area (VA) maps"
-
 log_Msg "END"
-
-#START230614
 echo "END: $0"
