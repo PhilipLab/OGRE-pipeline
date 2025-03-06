@@ -157,11 +157,13 @@ echo " " >> $WD/log.txt
 #    fslmaths $InputfMRImaskUndil $dil -bin $InputfMRImask
 #fi
 #START250220
-echo "${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${OutputfMRI} -odt float"
-${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${OutputfMRI} -odt float
+cmd="${FSLDIR}/bin/fslmaths ${InputfMRI} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 ${OutputfMRI} -odt float"
+echo "$cmd"
+$cmd
 if [ X${ScoutInput} != X ] ; then
-    echo "${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${ScoutOutput} -odt float"
-    ${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRImask} -thr 0 ${ScoutOutput} -odt float
+    cmd="${FSLDIR}/bin/fslmaths ${ScoutInput} $biascom $jacobiancom -mas ${BrainMask} -mas ${InputfMRI}_mask -thr 0 ${ScoutOutput} -odt float"
+    echo "$cmd"
+    $cmd 
 fi
 
 
