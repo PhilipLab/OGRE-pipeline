@@ -581,6 +581,11 @@ if __name__ == "__main__":
 
         F2 = stem0 + '_bidscp' + datestr + '.sh' 
         F2name = '${s0}_bidscp' + datestr + '.sh'
+
+        #START250305
+        F3 = stem0 + '_smooth' + datestr + '.sh' 
+        F3name = '${s0}_smooth' + datestr + '.sh'
+
         F0name = '${s0}_' + l0 + datestr + '.sh'
         Fclean = stem0 + '_cleanup' + datestr + '.sh'
 
@@ -655,11 +660,11 @@ if __name__ == "__main__":
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
 
                 if not args.lcsmoothonly: 
-
-                    #F0f[0].write('COPY=${sf0}/'+f'{F2name}\n')
-                    #if feat: F0f[0].write('FEAT=${sf0}/'+f'{Ffeatname}\n')
-                    #START241225
                     F0f[0].write('COPY=${sf0}/scripts/'+f'{F2name}\n')
+
+                    #START250305
+                    F0f[0].write('SMOOTH=${sf0}/scripts/'+f'{F3name}\n')
+
                     if feat: F0f[0].write('FEAT=${sf0}/scripts/'+f'{Ffeatname}\n')
 
                     F0f[0].write(f'dilation={args.dilation}\n')
@@ -716,7 +721,11 @@ if __name__ == "__main__":
                 if par.taskidx:
                     par.write_copy_script(F2,s0,pathstr,gev.FREESURFVER)
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
-                    par.write_smooth2(F0f[0],s0,args.fwhm,args.hpf_sec,args.lpf_sec)
+
+                    #par.write_smooth2(F0f[0],s0,args.fwhm,args.hpf_sec,args.lpf_sec)
+                    #START250305
+                    par.write_smooth_script(F3,s0,pathstr,args.fwhm,args.hpf_sec,args.lpf_sec)
+                    F0f[0].write('${SMOOTH}\n\n')
 
                 #    write_regressors(args.fslmo,F0f[0])
                 #START250212
@@ -730,6 +739,10 @@ if __name__ == "__main__":
                 for j in F0: pathlib.Path.unlink(j) 
                 pathlib.Path.unlink(F1)
                 pathlib.Path.unlink(F2) 
+
+                #START250305
+                pathlib.Path.unlink(F3) 
+
                 if arg.bs: pathlib.Path.unlink(bs0) 
             else:
 
@@ -758,6 +771,11 @@ if __name__ == "__main__":
                 print(f'    Output written to {F1}')
                 opl.rou.make_executable(F2)
                 print(f'    Output written to {F2}')
+
+                #START250305
+                opl.rou.make_executable(F3)
+                print(f'    Output written to {F3}')
+
                 if feat: print(f'    Output written to {Ffeat}')
 
                 if args.bs: 
