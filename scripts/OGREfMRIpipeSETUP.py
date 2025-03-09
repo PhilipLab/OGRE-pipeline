@@ -95,13 +95,8 @@ class Feat:
             gev = opl.rou.get_env_vars(args)
             if not gev: exit()
         with open(filename,'w',encoding="utf8",errors='ignore') as f0:
-
             f0.write(f'{gev.SHEBANG}\nset -e\n\n')
-
-            #if cmd_line_call: f0.write(f'#{cmd_line_call}\n\n')
-
             f0.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
-
             # https://favtutor.com/blogs/get-list-index-python
             #index = [i for i ,e in enumerate(self.level) if e == 1]
             index = [i for i ,e in enumerate(self.level) if e == '1']
@@ -112,14 +107,9 @@ class Feat:
                 f0.write(f'OGREDIR={gev.OGREDIR}\n'+'MAKEREGDIR=${OGREDIR}/lib/'+P3+'\n')
                 for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i]+'\n${MAKEREGDIR} '+self.outputdir[i])
 
-            #index = [i for i ,e in enumerate(self.level) if e == 2]
             index = [i for i ,e in enumerate(self.level) if e == '2']
-
-            #print(f'index={index}')
-
             if index:
                 for i in index: f0.write('\n${FSLDIR}/bin/feat '+self.fsf[i])
-
         opl.rou.make_executable(filename)
 
 
@@ -643,8 +633,10 @@ if __name__ == "__main__":
                 fi0+=1
                 if not args.lcsmoothonly: 
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
-                if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
-                    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P1+'\n')
+
+                #START250307
+                #if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
+                #    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P1+'\n')
 
                 #START250211
                 if not args.lcsmoothonly: 
@@ -719,12 +711,17 @@ if __name__ == "__main__":
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
                 if par.taskidx:
-                    par.write_copy_script(F2,s0,pathstr,gev.FREESURFVER)
+
+                    #par.write_copy_script(F2,s0,pathstr,gev.FREESURFVER)
+                    #START250307
+                    par.write_copy_script(F2,s0,pathstr,gev)
+
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
 
                     #par.write_smooth2(F0f[0],s0,args.fwhm,args.hpf_sec,args.lpf_sec)
                     #START250305
-                    par.write_smooth_script(F3,s0,pathstr,args.fwhm,args.hpf_sec,args.lpf_sec)
+                    #par.write_smooth_script(F3,s0,pathstr,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
+                    par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
                     F0f[0].write('${SMOOTH}\n\n')
 
                 #    write_regressors(args.fslmo,F0f[0])

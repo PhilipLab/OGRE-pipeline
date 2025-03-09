@@ -3,7 +3,11 @@
 import json
 import pathlib
 import re
-from opl.rou import run_cmd,SHEBANG
+
+#from opl.rou import run_cmd,SHEBANG
+#START250307
+#from opl.rou import run_cmd
+import opl
 
 class Scans:
     def __init__(self,file,lcdonotsmoothrest=False,lcdonotuseIntendedFor=False):
@@ -113,13 +117,18 @@ class Scans:
         #print(f'len(self.bold)={len(self.bold)}')   
 
 
-    #def write_copy_script(self,file,s0,pathstr,fwhm,paradigm_hp_sec,FREESURFVER):
-    #START250202
-    def write_copy_script(self,file,s0,pathstr,FREESURFVER):
+    #def write_copy_script(self,file,s0,pathstr,FREESURFVER):
+    #START250307
+    def write_copy_script(self,file,s0,pathstr,gev):
 
         with open(file,'w') as f0:
-            f0.write(f'{SHEBANG}\nset -e\n\n')
-            f0.write(f'FREESURFVER={FREESURFVER}\n\n')
+
+            #f0.write(f'{SHEBANG}\nset -e\n\n')
+            #f0.write(f'FREESURFVER={FREESURFVER}\n\n')
+            #START250307
+            f0.write(f'{gev.SHEBANG}\nset -e\n\n')
+            f0.write(f'FREESURFVER={gev.FREESURFVER}\n\n')
+
             f0.write(pathstr+'\n') # s0, bids and sf0
             f0.write('mkdir -p ${bids}/func\n\n')
             self.write_bold_bash(f0,s0,self.bold)
@@ -173,8 +182,10 @@ class Scans:
             f0.write('    done\n')
             f0.write('done\n')
 
-    def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
+        #START250307
+        opl.rou.make_executable(file)
 
+    def write_smooth(self,f0,s0,fwhm,paradigm_hp_sec):
         f0.write("# --TR= is only needed for high pass filtering --paradigm_hp_sec\n")
         f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR= can be omitted.\n")
         f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
@@ -183,54 +194,17 @@ class Scans:
         f0.write("# Ex.2  6 mm SUSAN smoothing only\n") 
         f0.write("#           OGRESmoothingProcess.sh --fMRITimeSeriesResults=sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm=6\n")
         f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
-
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
-
-        #f0.write(f'TR=({' '.join([str(get_TR(self.bold[j][0])) for j in self.taskidx])})\n\n') #241109 json's are now being written
-
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n')
         f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
         f0.write('    ${SMOOTH} \\\n')
         f0.write('        --fMRITimeSeriesResults="$file"\\\n')
         if fwhm: f0.write(f'        --fwhm="{' '.join(fwhm)}" \\\n')
-
-        #if paradigm_hp_sec:
-        #    f0.write(f'        --paradigm_hp_sec="{paradigm_hp_sec}" \\\n')
-        #    f0.write('        --TR="${TR[i]}" \n')
-        #START241109
         if paradigm_hp_sec:
             f0.write(f'        --paradigm_hp_sec="{paradigm_hp_sec}" \n')
-
         f0.write('done\n\n')
-
-    #START250125
-    #def write_smooth2(self,f0,s0,fwhm,paradigm_hp_sec):
-    #    f0.write("# --TR is only needed for high pass filtering --paradigm_hp_sec\n")
-    #    f0.write("# If the files have json's that include the TR as the field RepetitionTime, then --TR can be omitted.\n")
-    #    f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
-    #    f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-    #    f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm 6 --paradigm_hp_sec 60\n")
-    #    f0.write("# Ex.2  6 mm SUSAN smoothing only\n")
-    #    f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz --fwhm 6\n")
-    #    f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
-    #    boldtask = [self.bold[j] for j in self.taskidx]
-    #    self.write_bold_bash(f0,s0,boldtask)
-    #    cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz --fwhm '+f'{' '.join(fwhm)}'
-    #    if paradigm_hp_sec: cmd+=f' --paradigm_hp_sec {paradigm_hp_sec}'
-    #    f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
-    #START250202
     def write_smooth2(self,f0,s0,fwhm,hpf_sec,lpf_sec):
-
-        #f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
-        #f0.write("# If the files have json's that include the TR as the field RepetitionTime, then -TR can be omitted.\n")
-        #f0.write("# Eg. sub-2035_task-drawRH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
-        #f0.write("# Ex.1  6 mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-        #f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hp_sec 60\n")
-        #f0.write("# Ex.2  6 mm SUSAN smoothing only\n")
-        #f0.write("#           OGRESmoothingProcess.sh sub-2035_task-drawRH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6\n")
-        #f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
-        #START250212
         f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
         f0.write("# If the file to be filtered has a JSON that includes the TR as the field RepetitionTime, then -TR can be omitted, and the TR is read from the JSON.\n")
         f0.write("# Ex1. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
@@ -240,13 +214,51 @@ class Scans:
         f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
         f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n")
         f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
-
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
         cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
         if hpf_sec: cmd+=f' -hpf_sec {hpf_sec}'
         if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
+
+    #def write_smooth_script(self,file,s0,pathstr,gev,P1,fwhm,hpf_sec,lpf_sec):
+    def write_smooth_script(self,file,s0,bids,gev,P1,fwhm,hpf_sec,lpf_sec):
+        if not gev:
+            gev = opl.rou.get_env_vars(args)
+            if not gev: exit()
+        with open(file,'w') as f0:
+            f0.write(f'{gev.SHEBANG}\nset -e\n\n')
+            f0.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
+            f0.write(f'export OGREDIR={gev.OGREDIR}\n')
+            f0.write('SMOOTH=${OGREDIR}/lib/'+P1+'\n\n')
+            f0.write(f's0={s0}\nbids={bids}\n\nFWHM="{' '.join(fwhm)}"\n')
+
+            if hpf_sec:
+                f0.write(f'HPF_SEC="{hpf_sec}"\n')
+            else:
+                f0.write('HPF_SEC=\n')
+            if lpf_sec:
+                f0.write(f'LPF_SEC="{lpf_sec}"\n')
+            else:
+                f0.write('LPF_SEC=\n')
+            f0.write('\n')
+
+            f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
+            f0.write("# If the file to be filtered has a JSON that includes the TR as the field RepetitionTime, then -TR can be omitted, and the TR is read from the JSON.\n")
+            f0.write("# Ex1. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
+            f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+            f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60\n")
+            f0.write("# Ex2. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json does not include the field RepetitionTime.\n")
+            f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+            f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n")
+            f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
+            boldtask = [self.bold[j] for j in self.taskidx]
+            self.write_bold_bash(f0,s0,boldtask)
+            cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
+            if hpf_sec: cmd+=f' -hpf_sec {hpf_sec}'
+            if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
+            f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
+        opl.rou.make_executable(file)
 
 
 
@@ -296,7 +308,11 @@ class Par(Scans):
         return dict0['PhaseEncodingDirection']
 
     def __get_dim(self,file):
-        line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
+
+        #line0 = run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
+        #START250307
+        line0 = opl.rou.run_cmd(f'fslinfo {file} | grep -w dim[1-3]')
+
         line1=line0.split()
         return (line1[1],line1[3],line1[5])
 
@@ -382,29 +398,6 @@ class Par(Scans):
             #print(f'self.dim_fmap={self.dim_fmap}')
             for j in range(len(self.ped)):
                 if self.bfmap[self.bold[j][1]]:
-
-
-                    #if self.ped[j][0] != self.ped_fmap[self.bold[j][1]][0]:
-                    #    print(f'    ERROR: {self.bold[j][0]} {self.ped[j][0]}')
-                    #    print(f'    ERROR: {self.fmap[self.bold[j][1]*2]} {self.ped_fmap[self.bold[j][1]][0]}')
-                    #    print(f"           Fieldmap encoding direction must be the same! Fieldmap won't be applied.")
-                    #    continue
-                    #if self.dim[j] != self.dim_fmap[self.bold[j][1]]:
-                    #    print(f'    ERROR: {self.bold[j][0]} {self.dim[j]}')
-                    #    print(f'    ERROR: {self.fmap[self.bold[j][1]*2]} {self.dim_fmap[self.bold[j][1]]}')
-                    #    print(f"           Dimensions must be the same. Fieldmap won't be applied unless it is resampled.")
-                    #    ynq = input('    Would like to resample the field maps? y, n, q').casefold()
-                    #    if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
-                    #    if ynq=='n' or ynq=='no': continue
-                    #    for i in self.bold[j][1]*2,self.bold[j][1]*2+1:
-                    #        fmap0 = pathlib.Path(self.fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-                    #        junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
-                    #        self.dim_fmap[self.bold[j][1]] = self.dim[j]
-                    #        self.fmap[i] = fmap0
-                    #self.bbold_fmap[j]=True
-                    #self.fmap_bold[self.bold[j][1]*2].append(j)
-                    #self.fmap_bold[self.bold[j][1]*2+1].append(j)
-                    #START250115
                     if len(self.bold[0]) == 2:
                         # ped letter bold != ped letter fmap
                         if self.ped[j][0] != self.ped_fmap[self.bold[j][1]][0]:
@@ -421,7 +414,10 @@ class Par(Scans):
                             if ynq=='n' or ynq=='no': continue
                             for i in self.bold[j][1]*2,self.bold[j][1]*2+1:
                                 fmap0 = pathlib.Path(self.fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-                                junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+
+                                #junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+                                junk = opl.rou.run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+
                                 self.dim_fmap[self.bold[j][1]] = self.dim[j]
                                 self.fmap[i] = fmap0
                         self.bbold_fmap[j]=True
@@ -445,16 +441,16 @@ class Par(Scans):
                             if ynq=='n' or ynq=='no': continue
                             for i in self.bold[j][2],self.bold[j][3]:
                                 fmap0 = pathlib.Path(self.fmap[i]).stem + '_resampled' + 'x'.join(self.dim[j]) + '.nii.gz'
-                                junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+
+                                #junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+                                #START250307
+                                junk = opl.rou.run_cmd(f'{WBDIR}/wb_command -volume-resample {self.fmap[i]} {self.bold[j][0]} CUBIC {fmap0}')
+
                                 self.dim_fmap[self.bold[j][1]] = self.dim[j]
                                 self.fmap[i] = fmap0
                         self.bbold_fmap[j]=True
                         self.fmap_bold[self.bold[j][2]].append(j)
                         self.fmap_bold[self.bold[j][3]].append(j)
-
-#STARTHERE
-
-
 
 
     def check_ped_dims_dwi(self):
@@ -480,7 +476,11 @@ class Par(Scans):
                 if ynq=='q' or ynq=='quit' or ynq=='exit': exit()
                 if ynq=='n' or ynq=='no': continue
                 fmap0 = pathlib.Path(self.dwifmap[self.dwi[j][1]]).stem + '_resampled' + 'x'.join(dim_dwi) + '.nii.gz'
-                junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.dwifmap[self.dwi[j][1]]} {self.dwi[j][0]} CUBIC {fmap0}')
+
+                #junk = run_cmd(f'{WBDIR}/wb_command -volume-resample {self.dwifmap[self.dwi[j][1]]} {self.dwi[j][0]} CUBIC {fmap0}')
+                #START250307
+                junk = opl.rou.run_cmd(f'{WBDIR}/wb_command -volume-resample {self.dwifmap[self.dwi[j][1]]} {self.dwi[j][0]} CUBIC {fmap0}')
+
                 self.dwifmap[self.dwi[j][1]] = fmap0
             self.bdwi_fmap[j]=True
             self.fmap_dwi[self.dwi[j][1]].append(j)
