@@ -21,6 +21,9 @@ class Scans:
         self.dwi = []
         self.T2 = []
 
+        #START250308
+        self.taskflag=[]
+
         with open(file,encoding="utf8",errors='ignore') as f0:
             i,j = 0,0
             for line0 in f0:
@@ -46,13 +49,28 @@ class Scans:
                         self.sbref.append((file0,int(len(self.fmap)/2-1)))
                     else:
                         self.bold.append((file0,int(len(self.fmap)/2-1)))
+
+                        #if lcdonotsmoothrest:
+                        #    if line2[-1].find('task-rest') != -1:
+                        #        self.restidx.append(j)
+                        #    else:
+                        #        self.taskidx.append(j)
+                        #else:
+                        #    self.taskidx.append(j)
+                        #START250308
                         if lcdonotsmoothrest:
                             if line2[-1].find('task-rest') != -1:
                                 self.restidx.append(j)
+                                self.taskflag.append(0)
                             else:
                                 self.taskidx.append(j)
+                                self.taskflag.append(1)
                         else:
                             self.taskidx.append(j)
+                            self.taskflag.append(1)
+
+
+
                         j+=1
                 elif line2[-2] == 'dwi':
                     self.dwi.append((file0,int(len(self.dwifmap)-1))) #double parentheses for tuple
@@ -66,13 +84,12 @@ class Scans:
         #print(f'self.fmap={self.fmap}')
         #print(f'self.sbref={self.sbref}')
         #print(f'self.bold={self.bold}')
-        #print(f'self.taskidx={self.taskidx}')
+        print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
         #print(f'self.dwifmap={self.dwifmap}')
         #print(f'self.dwi={self.dwi}')
+        print(f'self.taskflag={self.taskflag}')
 
-        #self.__check_IntendedFor_fmap()
-        #START250118
         if not lcdonotuseIntendedFor: self.__check_IntendedFor_fmap()
 
 
@@ -238,10 +255,11 @@ class Scans:
             else:
                 f0.write('HPF_SEC=\n')
             if lpf_sec:
-                f0.write(f'LPF_SEC="{lpf_sec}"\n')
+                f0.write(f'LPF_SEC="{lpf_sec}"\n\n')
             else:
-                f0.write('LPF_SEC=\n')
-            f0.write('\n')
+                f0.write('LPF_SEC=\n\n')
+
+            #f0.write('\n[[ $FWHM ]] && fwhm="-fwhm $FWHM"\n[[ $HPF_SEC ]] && hpf="-hpf_sec $HPF_SEC"\n[[ $LPF_SEC ]] && lpf="-lpf_sec $LPF_SEC"\n')
 
             f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
             f0.write("# If the file to be filtered has a JSON that includes the TR as the field RepetitionTime, then -TR can be omitted, and the TR is read from the JSON.\n")
@@ -250,16 +268,28 @@ class Scans:
             f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60\n")
             f0.write("# Ex2. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json does not include the field RepetitionTime.\n")
             f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-            f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n")
-            f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
-            boldtask = [self.bold[j] for j in self.taskidx]
-            self.write_bold_bash(f0,s0,boldtask)
-            cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
-            if hpf_sec: cmd+=f' -hpf_sec {hpf_sec}'
-            if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
-            f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
-        opl.rou.make_executable(file)
+            f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n\n")
+            #f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
 
+            #boldtask = [self.bold[j] for j in self.taskidx]
+            #self.write_bold_bash(f0,s0,boldtask)
+            #cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
+            #if hpf_sec: cmd+=f' -hpf_sec {hpf_sec}'
+            #if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
+            #f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
+            #START250308
+            #for i in self.bold:
+            #    b0=f'BOLD={pathlib.Path(i[0]).name.split('.nii')[0]}'
+            #    cmd='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -lpf_sec $LPF_SEC'
+            #    f0.write(f'{b0}\n{cmd}\n\n')
+            for i,j in enumerate(self.bold):
+                cmd=''
+                if self.taskflag[i]==0: cmd='#'
+                b0=f'BOLD={pathlib.Path(j[0]).name.split('.nii')[0]}'
+                cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -lpf_sec $LPF_SEC'
+                f0.write(f'{b0}\n{cmd}\n\n')
+
+        opl.rou.make_executable(file)
 
 
     def write_bold_bash(self,f0,s0,bolds):

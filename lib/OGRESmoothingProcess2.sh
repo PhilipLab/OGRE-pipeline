@@ -50,14 +50,33 @@ for((i=0;i<${#@};++i));do
                 fwhm+=(${tmp[@]})
             done
             ;;
+
+
+        #--hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
+        #    hpf_sec=${arg[((++i))]}
+        #    echo "hpf_sec = $hpf_sec"
+        #    ;;
+        #--lpf_sec | -lpf_sec)
+        #    lpf_sec=${arg[((++i))]}
+        #    echo "lpf_sec = $lpf_sec"
+        #    ;;
+        #START250308
         --hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
-            hpf_sec=${arg[((++i))]}
+            tmp=${arg[((i+1))]}
+            [ "${tmp::1}" = "-" ] && break
+            hpf_sec=$tmp
+            ((++i))
             echo "hpf_sec = $hpf_sec"
             ;;
         --lpf_sec | -lpf_sec)
-            lpf_sec=${arg[((++i))]}
+            tmp=${arg[((i+1))]}
+            [ "${tmp::1}" = "-" ] && break
+            lpf_sec=$tmp
+            ((++i))
             echo "lpf_sec = $lpf_sec"
             ;;
+
+
         --TR | -TR)
             TR+=(${arg[((++i))]})
             for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
