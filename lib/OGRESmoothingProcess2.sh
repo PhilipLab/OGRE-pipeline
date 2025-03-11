@@ -16,8 +16,19 @@ helpmsg(){
     echo "        Smoothing (mm) for SUSAN. Multiple values ok." 
     echo "    --hpf_sec -hpf_sec -p --paradigm_hp_sec -paradigm_hp_sec"
     echo "        High pass filter cutoff in seconds. Optional." 
+
+    #START250309
+    echo "    --hpf_Hz -hpf_Hz"
+    echo "        High pass filter cutoff in Hz. Optional." 
+
     echo "    --lpf_sec -lpf_sec"
     echo "        Low pass filter cutoff in seconds. Optional." 
+
+    #START250309
+    echo "    --lpf_Hz -lpf_Hz"
+    echo "        Low pass filter cutoff in Hz. Optional." 
+
+
     echo "    --TR -TR"
     echo "        Sampling rate. Optional if time series includes JSON." 
     echo "    -h --help -help"
@@ -28,7 +39,9 @@ if((${#@}<1));then
     exit
 fi
 
-unset hpf_sec lpf_sec #DON'T SET dat fwhm TR unexpected
+#unset hpf_sec lpf_sec #DON'T SET dat fwhm TR unexpected
+#START250309
+unset hpf_sec hpf_Hz lpf_sec lpf_Hz #DON'T SET dat fwhm TR unexpected
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
@@ -61,19 +74,48 @@ for((i=0;i<${#@};++i));do
         #    echo "lpf_sec = $lpf_sec"
         #    ;;
         #START250308
+        #--hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
+        #    tmp=${arg[((i+1))]}
+        #    [ "${tmp::1}" = "-" ] && break
+        #    hpf_sec=$tmp
+        #    ((++i))
+        #    echo "hpf_sec = $hpf_sec"
+        #    ;;
+        #--lpf_sec | -lpf_sec)
+        #    tmp=${arg[((i+1))]}
+        #    [ "${tmp::1}" = "-" ] && break
+        #    lpf_sec=$tmp
+        #    ((++i))
+        #    echo "lpf_sec = $lpf_sec"
+        #    ;;
+        #START250309
         --hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
             tmp=${arg[((i+1))]}
-            [ "${tmp::1}" = "-" ] && break
+            [[ ${tmp::1} = - ]] && continue
             hpf_sec=$tmp
             ((++i))
             echo "hpf_sec = $hpf_sec"
             ;;
+        --hpf_Hz | -hpf_Hz)
+            tmp=${arg[((i+1))]}
+            [[ ${tmp::1} = - ]] && continue
+            hpf_Hz=$tmp
+            ((++i))
+            echo "hpf_Hz = $hpf_Hz"
+            ;;
         --lpf_sec | -lpf_sec)
             tmp=${arg[((i+1))]}
-            [ "${tmp::1}" = "-" ] && break
+            [[ "${tmp::1}" = - ]] && continue
             lpf_sec=$tmp
             ((++i))
             echo "lpf_sec = $lpf_sec"
+            ;;
+        --lpf_Hz | -lpf_Hz)
+            tmp=${arg[((i+1))]}
+            [[ ${tmp::1} = - ]] && continue
+            lpf_Hz=$tmp
+            ((++i))
+            echo "lpf_Hz = $lpf_Hz"
             ;;
 
 
@@ -94,6 +136,30 @@ for((i=0;i<${#@};++i));do
     esac
 done
 echo $0 $@
+
+#[[ $hpf_sec ]] && echo "here0 hpf_sec=$hpf_sec"
+#[[ $lpf_sec ]] && echo "here0 lpf_sec=$lpf_sec"
+#echo "here1"
+
+if [[ $hpf_Hz ]];then
+    if [[ $hpf_sec ]];then
+        echo "Ignoring hpf_Hz = $hpf_Hz"
+    else
+        hpf_sec=$(echo "scale=2; 1 / $hpf_Hz" | bc)
+        echo "hpf_sec = $hpf_sec"
+    fi
+fi
+if [[ $lpf_Hz ]];then
+    if [[ $lpf_sec ]];then
+        echo "Ignoring lpf_Hz = $lpf_Hz"
+    else
+        lpf_sec=$(echo "scale=2; 1 / $lpf_Hz" | bc)
+        echo "lpf_sec = $lpf_sec"
+    fi
+fi
+
+
+#exit
 
 [[ ${unexpected} ]] && dat+=(${unexpected[@]})
 if [[ ! ${dat} ]];then
