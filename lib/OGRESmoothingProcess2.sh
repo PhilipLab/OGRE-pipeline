@@ -136,31 +136,6 @@ for((i=0;i<${#@};++i));do
     esac
 done
 echo $0 $@
-
-#[[ $hpf_sec ]] && echo "here0 hpf_sec=$hpf_sec"
-#[[ $lpf_sec ]] && echo "here0 lpf_sec=$lpf_sec"
-#echo "here1"
-
-if [[ $hpf_Hz ]];then
-    if [[ $hpf_sec ]];then
-        echo "Ignoring hpf_Hz = $hpf_Hz"
-    else
-        hpf_sec=$(echo "scale=2; 1 / $hpf_Hz" | bc)
-        echo "hpf_sec = $hpf_sec"
-    fi
-fi
-if [[ $lpf_Hz ]];then
-    if [[ $lpf_sec ]];then
-        echo "Ignoring lpf_Hz = $lpf_Hz"
-    else
-        lpf_sec=$(echo "scale=2; 1 / $lpf_Hz" | bc)
-        echo "lpf_sec = $lpf_sec"
-    fi
-fi
-
-
-#exit
-
 [[ ${unexpected} ]] && dat+=(${unexpected[@]})
 if [[ ! ${dat} ]];then
     echo "Need to provide --fMRITimeSeriesResults"
@@ -171,6 +146,22 @@ if [[ ! ${fwhm} ]];then
     exit
 fi
 
+if [[ $hpf_Hz ]];then
+    if [[ $hpf_sec ]];then
+        echo "hpf_sec = $hpf_sec  Ignoring hpf_Hz = $hpf_Hz"
+    else
+        hpf_sec=$(echo "scale=2; 1 / $hpf_Hz" | bc)
+        echo "hpf_sec = $hpf_sec"
+    fi
+fi
+if [[ $lpf_Hz ]];then
+    if [[ $lpf_sec ]];then
+        echo "lpf_sec = $lpf_sec  Ignoring lpf_Hz = $lpf_Hz"
+    else
+        lpf_sec=$(echo "scale=2; 1 / $lpf_Hz" | bc)
+        echo "lpf_sec = $lpf_sec"
+    fi
+fi
 
 
 #if [[ ${paradigm_hp_sec} ]];then
