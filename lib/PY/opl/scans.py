@@ -238,8 +238,9 @@ class Scans:
         if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
 
+#par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args.lpf_Hz)
     #def write_smooth_script(self,file,s0,pathstr,gev,P1,fwhm,hpf_sec,lpf_sec):
-    def write_smooth_script(self,file,s0,bids,gev,P1,fwhm,hpf_sec,lpf_sec):
+    def write_smooth_script(self,file,s0,bids,gev,P1,fwhm,hpf_sec,lpf_sec,hpf_Hz,lpf_Hz):
         if not gev:
             gev = opl.rou.get_env_vars(args)
             if not gev: exit()

@@ -646,7 +646,7 @@ if __name__ == "__main__":
             fi0=0
             if args.lcfeatadapter: 
                 feat.write_script(Ffeat,gev)
-            else
+            else:
                 F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
                 fi0+=1
                 if not args.lcsmoothonly: 
@@ -731,7 +731,7 @@ if __name__ == "__main__":
                     #par.write_smooth_script(F3,s0,pathstr,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
                     #par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
                     #START250305
-                    par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args_lpf_Hz)
+                    par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args.lpf_Hz)
                     F0f[0].write('${SMOOTH}\n\n')
 
                 #    write_regressors(args.fslmo,F0f[0])

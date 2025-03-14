@@ -141,6 +141,7 @@ if [[ ! ${dat} ]];then
     echo "Need to provide --fMRITimeSeriesResults"
     exit
 fi
+
 if [[ ! ${fwhm} ]];then
     echo "Need to provide --fwhm"
     exit
@@ -279,16 +280,11 @@ for((i=0;i<${#dat[@]};++i));do
     ##/usr/local/fsl/bin/fslmaths prefiltered_func_data_thresh -Tmean mean_func
     ${FSLDIR}/bin/fslmaths ${sd0}/prefiltered_func_data_thresh -Tmean ${sd0}/mean_func
 
-    #for((j=0;j<${#FWHM[@]};++j));do
     for((j=0;j<${#fwhm[@]};++j));do
 
         ##/usr/local/fsl/bin/susan prefiltered_func_data_thresh [8218.408203 * 0.75] [filter FWHM converted to sigma] 3 1 1 mean_func [8218.408203 * 0.75] prefiltered_func_data_smooth
         bt=($(echo "scale=6; ${p50} * 0.75" | bc))
-        #declare -p bt 
-        #sigma=($(echo "scale=6; ${FWHM[j]} / 2.354820" | bc)) #https://brainder.org/2011/08/20/gaussian-kernels-convert-fwhm-to-sigma/ sigma=FWHM/sqrt(8ln2) for gaussian kernels
         sigma=($(echo "scale=6; ${fwhm[j]} / 2.354820" | bc)) #https://brainder.org/2011/08/20/gaussian-kernels-convert-fwhm-to-sigma/ sigma=FWHM/sqrt(8ln2) for gaussian kernels
-        #declare -p sigma 
-        #${FSLDIR}/bin/susan prefiltered_func_data_thresh $bt $sigma 3 1 1 mean_func $bt prefiltered_func_data_smooth
         echo "bt = $bt sigma = $sigma"
         ${FSLDIR}/bin/susan ${sd0}/prefiltered_func_data_thresh $bt $sigma 3 1 1 ${sd0}/mean_func $bt ${sd0}/prefiltered_func_data_smooth
 
