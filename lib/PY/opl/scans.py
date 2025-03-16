@@ -238,8 +238,6 @@ class Scans:
         if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
 
-#par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args.lpf_Hz)
-    #def write_smooth_script(self,file,s0,pathstr,gev,P1,fwhm,hpf_sec,lpf_sec):
     def write_smooth_script(self,file,s0,bids,gev,P1,fwhm,hpf_sec,lpf_sec,hpf_Hz,lpf_Hz):
         if not gev:
             gev = opl.rou.get_env_vars(args)
@@ -256,38 +254,40 @@ class Scans:
             else:
                 f0.write('HPF_SEC=\n')
             if lpf_sec:
-                f0.write(f'LPF_SEC="{lpf_sec}"\n\n')
+                f0.write(f'LPF_SEC="{lpf_sec}"\n')
             else:
-                f0.write('LPF_SEC=\n\n')
+                f0.write('LPF_SEC=\n')
+            if hpf_Hz:
+                f0.write(f'HPF_Hz="{hpf_Hz}"\n')
+            else:
+                f0.write('HPF_Hz=\n')
+            if lpf_Hz:
+                f0.write(f'LPF_Hz="{lpf_Hz}"\n\n')
+            else:
+                f0.write('LPF_Hz=\n\n')
 
-            #f0.write('\n[[ $FWHM ]] && fwhm="-fwhm $FWHM"\n[[ $HPF_SEC ]] && hpf="-hpf_sec $HPF_SEC"\n[[ $LPF_SEC ]] && lpf="-lpf_sec $LPF_SEC"\n')
 
-            f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
-            f0.write("# If the file to be filtered has a JSON that includes the TR as the field RepetitionTime, then -TR can be omitted, and the TR is read from the JSON.\n")
-            f0.write("# Ex1. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
-            f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-            f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60\n")
-            f0.write("# Ex2. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json does not include the field RepetitionTime.\n")
-            f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
-            f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n\n")
-            #f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
+            f0.write("# TR is only needed for high pass and low pass filtering.\n")
+            f0.write("# If the file to be filtered has a JSON that includes the field RepetitionTime, then TR can be omitted, and the TR is read from the JSON.\n")
+            f0.write("# Setting TR will overwrite what is read from the JSON.\n")
+            f0.write('TR=\n\n')
 
-            #boldtask = [self.bold[j] for j in self.taskidx]
-            #self.write_bold_bash(f0,s0,boldtask)
-            #cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
-            #if hpf_sec: cmd+=f' -hpf_sec {hpf_sec}'
-            #if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
-            #f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
-            #START250308
-            #for i in self.bold:
-            #    b0=f'BOLD={pathlib.Path(i[0]).name.split('.nii')[0]}'
-            #    cmd='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -lpf_sec $LPF_SEC'
-            #    f0.write(f'{b0}\n{cmd}\n\n')
+            #f0.write("# -TR is only needed for high pass (-hpf_sec) and low pass (-lpf_sec) filtering \n")
+            #f0.write("# If the file to be filtered has a JSON that includes the TR as the field RepetitionTime, then -TR can be omitted, and the TR is read from the JSON.\n")
+            #f0.write("# Ex1. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json includes the field RepetitionTime.\n")
+            #f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+            #f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60\n")
+            #f0.write("# Ex2. sub-2052_task-drawLH_run-1_OGRE-preproc_bold.json does not include the field RepetitionTime.\n")
+            #f0.write("#      6mm SUSAN smoothing and high pass filtering with a 60s cutoff\n")
+            #f0.write("#           OGRESmoothingProcess2.sh sub-2052_task-drawLH_run-1_OGRE-preproc_bold.nii.gz -fwhm 6 -hpf_sec 60 -TR 0.662\n\n")
+
             for i,j in enumerate(self.bold):
                 cmd=''
                 if self.taskflag[i]==0: cmd='#'
                 b0=f'BOLD={pathlib.Path(j[0]).name.split('.nii')[0]}'
-                cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -lpf_sec $LPF_SEC'
+                #cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -lpf_sec $LPF_SEC'
+                #cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -hpf_Hz $HPF_Hz -lpf_sec $LPF_SEC -lpf_Hz $LPF_Hz -TR $TR'
+                cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm ${FWHM[@]} -hpf_sec ${HPF_SEC[@]} -hpf_Hz ${HPF_Hz[@]} -lpf_sec ${LPF_SEC[@]} -lpf_Hz ${LPF_Hz[@]} -TR ${TR[@]}'
                 f0.write(f'{b0}\n{cmd}\n\n')
 
         opl.rou.make_executable(file)

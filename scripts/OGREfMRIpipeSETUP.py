@@ -731,6 +731,7 @@ if __name__ == "__main__":
                     #par.write_smooth_script(F3,s0,pathstr,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
                     #par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
                     #START250305
+                    #print(f'here0 args.hpf_Hz={args.hpf_Hz} args.lpf_Hz={args.lpf_Hz}') 
                     par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args.lpf_Hz)
                     F0f[0].write('${SMOOTH}\n\n')
 

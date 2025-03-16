@@ -16,19 +16,12 @@ helpmsg(){
     echo "        Smoothing (mm) for SUSAN. Multiple values ok." 
     echo "    --hpf_sec -hpf_sec -p --paradigm_hp_sec -paradigm_hp_sec"
     echo "        High pass filter cutoff in seconds. Optional." 
-
-    #START250309
     echo "    --hpf_Hz -hpf_Hz"
     echo "        High pass filter cutoff in Hz. Optional." 
-
     echo "    --lpf_sec -lpf_sec"
     echo "        Low pass filter cutoff in seconds. Optional." 
-
-    #START250309
     echo "    --lpf_Hz -lpf_Hz"
     echo "        Low pass filter cutoff in Hz. Optional." 
-
-
     echo "    --TR -TR"
     echo "        Sampling rate. Optional if time series includes JSON." 
     echo "    -h --help -help"
@@ -41,25 +34,27 @@ fi
 
 #unset hpf_sec lpf_sec #DON'T SET dat fwhm TR unexpected
 #START250309
-unset hpf_sec hpf_Hz lpf_sec lpf_Hz #DON'T SET dat fwhm TR unexpected
+#unset hpf_sec hpf_Hz lpf_sec lpf_Hz #DON'T SET dat fwhm TR unexpected
 
 arg=("$@")
 for((i=0;i<${#@};++i));do
     #echo "i=$i ${arg[i]}"
     case "${arg[i]}" in
         --fMRITimeSeriesResults | -fMRITimeSeriesResults)
-            dat+=(${arg[((++i))]})
+            #dat+=(${arg[((++i))]})
             for((j=i;j<${#@};++i));do #i is incremented only if dat is appended
                 tmp=(${arg[((++j))]})
-                [ "${tmp::1}" = "-" ] && break
+                #[ "${tmp::1}" = "-" ] && break
+                [[ ${tmp::1} = - ]] && break
                 dat+=(${tmp[@]})
             done
             ;;
         -f | --fwhm | -fwhm)
-            fwhm+=(${arg[((++i))]})
+            #fwhm+=(${arg[((++i))]})
             for((j=i;j<${#@};++i));do #i is incremented only if fwhm is appended
                 tmp=(${arg[((++j))]})
-                [ "${tmp::1}" = "-" ] && break
+                #[ "${tmp::1}" = "-" ] && break
+                [[ ${tmp::1} = - ]] && break
                 fwhm+=(${tmp[@]})
             done
             ;;
@@ -89,44 +84,81 @@ for((i=0;i<${#@};++i));do
         #    echo "lpf_sec = $lpf_sec"
         #    ;;
         #START250309
+        #--hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
+        #    tmp=${arg[((i+1))]}
+        #    [[ ${tmp::1} = - ]] && continue
+        #    hpf_sec=$tmp
+        #    ((++i))
+        #    #echo "hpf_sec = $hpf_sec"
+        #    ;;
+        #--hpf_Hz | -hpf_Hz)
+        #    tmp=${arg[((i+1))]}
+        #    [[ ${tmp::1} = - ]] && continue
+        #    hpf_Hz=$tmp
+        #    ((++i))
+        #    #echo "hpf_Hz = $hpf_Hz"
+        #    ;;
+        #--lpf_sec | -lpf_sec)
+        #    tmp=${arg[((i+1))]}
+        #    [[ "${tmp::1}" = - ]] && continue
+        #    lpf_sec=$tmp
+        #    ((++i))
+        #    #echo "lpf_sec = $lpf_sec"
+        #    ;;
+        #--lpf_Hz | -lpf_Hz)
+        #    tmp=${arg[((i+1))]}
+        #    [[ ${tmp::1} = - ]] && continue
+        #    lpf_Hz=$tmp
+        #    ((++i))
+        #    #echo "lpf_Hz = $lpf_Hz"
+        #    ;;
+        #START250315
         --hpf_sec | -hpf_sec | -p | --paradigm_hp_sec | -paradigm_hp_sec)
-            tmp=${arg[((i+1))]}
-            [[ ${tmp::1} = - ]] && continue
-            hpf_sec=$tmp
-            ((++i))
-            echo "hpf_sec = $hpf_sec"
+            for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
+                tmp=(${arg[((++j))]})
+                [[ ${tmp::1} = - ]] && break
+                hpf_sec+=(${tmp[@]})
+            done
             ;;
         --hpf_Hz | -hpf_Hz)
-            tmp=${arg[((i+1))]}
-            [[ ${tmp::1} = - ]] && continue
-            hpf_Hz=$tmp
-            ((++i))
-            echo "hpf_Hz = $hpf_Hz"
+            for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
+                tmp=(${arg[((++j))]})
+                [[ ${tmp::1} = - ]] && break
+                hpf_Hz+=(${tmp[@]})
+            done
             ;;
         --lpf_sec | -lpf_sec)
-            tmp=${arg[((i+1))]}
-            [[ "${tmp::1}" = - ]] && continue
-            lpf_sec=$tmp
-            ((++i))
-            echo "lpf_sec = $lpf_sec"
+            for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
+                tmp=(${arg[((++j))]})
+                [[ ${tmp::1} = - ]] && break
+                lpf_sec+=(${tmp[@]})
+            done
             ;;
         --lpf_Hz | -lpf_Hz)
-            tmp=${arg[((i+1))]}
-            [[ ${tmp::1} = - ]] && continue
-            lpf_Hz=$tmp
-            ((++i))
-            echo "lpf_Hz = $lpf_Hz"
+            for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
+                tmp=(${arg[((++j))]})
+                [[ ${tmp::1} = - ]] && break
+                lpf_Hz+=(${tmp[@]})
+            done
             ;;
 
 
         --TR | -TR)
-            TR+=(${arg[((++i))]})
+            #TR+=(${arg[((++i))]})
+            #for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
+            #    tmp=(${arg[((++j))]})
+            #    [ "${tmp::1}" = "-" ] && break
+            #    TR+=(${tmp[@]})
+            #done
+            #;;
             for((j=i;j<${#@};++i));do #i is incremented only if TR is appended
                 tmp=(${arg[((++j))]})
-                [ "${tmp::1}" = "-" ] && break
+                [[ ${tmp::1} = - ]] && break
                 TR+=(${tmp[@]})
             done
             ;;
+
+
         -h | --help | -help)
             helpmsg
             exit
@@ -143,7 +175,7 @@ if [[ ! ${dat} ]];then
 fi
 
 if [[ ! ${fwhm} ]];then
-    echo "Need to provide --fwhm"
+    echo -e "Need to provide --fwhm\n"
     exit
 fi
 
@@ -152,7 +184,7 @@ if [[ $hpf_Hz ]];then
         echo "hpf_sec = $hpf_sec  Ignoring hpf_Hz = $hpf_Hz"
     else
         hpf_sec=$(echo "scale=2; 1 / $hpf_Hz" | bc)
-        echo "hpf_sec = $hpf_sec"
+        #echo "hpf_sec = $hpf_sec"
     fi
 fi
 if [[ $lpf_Hz ]];then
@@ -160,9 +192,12 @@ if [[ $lpf_Hz ]];then
         echo "lpf_sec = $lpf_sec  Ignoring lpf_Hz = $lpf_Hz"
     else
         lpf_sec=$(echo "scale=2; 1 / $lpf_Hz" | bc)
-        echo "lpf_sec = $lpf_sec"
+        #echo "lpf_sec = $lpf_sec"
     fi
 fi
+
+#echo -e "fwhm=$fwhm\nhpf_sec=$hpf_sec\nhpf_Hz=$hpf_Hz\nlpf_Hz=$lpf_Hz\nlpf_sec=$lpf_sec\nTR=$TR\n"
+#echo -e "fwhm=$fwhm\nhpf_sec=$hpf_sec\nlpf_sec=$lpf_sec\nTR=$TR\n"
 
 
 #if [[ ${paradigm_hp_sec} ]];then
@@ -190,7 +225,7 @@ fi
 #START250202
 if [[ ${hpf_sec} || ${lpf_sec} ]];then
     if [[ ! ${TR} ]];then
-        echo "--TR not provided. Will look for it in the json files."
+        echo "TR not provided. Will look for it in the json files."
     else
         if((${#dat[@]}!=${#TR[@]}));then
             if((${#TR[@]}==1));then
@@ -201,7 +236,11 @@ if [[ ${hpf_sec} || ${lpf_sec} ]];then
                 done
             elif((${#dat[@]}<${#TR[@]}));then
                 echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
-                echo "We will use the first ${#dat[@]} elements."
+
+                #echo "We will use the first ${#dat[@]} elements."
+                #START250315
+                ((${#dat[@]}==1)) && echo "We will use just the first element." || echo "We will use the first ${#dat[@]} elements."
+
             else #dat has more elements than TR, but TR has more than one element
                 echo "fMRITimeSeriesResults has ${#dat[@]} elements, but TR has ${#TR[@]} elements with values ${TR[@]}."
                 echo "The number of elements for both must be the same. Abort!"
@@ -213,6 +252,7 @@ fi
 
 
 #echo "TR = ${TR[@]}"
+#echo -e "fwhm=$fwhm\nhpf_sec=$hpf_sec\nlpf_sec=$lpf_sec\nTR=${TR[@]}\n"
 
 
 for((i=0;i<${#dat[@]};++i));do
@@ -230,9 +270,11 @@ for((i=0;i<${#dat[@]};++i));do
             fi
             IFS=$' ,' read -ra line0 < <( grep RepetitionTime $json )
             TR[i]=${line0[1]}
-            echo "Found TR[$i]=${TR[i]}"
+            #echo "Found TR[$i]=${TR[i]}"
         fi
     fi
+    echo -e "fwhm=$fwhm hpf_sec=$hpf_sec lpf_sec=$lpf_sec TR=${TR[i]}\n"
+    exit
 
 
     #prefiltered_func_data_unwarp=${fMRITimeSeriesResults[i]}
