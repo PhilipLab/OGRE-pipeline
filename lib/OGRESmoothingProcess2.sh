@@ -274,7 +274,7 @@ for((i=0;i<${#dat[@]};++i));do
         fi
     fi
     echo -e "fwhm=$fwhm hpf_sec=$hpf_sec lpf_sec=$lpf_sec TR=${TR[i]}\n"
-    exit
+    #exit
 
 
     #prefiltered_func_data_unwarp=${fMRITimeSeriesResults[i]}
@@ -390,7 +390,7 @@ for((i=0;i<${#dat[@]};++i));do
             jq -n --arg FWHM $fwhm '$ARGS.named' > ${sd0}/tmp.json 
         fi
 
-        echo "Output written to ${out0}"
+        echo "Output written to ${out0}.nii.gz"
 
         #OGREjson.py -f "${out0}.nii.gz" -j "${fMRITimeSeriesResults[i]//nii.gz/json}"
         echo "OGREjson2.py ${out0}.nii.gz -j ${dat[i]//nii.gz/json} ${sd0}/tmp.json"
