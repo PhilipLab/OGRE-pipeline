@@ -319,7 +319,12 @@ echo "Reading ${dat}"
 #cp -p ${dat} tmp; sed -i '' $'s/\r$//' ${dat}; touch -r tmp ${dat}; rm -f tmp
 #t=$(stat -c %y "${dat}"); sed -i '' $'s/\r$//' ${dat}; touch -d "$t" "${dat}" #does not preserve timestamp
 #https://stackoverflow.com/questions/34432514/preserve-timestamp-when-editing-file
-touch -r ${dat} tmp; sed -i '' $'s/\r$//' ${dat}; touch -r tmp ${dat}; rm -f tmp
+#touch -r ${dat} tmp; sed -i '' $'s/\r$//' ${dat}; touch -r tmp ${dat}; rm -f tmp
+#START250524
+#sed command that works on darwin and linux
+#https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux
+#tested on mac and WSL-Ubuntu
+touch -r ${dat} tmp; perl -i -pe$'s/\r$//' ${dat}; touch -r tmp ${dat}; rm -f tmp
 
 
 

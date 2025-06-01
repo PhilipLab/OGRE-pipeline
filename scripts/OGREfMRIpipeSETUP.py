@@ -250,7 +250,10 @@ if __name__ == "__main__":
     parser.add_argument('--donotsmoothrest','-donotsmoothrest','--DONOTSMOOTHREST','-DONOTSMOOTHREST',dest='lcdonotsmoothrest',action='store_true',help=hlcdonotsmoothrest)
 
     #START250118
-    hlcdonotuseIntendedFor='Flag. Do not do use IntendedFor field map JSON to determine which bolds the fieldmap should be applied to.\n' \
+    #hlcdonotuseIntendedFor='Flag. Do not do use IntendedFor field map JSON to determine which bolds the fieldmap should be applied to.\n' \
+    #    + 'Instead use the most recent fieldmap in the scanlist.'
+    #START250524
+    hlcdonotuseIntendedFor='Flag. Do not do use the IntendedFor field of the field map JSON to determine which bolds the fieldmap should be applied to.\n' \
         + 'Instead use the most recent fieldmap in the scanlist.'
     parser.add_argument('--donotuseIntendedFor','-donotuseIntendedFor','--DONOTUSEINTENDEDFOR','-DONOTUSEINTENDEDFOR',dest='lcdonotuseIntendedFor',action='store_true', \
         help=hlcdonotuseIntendedFor)
