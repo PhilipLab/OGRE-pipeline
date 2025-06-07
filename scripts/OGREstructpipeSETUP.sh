@@ -92,6 +92,11 @@ helpmsg(){
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
         echo "        Show all options."
+
+        #START250606
+        echo "    -h --help -help"
+        echo "        Echo this help message."
+
     else
         echo "    -r --hires -hires"
         echo "        Resolution in mm: 0.7, 0.8 or 1. Default is 1."
@@ -119,9 +124,19 @@ helpmsg(){
         echo "        No default. If provided, this will be used to make the T2brain image. This will overwrite -ht."
         echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2HighResolutionBrainMask --T2HighResolutionBrainMask"
         echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
+
+        #START250606
+        echo "    -h --help -help"
+        echo "        Echo the short list."
+        echo "    --helpall -helpall"
+        echo "        Echo this help message."
+
     fi
-    echo "    -h --help -help"
-    echo "        Echo this help message."
+
+    #START250606
+    #echo "    -h --help -help"
+    #echo "        Echo this help message."
+
     }
 if((${#@}<1));then
     helpmsg
