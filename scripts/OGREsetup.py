@@ -105,7 +105,10 @@ if __name__ == "__main__":
             exit()
 
         str_both = ' ' + dict1["ScanList"] 
-        if dict1["AutoRun"]: str_both+=' -A' 
+
+        #START250604
+        #if dict1["AutoRun"]: str_both+=' -A' 
+
         if dict1["OGREDIR"]: str_both+=' -O ' + dict1["OGREDIR"]
         if dict1["HCPDIR"]: str_both+=' -H ' + dict1["HCPDIR"] 
         if dict1["FreeSurferVersion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
@@ -125,17 +128,6 @@ if __name__ == "__main__":
             if dict1["HighResolutionTemplateDirectory"]: str_stru+=' -ht ' + dict1["HighResolutionTemplateDirectory"] 
             if dict1["LowResolutionTemplateDirectory"]: str_stru+=' -lt ' + dict1["LowResolutionTemplateDirectory"] 
             if dict1["Resolution"]: str_stru+=' -r ' + dict1["Resolution"]
-
-
-            #if dict1["T1Template"]: str_stru+=' -t1 ' + dict1["T1Template"] 
-            #if dict1["T1BrainTemplate"]: str_stru+=' -t1b ' + dict1["T1BrainTemplate"] 
-            #if dict1["T1LowResolutionTemplate"]: ' -t1l ' + dict1["T1LowResolutionTemplate"]
-            #if dict1["T2Template"]: str_stru+=' -t2 ' + dict1["T2Template"] 
-            #if dict1["T2BrainTemplate"]: str_stru+=' -t2b ' + dict1["T2BrainTemplate"] 
-            #if dict1["T2LowResolutionTemplate"]: str_stru+=' -t2l ' + dict1["T2LowResolutionTemplate"]
-            #if dict1["T1BrainMaskTemplate"]: str_stru+=' -t1bm ' + dict1["T1BrainMaskTemplate"] 
-            #if dict1["T1BrainMaskLowResolutionTemplate"]: str_stru+=' -t1bml ' + dict1["T1BrainMaskLowTemplate"] 
-            #START250103
             if dict1["T1HighResolutionWholeHead"]: str_stru+=' -t1 ' + dict1["T1HighResolutionWholeHead"] 
             if dict1["T1HighResolutionBrainOnly"]: str_stru+=' -t1b ' + dict1["T1HighResolutionBrainOnly"] 
             if dict1["T1HighResolutionBrainMask"]: str_stru+=' -t1bm ' + dict1["T1HighResolutionBrainMask"] 
@@ -147,21 +139,17 @@ if __name__ == "__main__":
             if dict1["T2HighResolutionBrainMask"]: str_stru+=' -t2bm ' + dict1["T2HighResolutionBrainMask"] 
             if dict1["T2LowResolutionWholeHead"]: str_stru+=' -t2l ' + dict1["T2LowResolutionWholeHead"] 
 
+            #START250604
+            if dict1["AutoRun"] and not dict1["OGREfMRIpipeSETUP"]: str_stru+=' -A' 
+
 
         str_func=''
         if dict1["OGREfMRIpipeSETUP"]:
             if dict1["FWHM"]: str_func+=' -f ' + str(dict1["FWHM"])
-
-
-            #if dict1["HPFcutoff"]: str_func+=' -p ' + str(dict1["HPFcutoff"])
-            #START250125
             if dict1["HPFcutoff_sec"]: str_func+=' -hpf_sec ' + str(dict1["HPFcutoff_sec"])
             if dict1["LPFcutoff_sec"]: str_func+=' -lpf_sec ' + str(dict1["LPFcutoff_sec"])
             if dict1["HPFcutoff_Hz"]: str_func+=' -hpf_Hz ' + str(dict1["HPFcutoff_Hz"])
             if dict1["LPFcutoff_Hz"]: str_func+=' -lpf_Hz ' + str(dict1["LPFcutoff_Hz"])
-
-
-
             if dict1["SmoothOnly"]: str_func+=' -smoothonly'
             if dict1["donotsmoothrest"]: str_func+=' -donotsmoothrest'
             if dict1["donotuseIntendedFor"]: str_func+=' -donotuseIntendedFor'
@@ -170,6 +158,9 @@ if __name__ == "__main__":
             if dict1["UseRefinement"]: str_func+=' -userefinement'
             if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
             if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
+
+            #START250604
+            if dict1["AutoRun"]: str_func+=' -A' 
 
         if dict1["OGREstructpipeSETUP"]:
             cmd = f'{dict1["OGREDIR"]}/scripts/OGREstructpipeSETUP.sh{str_both}{str_stru}'

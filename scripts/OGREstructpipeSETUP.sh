@@ -369,6 +369,13 @@ datf=$(realpath ${dat[0]})
 dir0=${datf%/*}
 IFS='/' read -ra subj <<< "${dir0}"
 s0=${subj[${#subj[@]}-1]}
+
+#echo "here0 dat[0]=${dat[0]}"
+#echo "here0 datf=${datf}"
+#echo "here0 dir0=${dir0}"
+#echo "here0 subj=${subj}END"
+#echo "here0 s0=${s0}END"
+
 if [ -z "${cd0}" ];then
     T1f=${T1f//${s0}/'${s0}'}
     T2f=${T2f//${s0}/'${s0}'}
@@ -389,7 +396,17 @@ else
     dir1=${cd0}/pipeline'${FREESURFVER}'
 fi
 
-[ -n "$name" ] && s0=$name
+#[ -n "$name" ] && s0=$name
+#START250601
+if [[ -n $name ]];then
+    s0=$name
+elif [[ -z ${subj[j]} ]];then
+    r0=${datf##*/}
+    s0=${r0%scanlist*}
+    [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required
+fi
+
+
 if((lchostname==1));then
     dir0+=_$(hostname)
     dir1+=_'$(hostname)'
