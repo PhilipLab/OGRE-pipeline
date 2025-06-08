@@ -247,7 +247,14 @@ class Scans:
             f0.write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')
             f0.write(f'export OGREDIR={gev.OGREDIR}\n')
             f0.write('SMOOTH=${OGREDIR}/lib/'+P1+'\n\n')
-            f0.write(f's0={s0}\nbids={bids}\n\nFWHM="{' '.join(fwhm)}"\n')
+
+            #f0.write(f's0={s0}\nbids={bids}\n\nFWHM="{' '.join(fwhm)}"\n')
+            #START260607
+            f0.write(f's0={s0}\nbids={bids}\n\n')
+            if fwhm:
+                f0.write(f'FWHM="{' '.join(fwhm)}"\n')
+            else:
+                f0.write('FWHM=\n')
 
             if hpf_sec:
                 f0.write(f'HPF_SEC="{hpf_sec}"\n')

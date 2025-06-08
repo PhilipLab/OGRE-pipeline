@@ -458,9 +458,10 @@ if __name__ == "__main__":
 
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
-            #print(f's0={s0}')
-            #print(f'{s0}')
-        
+
+            #START250607
+            if not s0: s0 = i[idx: idx + i[idx:].find('_')]
+
         if args.cd0:
             p0=pathlib.Path(args.cd0) 
             d0 = str(p0.resolve())
@@ -540,13 +541,27 @@ if __name__ == "__main__":
                         + f'    Is this what you want? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
         else:
+
+            #idx = i.find('raw_data')
+            #if idx == -1:
+            #    d0 = str(pathlib.Path(i).resolve().parent) + '/'
+            #else:
+            #    d0 = i[:idx]
+            #dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER
+            #bids = d0 + 'derivatives/preprocessed/${s0}'
+            #dir1 = '${bids}/pipeline${FREESURFVER}'
+            #dir2 = bids + '/pipeline${FREESURFVER}'
+            #START250607
             idx = i.find('raw_data')
             if idx == -1:
-                d0 = str(pathlib.Path(i).resolve().parent) + '/'
+                #d0 = str(pathlib.Path(i).resolve().parent) + '/'
+                d0 = str(pathlib.Path(i).resolve().parent)
+                str0=''
             else:
                 d0 = i[:idx]
-            dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER
-            bids = d0 + 'derivatives/preprocessed/${s0}'
+                str0='derivatives/preprocessed/' + s0
+            dir0 = d0 + str0 + '/pipeline' + gev.FREESURFVER
+            bids = d0 + str0 + '${s0}'
             dir1 = '${bids}/pipeline${FREESURFVER}'
             dir2 = bids + '/pipeline${FREESURFVER}'
 
@@ -602,6 +617,8 @@ if __name__ == "__main__":
             if not args.lcsmoothonly: 
                 par.check_phase_dims_fmap()
                 par.check_ped_dims()
+
+        #print(f'F0[0]={F0[0]}')
 
         pathlib.Path(F0[0]).parent.mkdir(exist_ok=True)
 
@@ -735,10 +752,11 @@ if __name__ == "__main__":
                     #par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
                     #START250305
                     #print(f'here0 args.hpf_Hz={args.hpf_Hz} args.lpf_Hz={args.lpf_Hz}') 
+                    #print(f'here100 args.fwhm={args.fwhm}')
                     par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args.lpf_Hz)
                     F0f[0].write('${SMOOTH}\n\n')
 
-                #    write_regressors(args.fslmo,F0f[0])
+                #write_regressors(args.fslmo,F0f[0])
                 #START250212
                 write_regressors(args.fslmo,F0f[0])
 
