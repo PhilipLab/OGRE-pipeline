@@ -102,11 +102,11 @@ helpmsg(){
         echo "        Resolution in mm: 0.7, 0.8 or 1. Default is 1."
 
         echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
-        echo "        Default is MNI152_T1_${hires}mm.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T1_${Hires}mm.nii.gz. This will overwrite -ht."
         echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b -T1HighResolutionBrainOnly --T1HighResolutionBrainOnly"
-        echo "        Default is MNI152_T1_${hires}mm_brain.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T1_${Hires}mm_brain.nii.gz. This will overwrite -ht."
         echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm -T1HighResolutionBrainMask --T1HighResolutionBrainMask"
-        echo "        Default is MNI152_T1_${hires}mm_brain_mask.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T1_${Hires}mm_brain_mask.nii.gz. This will overwrite -ht."
 
         echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l -T1LowResolutionWholeHead --T1LowResolutionWholeHead"
         echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
@@ -117,9 +117,9 @@ helpmsg(){
         echo '        Mask is dilated if name does not include "dil".'
 
         echo "    -T2 --T2 -t2 --t2 -T2HighResolutionWholeHead --T2HighResolutionWholeHead"
-        echo "        Default is MNI152_T2_${hires}mm.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T2_${Hires}mm.nii.gz. This will overwrite -ht."
         echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b -T2HighResolutionBrainOnly --T2HighResolutionBrainOnly"
-        echo "        Default is MNI152_T2_${hires}mm_brain.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T2_${Hires}mm_brain.nii.gz. This will overwrite -ht."
         echo "    -T2brainmask --T2brainmask -t2brainmask --t2brainmask -t2bm --t2bm -T2bm --T2bm -T2HighResolutionBrainMask --T2HighResolutionBrainMask" 
         echo "        No default. If provided, this will be used to make the T2brain image. This will overwrite -ht."
         echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2HighResolutionBrainMask --T2HighResolutionBrainMask"

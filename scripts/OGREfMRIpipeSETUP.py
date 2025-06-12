@@ -236,29 +236,19 @@ if __name__ == "__main__":
     mlpf_Hz='LPFcutoff(Hz)'
     parser.add_argument('--lpf_Hz','-lpf_Hz',dest='lpf_Hz',metavar=mlpf_Hz,help=hlpf_Hz)
 
-
-
-
     hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
     parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
-
-    #START241219
     hlcdonotsmoothrest='Flag. Do not do SUSAN smoothing and high pass filtering on rest runs.\n' \
         + 'The default is to smooth all runs.'
     parser.add_argument('--donotsmoothrest','-donotsmoothrest','--DONOTSMOOTHREST','-DONOTSMOOTHREST',dest='lcdonotsmoothrest',action='store_true',help=hlcdonotsmoothrest)
 
-    #START250118
-    #hlcdonotuseIntendedFor='Flag. Do not do use IntendedFor field map JSON to determine which bolds the fieldmap should be applied to.\n' \
-    #    + 'Instead use the most recent fieldmap in the scanlist.'
-    #START250524
     hlcdonotuseIntendedFor='Flag. Do not do use the IntendedFor field of the field map JSON to determine which bolds the fieldmap should be applied to.\n' \
         + 'Instead use the most recent fieldmap in the scanlist.'
     parser.add_argument('--donotuseIntendedFor','-donotuseIntendedFor','--DONOTUSEINTENDEDFOR','-DONOTUSEINTENDEDFOR',dest='lcdonotuseIntendedFor',action='store_true', \
         help=hlcdonotuseIntendedFor)
     
-
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
     parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
@@ -552,18 +542,32 @@ if __name__ == "__main__":
             #dir1 = '${bids}/pipeline${FREESURFVER}'
             #dir2 = bids + '/pipeline${FREESURFVER}'
             #START250607
+            #idx = i.find('raw_data')
+            #if idx == -1:
+            #    #d0 = str(pathlib.Path(i).resolve().parent) + '/'
+            #    d0 = str(pathlib.Path(i).resolve().parent)
+            #    str0=''
+            #else:
+            #    d0 = i[:idx]
+            #    str0='derivatives/preprocessed/' + s0
+            #dir0 = d0 + str0 + '/pipeline' + gev.FREESURFVER
+            #bids = d0 + str0 + '${s0}'
+            #dir1 = '${bids}/pipeline${FREESURFVER}'
+            #dir2 = bids + '/pipeline${FREESURFVER}'
+            #START250608
             idx = i.find('raw_data')
             if idx == -1:
-                #d0 = str(pathlib.Path(i).resolve().parent) + '/'
                 d0 = str(pathlib.Path(i).resolve().parent)
                 str0=''
+                bids = d0 + str0
             else:
                 d0 = i[:idx]
                 str0='derivatives/preprocessed/' + s0
+                bids = d0 + str0 + '${s0}'
             dir0 = d0 + str0 + '/pipeline' + gev.FREESURFVER
-            bids = d0 + str0 + '${s0}'
             dir1 = '${bids}/pipeline${FREESURFVER}'
             dir2 = bids + '/pipeline${FREESURFVER}'
+
 
         if args.bhostname:
             hostname = opl.rou.run_cmd('hostname')
