@@ -848,7 +848,8 @@ if __name__ == "__main__":
                 #Fcleanf.write('mv ${sf0}/MNINonLinearSave ${sf0}/MNINonLinear\n\n')
                 #START241210
                 Fcleanf.write('\nmkdir -p ${sf0}/MNINonLinearSave/gm_wm_csf\n')
-                Fcleanf.write('cp -R ${sf0}/MNINonLinear/gm_wm_csf/ ${sf0}/MNINonLinearSave/gm_wm_csf\n') # must be ...csf/ to only copy files
+                #Fcleanf.write('cp -R ${sf0}/MNINonLinear/gm_wm_csf/ ${sf0}/MNINonLinearSave/gm_wm_csf\n') # must be ...csf/ to only copy files
+                Fcleanf.write('cp -R ${sf0}/MNINonLinear/gm_wm_csf/ ${sf0}/MNINonLinearSave/gm_wm_csf # must be ...csf/ to only copy files and not the work directory\n')
                 Fcleanf.write('cp -R ${sf0}/MNINonLinear/Results ${sf0}/MNINonLinearSave\n')
                 Fcleanf.write('rm -Rf ${sf0}/MNINonLinear\n')
                 Fcleanf.write('mv ${sf0}/MNINonLinearSave ${sf0}/MNINonLinear\n\n')
