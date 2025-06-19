@@ -282,31 +282,30 @@ if __name__ == "__main__":
     parser.add_argument('-startIntensityNormalization','--startIntensityNormalization','-sin','--sin',dest='startIntensityNormalization',action='store_true',help=hstartIntensityNormalization)
 
 
-    #hd='Pipeline directory. Optional. BIDS directories are assumed to be at the same level on the directory tree.\n' \
-    #    +'Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/pipeline7.4.1\n' \
-    #    +'        BIDS directories are /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/anat\n' \
-    #    +'                             /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1001/func\n'
-    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
-    #happend='Append string to pipeline output directory. Ex. -append debug, will result in pipeline7.4.1debug'
-    #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='')
-    #START240813    
-    #hd='Archaic. Use --container_directory instead.'
-    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd,type=abort)
-    #happend='Archaic. Use --container_directory instead.'
-    #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend,default='',type=abort)
 
-    hd='Archaic. Use --container_directory instead.'
+    #hd='Archaic. Use --container_directory instead.'
+    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+    #flagdsir=['-d','--dir','-dir']
+    #happend='Archaic. Use --container_directory instead.'
+    #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
+    #flagsappend=['-append','--append']
+    #hcd0='Container directory\n' \
+    #    +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
+    #    +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
+    #parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
+    #START250613
+    hd='Archaic. Use --parent instead.'
     parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
     flagdsir=['-d','--dir','-dir']
-
-    happend='Archaic. Use --container_directory instead.'
+    happend='Archaic. Use --parent instead.'
     parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
     flagsappend=['-append','--append']
-
-    hcd0='Container directory\n' \
+    hcd0='Parent directory\n' \
         +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
         +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
-    parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
+    parser.add_argument('-P','--parent','-parent','--parent_directory','-parent_directory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
+
+
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -327,13 +326,21 @@ if __name__ == "__main__":
         #print(f'sys.argv={sys.argv}')
         matches = [x for x in flagsdir if x in sys.argv]
         #print(f'matches={matches}')
-        print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --container_directory instead. Abort!\n')
+
+        #print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --container_directory instead. Abort!\n')
+        #START250613
+        print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --parent instead. Abort!\n')
+
         exit()
     if args.append:
         #print(f'sys.argv={sys.argv}')
         matches = [x for x in flagsappend if x in sys.argv]
         #print(f'matches={matches}')
-        print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --container_directory instead. Abort!\n')
+
+        #print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --container_directory instead. Abort!\n')
+        #START250613
+        print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --parent instead. Abort!\n')
+
         exit()
 
     print(f'{' '.join(sys.argv)}')          
@@ -471,65 +478,72 @@ if __name__ == "__main__":
 
             if p0.root:
                 #TRAP 1
-
-                #if p0.exists():
-                #    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory exists. Contents will be overwritten.' \
-                #    #    + ' Would you like to continue? y, n ').casefold()
-                #    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                #    #START240909
-                #    #exists=False
-                #    #for j in par.bold:
-                #    #    #print(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}')
-                #    #    if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
-                #    #        exists=True
-                #    #        break
-                #START240911
                 if exists:
-                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+
+                    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+                    #    + ' Would you like to continue? y, n ').casefold()
+                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                    #START250613
+                    ynq = input(f'    \nParent directory = {args.cd0}\n    Your parent directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
                         + ' Would you like to continue? y, n ').casefold()
-                    ##ynq = input(f'Container directory = {args.cd0} Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten. Would you like to continue? y, n ').casefold()
-                    ##ynq = input('My question here???')
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                    #START240923
-                    ##exit()
 
             else:
-
                 ##TRAP 2
-                #if p0.exists():
-                #    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
-                #        + f'        {pathlib.Path(args.cd0).resolve()}\n    Directory exists. Contents will be overwritten.' 
-                #        + ' Would you like to continue? y, n ').casefold()
-                #    if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                #START240911
-                #TRAP 2
                 if exists:
-                    ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
-                        + f'        {d0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+
+                    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
+                    #    + f'        {d0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+                    #    + ' Would you like to continue? y, n ').casefold()
+                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                    #START250613
+                    ynq = input(f'    \nParent directory = {args.cd0}\n    Your parent directory is a relative path. Resolving ...\n' \
+                        + f'        {d0}\n    Your parent directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
                         + ' Would you like to continue? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
 
 
                 #TRAP 3
                 if pathlib.Path(f'/{p0}').exists():
-                    print(f'    \nContainer directory = {args.cd0}\n' \
-                        + '    Your container directory is missing the forward slash at the beginning.\n' \
+
+                    #print(f'    \nContainer directory = {args.cd0}\n' \
+                    #    + '    Your container directory is missing the forward slash at the beginning.\n' \
+                    #    + '    However, the directory with the added forward slash already exists. Danger of overwrite! Please correct. Abort!')
+                    #START250613
+                    print(f'    \nParent directory = {args.cd0}\n' \
+                        + '    Your parent directory is missing the forward slash at the beginning.\n' \
                         + '    However, the directory with the added forward slash already exists. Danger of overwrite! Please correct. Abort!')
+
                     exit()
                 #TRAP 4
                 if pathlib.Path(f'/{p0.parts[0]}').exists():
-                    print(f'    \nContainer directory = {args.cd0}\n' \
-                        + '    Your container directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
+
+                    #print(f'    \nContainer directory = {args.cd0}\n' \
+                    #    + '    Your container directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
+                    #START250613
+                    print(f'    \nParent directory = {args.cd0}\n' \
+                        + '    Your parent directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
+
                     exit()
                 else:
                     #TRAP 5
-                    ynq = input(f'    \nContainer directory = {args.cd0}\n' \
-                        + '    Your container directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
+
+                    #ynq = input(f'    \nContainer directory = {args.cd0}\n' \
+                    #    + '    Your container directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
+                    #    + '    The following root will be added:\n' \
+                    #    + f'        {pathlib.Path.cwd()}\n' \
+                    #    + f'    New container directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
+                    #    + f'    Is this what you want? y, n ').casefold()
+                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+                    #START260513
+                    ynq = input(f'    \nParent directory = {args.cd0}\n' \
+                        + '    Your parent directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
                         + '    The following root will be added:\n' \
                         + f'        {pathlib.Path.cwd()}\n' \
-                        + f'    New container directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
+                        + f'    New parent directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
                         + f'    Is this what you want? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
         else:
 
             #idx = i.find('raw_data')

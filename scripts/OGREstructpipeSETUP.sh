@@ -83,11 +83,11 @@ helpmsg(){
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm"
-    echo "    --container_directory -container_directory --cd -cd"
+    echo "    -P --parent -parent --parent_directory -parent_directory --container_directory -container_directory --cd -cd"
     echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
     echo "    -n --name -name"
-    echo "        Use with --container_directory to provide the subject name. Default is root of scanlist.csv."
+    echo "        Use with --parent to provide the subject name. Default is root of scanlist.csv."
 
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
@@ -247,14 +247,14 @@ for((i=0;i<${#@};++i));do
             t2l=${arg[((++i))]}
             ;;
         -p | --pipedir | -pipedir | -d | -directory | --directory)
-            echo ${arg[i]} is archaic. Use --container_directory instead.
+            echo ${arg[i]} is archaic. Use --parent instead.
             exit
             ;;
         --append | -append)
-            echo ${arg[i]} is archaic. Use --container_directory instead.
+            echo ${arg[i]} is archaic. Use --parent instead.
             exit
             ;;
-        --container_directory | -container_directory | --cd | -cd)
+        -P | --parent | -parent | --parent_directory | -parent_directory | --container_directory | -container_directory | --cd | -cd)
             cd0=${arg[((++i))]}
             #echo cd0=${cd0}
             ;;

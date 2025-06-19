@@ -118,7 +118,11 @@ if __name__ == "__main__":
         if dict1["BatchScript"]: 
             str_both+=' -b'                    
             if dict1["BatchScript"]!=True: str_both+=' ' +  dict1["BatchScript"]
-        if dict1["ContainerDirectory"]: str_both+=' -cd ' + dict1["ContainerDirectory"] 
+
+        #if dict1["ContainerDirectory"]: str_both+=' -cd ' + dict1["ContainerDirectory"] 
+        #START250613
+        if dict1["Parent"]: str_both+=' -cd ' + dict1["Parent"] 
+
         if dict1["Name"]: str_both+=' -n ' + dict1["Name"] 
 
         str_stru=''

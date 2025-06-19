@@ -14,7 +14,7 @@
         "Dilation": null,
         "HighResolutionTemplateDirectory": null,
         "LowResolutionTemplateDirectory": null,
-        "ContainerDirectory": null,
+        "Parent": null,
         "Name": null,
         "Resolution": null,
         "T1HighResolutionWholeHead": null,
