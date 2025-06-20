@@ -52,16 +52,16 @@ helpmsg(){
     echo "        NOTE: you must either set -O or the variable OGREDIR."
     echo "    -H --HCPDIR -HCPDIR --hcpdir -hcpdir"
     echo "        HCP directory. Optional; default location is OGREDIR/lib/HCP"
-    echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion"
+    echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion --freesurferversion -freesurferversion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
     echo "    -m --HOSTNAME"
-    echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003"
+    echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.1_3452-AD-05003"
     echo "    -D --DATE -DATE --date -date"
     echo "        Flag. Add date (YYMMDD) to name of output script."
     echo "    -DL --DL --DATELONG -DATELONG --datelong -datelong"
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
     echo "    -b --batchscript -batchscript"
-    echo "        *_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv."
+    echo "        *_fileout.sh scripts are collected in an executable batchscript"
     echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
     echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename (an across-subjects script)."
     echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
@@ -171,7 +171,7 @@ for((i=0;i<${#@};++i));do
             HCPDIR=${arg[((++i))]}
             echo "HCPDIR=$HCPDIR"
             ;;
-        -V | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion)
+        -V | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion | --freesurferversion | -freesurferversion)
             FREESURFVER=${arg[((++i))]}
             #echo "FREESURFVER=$FREESURFVER"
             ;;
