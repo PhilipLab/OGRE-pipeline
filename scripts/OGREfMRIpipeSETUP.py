@@ -208,7 +208,7 @@ if __name__ == "__main__":
         help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0', '7.4.1'])
 
     hbhostname='Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003'
-    parser.add_argument('-m','--HOSTNAME',dest='bhostname',action='store_true',help=hbhostname)
+    parser.add_argument('-m','--HOSTNAME','-HOSTNAME','--hostname','-hostname',dest='bhostname',action='store_true',help=hbhostname)
 
     hlcdate='Flag. Add date (YYMMDD) to name of output script.'
     parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate,default=0)

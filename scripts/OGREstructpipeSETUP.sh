@@ -54,7 +54,7 @@ helpmsg(){
     echo "        HCP directory. Optional; default location is OGREDIR/lib/HCP"
     echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion --freesurferversion -freesurferversion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
-    echo "    -m --HOSTNAME"
+    echo "    -m --HOSTNAME -HOSTNAME --hostname -hostname"
     echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.1_3452-AD-05003"
     echo "    -D --DATE -DATE --date -date"
     echo "        Flag. Add date (YYMMDD) to name of output script."
@@ -73,7 +73,7 @@ helpmsg(){
     echo "        Ex. -e 2, will result in two erosions"
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
     echo "    -ht --ht --highres-template -highres-template --HighResolutionTemplateDirectory -HighResolutionTemplateDirectory"
-    echo "        Optional. High resolution registration templates. Default is MNI152 1mm asymmetric (HCP/FSL version)"
+    echo "        Optional. High resolution registration templates. Default is MNI152 1mm asymmetric (HCP/FSL)"
     echo "        Full path of a folder containing 2 files: T1w (whole-head), T1w_brain and/or T1_brain_mask"
     echo "        Optionally, two T2-weighted images can be included: T2w (whole-head), T2w_brain and/or T2_brain_mask"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_1mm"
@@ -99,7 +99,7 @@ helpmsg(){
 
     else
         echo "    -r --hires -hires"
-        echo "        Resolution in mm: 0.7, 0.8 or 1. Default is 1."
+        echo "        High resolution in mm: 0.7, 0.8 or 1. Default is 1. Applies only to default MNI152 asymmetric (HCP/FSL) templates."
 
         echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
         echo "        Default is MNI152_T1_${Hires}mm.nii.gz. This will overwrite -ht."
@@ -175,7 +175,7 @@ for((i=0;i<${#@};++i));do
             FREESURFVER=${arg[((++i))]}
             #echo "FREESURFVER=$FREESURFVER"
             ;;
-        -m | --HOSTNAME)
+        -m | --HOSTNAME | -HOSTNAME | --hostname | -hostname)
             lchostname=1
             echo "lchostname=$lchostname"
             ;;
