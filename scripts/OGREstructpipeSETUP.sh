@@ -83,7 +83,7 @@ helpmsg(){
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm"
-    echo "    -P --parent -parent --parent_directory -parent_directory --container_directory -container_directory --cd -cd"
+    echo "    -P --ProjectDirectory -ProjectDirectory --project_directory -project_directory --container_directory -container_directory --cd -cd"
     echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
     echo "    -n --name -name"
@@ -102,28 +102,28 @@ helpmsg(){
         echo "        High resolution in mm: 0.7, 0.8 or 1. Default is 1. Applies only to default MNI152 asymmetric (HCP/FSL) templates."
 
         echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
-        echo "        Default is MNI152_T1_${Hires}mm.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T1_${Hires}mm.nii.gz. This will override -ht."
         echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b -T1HighResolutionBrainOnly --T1HighResolutionBrainOnly"
-        echo "        Default is MNI152_T1_${Hires}mm_brain.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T1_${Hires}mm_brain.nii.gz. This will override -ht."
         echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm -T1HighResolutionBrainMask --T1HighResolutionBrainMask"
-        echo "        Default is MNI152_T1_${Hires}mm_brain_mask.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T1_${Hires}mm_brain_mask.nii.gz. This will override -ht."
 
         echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l -T1LowResolutionWholeHead --T1LowResolutionWholeHead"
-        echo "        Default is MNI152_T1_2mm.nii.gz. This will overwrite -lt."
+        echo "        Default is MNI152_T1_2mm.nii.gz. This will overide -lt."
         echo "    -T1brainlow --T1brainlow -t1brainlow --t1brainlow -t1bl --t1bl -T1bl --T1bl -T1LowResolutionBrainOnly --T1LowResolutionBrainOnly"
-        echo "        No default. If provided, this will be used to make the low resolution mask. This will overwrite -lt."
+        echo "        No default. If provided, this will be used to make the low resolution mask. This will override -lt."
         echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml -T1LowResolutionBrainMask --T1LowResolutionBrainMask"
-        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will overwrite -lt."
+        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will override -lt."
         echo '        Mask is dilated if name does not include "dil".'
 
         echo "    -T2 --T2 -t2 --t2 -T2HighResolutionWholeHead --T2HighResolutionWholeHead"
-        echo "        Default is MNI152_T2_${Hires}mm.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T2_${Hires}mm.nii.gz. This will override -ht."
         echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b -T2HighResolutionBrainOnly --T2HighResolutionBrainOnly"
-        echo "        Default is MNI152_T2_${Hires}mm_brain.nii.gz. This will overwrite -ht."
+        echo "        Default is MNI152_T2_${Hires}mm_brain.nii.gz. This will override -ht."
         echo "    -T2brainmask --T2brainmask -t2brainmask --t2brainmask -t2bm --t2bm -T2bm --T2bm -T2HighResolutionBrainMask --T2HighResolutionBrainMask" 
-        echo "        No default. If provided, this will be used to make the T2brain image. This will overwrite -ht."
-        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2HighResolutionBrainMask --T2HighResolutionBrainMask"
-        echo "        Default is MNI152_T2_2mm.nii.gz. This will overwrite -lt."
+        echo "        No default. If provided, this will be used to make the T2brain image. This will override -ht."
+        echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2LowResolutionWholeHead --T2LowResolutionWholeHead"
+        echo "        Default is MNI152_T2_2mm.nii.gz. This will override -lt."
 
         #START250606
         echo "    -h --help -help"
@@ -243,7 +243,7 @@ for((i=0;i<${#@};++i));do
         -T2brainmask | --T2brainmask | -t2brainmask | --t2brainmask | -t2bm | --t2bm | -T2bm | --T2bm | -T2HighResolutionBrainMask | --T2HighResolutionBrainMask) 
             t2bm=${arg[((++i))]}
             ;;
-        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l | -T2HighResolutionBrainMask | --T2HighResolutionBrainMask)
+        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l | -T2LowResolutionWholeHead | --T2HighResolutionWholeHead)
             t2l=${arg[((++i))]}
             ;;
         -p | --pipedir | -pipedir | -d | -directory | --directory)
@@ -254,7 +254,7 @@ for((i=0;i<${#@};++i));do
             echo ${arg[i]} is archaic. Use --parent instead.
             exit
             ;;
-        -P | --parent | -parent | --parent_directory | -parent_directory | --container_directory | -container_directory | --cd | -cd)
+        -P | --ProjectDirectory | -ProjectDirectory | --project_directory | -project_directory | --container_directory | -container_directory | --cd | -cd)
             cd0=${arg[((++i))]}
             #echo cd0=${cd0}
             ;;

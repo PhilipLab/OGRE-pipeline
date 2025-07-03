@@ -14,7 +14,7 @@
         "Erosion": null,
         "HighResolutionTemplateDirectory": null,
         "LowResolutionTemplateDirectory": null,
-        "Parent": null,
+        "ProjectDirectory": null,
         "Name": null,
         "Resolution": null,
         "T1HighResolutionWholeHead": null,
@@ -38,6 +38,6 @@
         "Feat": null,
         "FeatAdapter": false,
         "UseRefinement": false,
-        "FSLMotionOutliers": null,  
-        "StartIntensityNormalization": false
+        "fsl_motion_outliers": null,  
+        "startIntensityNormalization": false
 }

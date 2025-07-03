@@ -216,46 +216,46 @@ if __name__ == "__main__":
     hlcdateL='Flag. Add date (YYMMDDHHMMSS) to name of output script.'
     parser.add_argument('-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL,default=0)
 
-    hfwhm='Smoothing (mm) for SUSAN. Multiple values ok.'
+    hfwhm='SUSAN spatial smoothing (mm). Multiple values ok.'
     mfwhm='FWHM'
-    parser.add_argument('-f','--fwhm','-fwhm',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
+    parser.add_argument('-f','--fwhm','-fwhm','--FWHM','-FWHM',dest='fwhm',metavar=mfwhm,action='append',nargs='+',help=hfwhm)
 
     hhpf_sec='High pass filter cutoff in seconds'
     mhpf_sec='HPFcutoff(s)'
-    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec','--hpf_sec','-hpf_sec',dest='hpf_sec',metavar=mhpf_sec,help=hhpf_sec)
+    parser.add_argument('-p','--paradigm_hp_sec','-paradigm_hp_sec','--hpf_sec','-hpf_sec','--HPFcutoff_sec','-HPFcutoff_sec',dest='hpf_sec',metavar=mhpf_sec,help=hhpf_sec)
 
     hlpf_sec='Low pass filter cutoff in seconds'
     mlpf_sec='LPFcutoff(s)'
-    parser.add_argument('--lpf_sec','-lpf_sec',dest='lpf_sec',metavar=mlpf_sec,help=hlpf_sec)
+    parser.add_argument('--lpf_sec','-lpf_sec','--LPFcutoff_sec','-LPFcutoff_sec',dest='lpf_sec',metavar=mlpf_sec,help=hlpf_sec)
 
     hhpf_Hz='High pass filter cutoff in Hz'
     mhpf_Hz='HPFcutoff(Hz)'
-    parser.add_argument('--hpf_Hz','-hpf_Hz',dest='hpf_Hz',metavar=mhpf_Hz,help=hhpf_Hz)
+    parser.add_argument('--hpf_Hz','-hpf_Hz','--HPFcutoff_Hz','-HPFcutoff_Hz',dest='hpf_Hz',metavar=mhpf_Hz,help=hhpf_Hz)
 
     hlpf_Hz='Low pass filter cutoff in Hz'
     mlpf_Hz='LPFcutoff(Hz)'
-    parser.add_argument('--lpf_Hz','-lpf_Hz',dest='lpf_Hz',metavar=mlpf_Hz,help=hlpf_Hz)
+    parser.add_argument('--lpf_Hz','-lpf_Hz','--LPFcutoff_Hz','-LPFcutoff_Hz',dest='lpf_Hz',metavar=mlpf_Hz,help=hlpf_Hz)
 
-    hlcsmoothonly='Flag. Only do SUSAN smoothing and high pass filtering.\n' \
+    hlcsmoothonly='Flag. Only do SUSAN smoothing and low/high pass filtering.\n' \
         + 'If you want to execute smoothing/filtering on individual runs, edit the .sh run script.'
-    parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
+    parser.add_argument('--smoothonly','-smoothonly','--SMOOTHONLY','-SMOOTHONLY','--SmoothOnly','-SmoothOnly',dest='lcsmoothonly',action='store_true',help=hlcsmoothonly)
 
-    hlcdonotsmoothrest='Flag. Do not do SUSAN smoothing and high pass filtering on rest runs.\n' \
+    hlcdonotsmoothrest='Flag. Do not do SUSAN smoothing and low/high pass filtering on rest runs.\n' \
         + 'The default is to smooth all runs.'
     parser.add_argument('--donotsmoothrest','-donotsmoothrest','--DONOTSMOOTHREST','-DONOTSMOOTHREST',dest='lcdonotsmoothrest',action='store_true',help=hlcdonotsmoothrest)
 
-    hlcdonotuseIntendedFor='Flag. Do not do use the IntendedFor field of the field map JSON to determine which bolds the fieldmap should be applied to.\n' \
+    hlcdonotuseIntendedFor='Flag. Do not use the IntendedFor field of the field map JSON to determine which bolds the fieldmap should be applied to.\n' \
         + 'Instead use the most recent fieldmap in the scanlist.'
     parser.add_argument('--donotuseIntendedFor','-donotuseIntendedFor','--DONOTUSEINTENDEDFOR','-DONOTUSEINTENDEDFOR',dest='lcdonotuseIntendedFor',action='store_true', \
         help=hlcdonotuseIntendedFor)
     
     hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
         +'An OGREfeat.sh call is created for each fsf.'
-    parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
+    parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2','--Feat','-Feat',dest='feat',metavar='path, text file or *.fsf',action='extend',
         nargs='+',help=hfeat)
 
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
-    parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
+    parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter','--FeatAdapter','-FeatAdapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
 
     hbs = '*_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv.\n' \
         + 'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n' \
@@ -266,13 +266,13 @@ if __name__ == "__main__":
 
     huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
-    parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT',dest='userefinement',action='store_true',help=huserefinement)
+    parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT','--UseRefinement','-UseRefinement',dest='userefinement',action='store_true',help=huserefinement)
 
 
     hfslmo='Run fsl_motion_outliers on raw data, with optional comma-separated arguments.\n' \
-        +'Ex. -fslmo "--fd,--thresh=2"\n' \
-        +'Ex. -fslmo --fd,--thresh=2\n'
-    parser.add_argument('-fslmo','--fslmo',dest='fslmo',action='store_true',help=hfslmo)
+        +'Ex. --fslmo "--fd,--thresh=2"\n' \
+        +'Ex. --fslmo --fd,--thresh=2\n'
+    parser.add_argument('--fslmo','-fslmo','--fsl_motion_outliers','-fsl_motion_outliers',dest='fslmo',action='store_true',help=hfslmo)
 
     hdil='Dilate masks applied to fMRI at output.'
     mdil='Dilate output masks'
@@ -300,10 +300,10 @@ if __name__ == "__main__":
     happend='Archaic. Use --parent instead.'
     parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
     flagsappend=['-append','--append']
-    hcd0='Parent directory\n' \
+    hcd0='Project directory\n' \
         +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
         +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
-    parser.add_argument('-P','--parent','-parent','--parent_directory','-parent_directory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
+    parser.add_argument('-P','--ProjectDirectory','-ProjectDirectory','--project_directory','-project_directory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
 
 
 

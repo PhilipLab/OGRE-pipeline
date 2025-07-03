@@ -160,7 +160,11 @@ if __name__ == "__main__":
             if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
             if dict1["FeatAdapter"]: str_func+=' -F'
             if dict1["UseRefinement"]: str_func+=' -userefinement'
-            if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
+
+            #if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
+            #START250623
+            if dict1["fsl_motion_outliers"]: str_func+=' -fslmo ' + dict1["fsl_motion_outliers"]  
+
             if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
 
             #START250604
