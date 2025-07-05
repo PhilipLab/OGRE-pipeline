@@ -414,7 +414,8 @@ if __name__ == "__main__":
         else: 
             l0 = 'smooth'
     else:
-        l0 = 'FEATADAPTER'
+        #l0 = 'FEATADAPTER'
+        l0 = 'featadapter'
 
     if args.bs:
         if args.bs!=True: #this explicit check is needed!
@@ -606,8 +607,10 @@ if __name__ == "__main__":
         F1 = str0 + '_fileout.sh'
 
         if not args.lcfeatadapter and feat: 
-            Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
-            Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
+            #Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
+            #Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
+            Ffeat = stem0 + '_featadapter' + datestr + '.sh'
+            Ffeatname = '${s0}_featadapter' + datestr + '.sh' 
 
         F2 = stem0 + '_bidscp' + datestr + '.sh' 
         F2name = '${s0}_bidscp' + datestr + '.sh'
