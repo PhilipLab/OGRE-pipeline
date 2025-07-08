@@ -158,7 +158,7 @@ log_Msg "startIntensityNormalization: ${startIntensityNormalization}"
 
 
 #START240730
-dilation=`opts_GetOpt1 "--dilation" $@`
+#dilation=`opts_GetOpt1 "--dilation" $@`
 
 
 #START241017
@@ -528,8 +528,8 @@ if [ "$do_P2" -eq "1" ];then
            --ofmri=${fMRIFolder}/${NameOffMRI}_nonlin_norm \
            --inscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin \
            --oscout=${fMRIFolder}/${NameOffMRI}_SBRef_nonlin_norm \
-           --usejacobian=${UseJacobian} \
-           --dilation=${dilation}
+           --usejacobian=${UseJacobian} #\
+           #--dilation=${dilation}
 fi
 
 

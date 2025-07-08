@@ -214,7 +214,7 @@ if __name__ == "__main__":
     parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate,default=0)
 
     hlcdateL='Flag. Add date (YYMMDDHHMMSS) to name of output script.'
-    parser.add_argument('-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL,default=0)
+    parser.add_argument('-L','-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL,default=0)
 
     hfwhm='SUSAN spatial smoothing (mm). Multiple values ok.'
     mfwhm='FWHM'
@@ -257,26 +257,25 @@ if __name__ == "__main__":
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter','--FeatAdapter','-FeatAdapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
 
-    hbs = '*_fileout.sh scripts are collected in an executable batchscript, one for each scanlist.csv.\n' \
-        + 'This permits the struct and fMRI scripts to be run sequentially and seamlessly.\n' \
-        + 'If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename.\n' \
-        + 'This permits multiple subjects to be run sequentially and seamlessly.\n'
+    hbs = '*_fileout.sh scripts are collected in an executable batchscript.\n' \
+        + 'This permits the struct and fMRIvol scripts to be run sequentially and seamlessly.\n' \
+        + 'If a filename is provided, then in addition, the batchscripts are written to the provided filename.\n' \
+        + 'This facilitates the creation of an across-subjects script such that multiple subjects can be run sequentially and seamlessly.\n'
     parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
-
 
     huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT','--UseRefinement','-UseRefinement',dest='userefinement',action='store_true',help=huserefinement)
-
 
     hfslmo='Run fsl_motion_outliers on raw data, with optional comma-separated arguments.\n' \
         +'Ex. --fslmo "--fd,--thresh=2"\n' \
         +'Ex. --fslmo --fd,--thresh=2\n'
     parser.add_argument('--fslmo','-fslmo','--fsl_motion_outliers','-fsl_motion_outliers',dest='fslmo',action='store_true',help=hfslmo)
 
-    hdil='Dilate masks applied to fMRI at output.'
-    mdil='Dilate output masks'
-    parser.add_argument('-dil','--dil','-dilation','--dilation',dest='dilation',metavar=mdil,help=hdil,default=0)
+    #START250706
+    #hdil='Dilate masks applied to fMRI at output.'
+    #mdil='Dilate output masks'
+    #parser.add_argument('-dil','--dil','-dilation','--dilation',dest='dilation',metavar=mdil,help=hdil,default=0)
 
     hstartIntensityNormalization='Flag. Start at IntensityNormalization. Defaut is to run the whole script.\n'
     parser.add_argument('-startIntensityNormalization','--startIntensityNormalization','-sin','--sin',dest='startIntensityNormalization',action='store_true',help=hstartIntensityNormalization)
@@ -294,16 +293,16 @@ if __name__ == "__main__":
     #    +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
     #parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
     #START250613
-    hd='Archaic. Use --parent instead.'
-    parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
-    flagdsir=['-d','--dir','-dir']
+    #hd='Archaic. Use --parent instead.'
+    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
+    #flagdsir=['-d','--dir','-dir']
     happend='Archaic. Use --parent instead.'
     parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
     flagsappend=['-append','--append']
     hcd0='Project directory\n' \
         +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
         +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
-    parser.add_argument('-P','--ProjectDirectory','-ProjectDirectory','--project_directory','-project_directory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
+    parser.add_argument('-P','--projectdirectory','-projectdirectory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
 
 
 
@@ -612,10 +611,12 @@ if __name__ == "__main__":
             Ffeat = stem0 + '_featadapter' + datestr + '.sh'
             Ffeatname = '${s0}_featadapter' + datestr + '.sh' 
 
-        F2 = stem0 + '_bidscp' + datestr + '.sh' 
-        F2name = '${s0}_bidscp' + datestr + '.sh'
+        #F2 = stem0 + '_bidscp' + datestr + '.sh' 
+        #F2name = '${s0}_bidscp' + datestr + '.sh'
+        #START250706
+        F2 = stem0 + '_bidscp_func' + datestr + '.sh' 
+        F2name = '${s0}_bidscp_func' + datestr + '.sh'
 
-        #START250305
         F3 = stem0 + '_smooth' + datestr + '.sh' 
         F3name = '${s0}_smooth' + datestr + '.sh'
 
@@ -702,13 +703,12 @@ if __name__ == "__main__":
 
                 if not args.lcsmoothonly: 
                     F0f[0].write('COPY=${sf0}/scripts/'+f'{F2name}\n')
-
-                    #START250305
                     F0f[0].write('SMOOTH=${sf0}/scripts/'+f'{F3name}\n')
-
                     if feat: F0f[0].write('FEAT=${sf0}/scripts/'+f'{Ffeatname}\n')
 
-                    F0f[0].write(f'dilation={args.dilation}\n')
+                    #START250706
+                    #F0f[0].write(f'dilation={args.dilation}\n')
+
                     F0f[0].write('\nRAW_BOLD=(\\\n')
                     j=-1 #default value needed for a single bold
                     for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
@@ -756,29 +756,17 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
                     if args.userefinement: F0f[0].write('    --userefinement \\\n')
+
+                    #START250706
                     F0f[0].write('    --dilation=${dilation} \\\n')
+
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
                 if par.taskidx:
-
-                    #par.write_copy_script(F2,s0,pathstr,gev.FREESURFVER)
-                    #START250307
                     par.write_copy_script(F2,s0,pathstr,gev)
-
                     if not args.lcsmoothonly: F0f[0].write('${COPY}\n\n')
-
-                    #par.write_smooth2(F0f[0],s0,args.fwhm,args.hpf_sec,args.lpf_sec)
-                    #START250305
-                    #par.write_smooth_script(F3,s0,pathstr,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
-                    #par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec)
-                    #START250305
-                    #print(f'here0 args.hpf_Hz={args.hpf_Hz} args.lpf_Hz={args.lpf_Hz}') 
-                    #print(f'here100 args.fwhm={args.fwhm}')
                     par.write_smooth_script(F3,s0,bids,gev,P1,args.fwhm,args.hpf_sec,args.lpf_sec,args.hpf_Hz,args.lpf_Hz)
                     F0f[0].write('${SMOOTH}\n\n')
-
-                #write_regressors(args.fslmo,F0f[0])
-                #START250212
                 write_regressors(args.fslmo,F0f[0])
 
             if feat: F0f[0].write('${FEAT}\n\n')

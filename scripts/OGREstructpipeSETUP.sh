@@ -56,16 +56,16 @@ helpmsg(){
     echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.1_3452-AD-05003"
     echo "    -D --DATE -DATE --date -date"
     echo "        Flag. Add date (YYMMDD) to name of output script."
-    echo "    -DL --DL --DATELONG -DATELONG --datelong -datelong"
+    echo "    -L -DL --DL --DATELONG -DATELONG --datelong -datelong"
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
     echo "    -b --batchscript -batchscript"
-    echo "        *_fileout.sh scripts are collected in an executable batchscript"
-    echo "        This permits the struct and fMRI scripts to be run sequentially and seamlessly."
-    echo "        If a filename is provided, then in addition, the *OGREbatch.sh scripts are written to the provided filename (an across-subjects script)."
-    echo "        This across-subjects script permits multiple subjects to be run sequentially and seamlessly."
-    echo "    -dil --dil -dilation --dilation"
+    echo "        *_fileout.sh scripts are collected in an executable batchscript."
+    echo "        This permits the struct and fMRIvol scripts to be run sequentially and seamlessly."
+    echo "        If a filename is provided, then in addition, the batchscripts are written to the provided filename."
+    echo "        This facilitates the creation of an across-subjects script such that multiple subjects can be run sequentially and seamlessly."
+    echo "    -d -dil --dil -dilation --dilation"
     echo "        Dilate the brain mask. Default is 3. Number of dilations (fslmaths dilD) that precede the erosions."
-    echo "        Ex. -dil 3, will result in three dilations"
+    echo "        Ex. -d 3, will result in three dilations"
     echo "    -e --erosion -erosion --ero -ero"
     echo "        Erode the brain mask. Default is 2. Number of erosions that follow the dilations."
     echo "        Ex. -e 2, will result in two erosions"
@@ -81,7 +81,7 @@ helpmsg(){
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm"
-    echo "    -P --ProjectDirectory -ProjectDirectory --project_directory -project_directory --container_directory -container_directory --cd -cd"
+    echo "    -P --projectdirectory -projectdirectory --container_directory -container_directory --cd -cd"
     echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
     echo "    -n --name -name"
@@ -90,11 +90,8 @@ helpmsg(){
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
         echo "        Show all options."
-
-        #START250606
         echo "    -h --help -help"
         echo "        Echo this help message."
-
     else
         echo "    -r --hires -hires"
         echo "        High resolution in mm: 0.7, 0.8 or 1. Default is 1. Applies only to default MNI152 asymmetric (HCP/FSL) templates."
@@ -123,12 +120,10 @@ helpmsg(){
         echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2LowResolutionWholeHead --T2LowResolutionWholeHead"
         echo "        Default is MNI152_T2_2mm.nii.gz. This will override -lt."
 
-        #START250606
         echo "    -h --help -help"
         echo "        Echo the short list."
         echo "    --helpall -helpall"
         echo "        Echo this help message."
-
     fi
 
     #START250606
@@ -186,7 +181,7 @@ for((i=0;i<${#@};++i));do
             lcdate=1
             #echo "lcdate=$lcdate"
             ;;
-        -DL | --DL | --DATELONG | -DATELONG | --datelong | -datelong)
+        -L | -DL | --DL | --DATELONG | -DATELONG | --datelong | -datelong)
             lcdate=2
             echo "lcdate=$lcdate"
             ;;
@@ -195,13 +190,13 @@ for((i=0;i<${#@};++i));do
             ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
             #echo "bs=$bs"
             ;;
+        -d | -dil | --dilation | -dilation | --dil)
+            dilation=${arg[((++i))]}
+            echo "dilation=$dilation"
+            ;;
         -e | --erosion | -erosion | --ero | -ero)
             erosion=${arg[((++i))]}
             echo "erosion=$erosion"
-            ;;
-        -dil | --dilation | -dilation | --dil)
-            dilation=${arg[((++i))]}
-            echo "dilation=$dilation"
             ;;
         -ht | --ht | --highres-template | -highres-template | --HighResolutionTemplateDirectory | -HighResolutionTemplateDirectory)
             ht=${arg[((++i))]}
@@ -250,19 +245,16 @@ for((i=0;i<${#@};++i));do
             t2l=${arg[((++i))]}
             ;;
         -p | --pipedir | -pipedir | -d | -directory | --directory)
-            echo ${arg[i]} is archaic. Use --parent instead.
+            echo ${arg[i]} is archaic. Use --projectdirectory instead.
             exit
             ;;
         --append | -append)
-            echo ${arg[i]} is archaic. Use --parent instead.
+            echo ${arg[i]} is archaic. Use --projectdirectory instead.
             exit
             ;;
-        -P | --ProjectDirectory | -ProjectDirectory | --project_directory | -project_directory | --container_directory | -container_directory | --cd | -cd)
+        -P | --projectdirectory | -projectdirectory | --container_directory | -container_directory | --cd | -cd)
             cd0=${arg[((++i))]}
-            #START250705
             bids=${cd0}
-
-            #echo cd0=${cd0}
             ;;
         -n | --name | -name)
             name=${arg[((++i))]}
@@ -391,25 +383,6 @@ dir0=${datf%/*}
 IFS='/' read -ra subj <<< "${dir0}"
 s0=${subj[${#subj[@]}-1]}
 
-#echo "here0 dat[0]=${dat[0]}"
-#echo "here0 datf=${datf}"
-#echo "here0 dir0=${dir0}"
-#echo "here0 subj=${subj}END"
-#echo "here0 s0=${s0}END"
-
-#            idx = i.find('raw_data')
-#            if idx == -1:
-#                d0 = str(pathlib.Path(i).resolve().parent)
-#                str0=''
-#                bids = d0 + str0
-#            else:
-#                d0 = i[:idx]
-#                str0='derivatives/preprocessed/' + s0
-#                bids = d0 + str0 + '${s0}'
-#            dir0 = d0 + str0 + '/pipeline' + gev.FREESURFVER
-#            dir1 = '${bids}/pipeline${FREESURFVER}'
-#            dir2 = bids + '/pipeline${FREESURFVER}'
-
 
 #if [ -z "${cd0}" ];then
 #    T1f=${T1f//${s0}/'${s0}'}
@@ -499,8 +472,8 @@ F0name='${s0}'_OGREstruct${datestr}.sh
 
 
 #START250705
-Fcopy=${dir0}/scripts/${s0}_struct_bidscp${datestr}.sh
-Fcopyname='${s0}'_struct_bidscp${datestr}.sh
+Fcopy=${dir0}/scripts/${s0}__bidscp_struct${datestr}.sh
+Fcopyname='${s0}'_bidscp_struct${datestr}.sh
 
 
 if [ -n "${bs}" ];then
@@ -1010,9 +983,14 @@ echo "    Output written to ${F1}"
 
 if [ -n "${bs}" ];then
 
-    #echo -e "FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/${F0name}"\n"out='${F0}'.txt >> ${bs0}
-    #START241224
-    echo -e ${e0} >> ${bs0}
+    #echo -e ${e0} >> ${bs0}
+    #START250706
+    echo "FREESURFVER=${FREESURFVER}" >> ${F1}
+    echo "s0=${s0}" >> ${F1}
+    echo "bids=${bids}" >> ${F1}
+    echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${F1}
+    echo -e F0='${sf0}'/scripts/${F0name}'\nout=${F0}'.txt >> ${F1}
+
 
     echo 'if [ -f "${out}" ];then' >> ${bs0}
     echo '    echo -e "\n\n**********************************************************************" >> ${out}' >> ${bs0}
