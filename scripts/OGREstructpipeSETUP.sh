@@ -63,7 +63,7 @@ helpmsg(){
     echo "        This permits the struct and fMRIvol scripts to be run sequentially and seamlessly."
     echo "        If a filename is provided, then in addition, the batchscripts are written to the provided filename."
     echo "        This facilitates the creation of an across-subjects script such that multiple subjects can be run sequentially and seamlessly."
-    echo "    -d -dil --dil -dilation --dilation"
+    echo "    -d --dilation -dilation --dil -dil"
     echo "        Dilate the brain mask. Default is 3. Number of dilations (fslmaths dilD) that precede the erosions."
     echo "        Ex. -d 3, will result in three dilations"
     echo "    -e --erosion -erosion --ero -ero"
@@ -140,7 +140,7 @@ lcautorun=0;lchostname=0;lcdate=0;erosion=2;dilation=3 #DON'T SET dat unexpected
 
 #unset bs cd0 name helpall help t1 t1b t1bm t1l t1bl t1bml t2 t2b t2bm t2l ht lt
 #START250705
-unset bs cd0 bids name helpall help t1 t1b t1bm t1l t1bl t1bml t2 t2b t2bm t2l ht lt
+unset bs cd0 bids name helpall help t1 t1b t1bm t1l t1bl t1bml t2 t2b t2bm t2l ht lt s1
 
 
 unset T1wTemplate T1wTemplateBrain TemplateMask T1wTemplateLow T1wTemplateBrainLow TemplateMaskLow T2wTemplate T2wTemplateBrain T2wTemplateMask T2wTemplateLow 
@@ -190,7 +190,7 @@ for((i=0;i<${#@};++i));do
             ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
             #echo "bs=$bs"
             ;;
-        -d | -dil | --dilation | -dilation | --dil)
+        -d | --dilation | -dilation | --dil | -dil)
             dilation=${arg[((++i))]}
             echo "dilation=$dilation"
             ;;
@@ -445,6 +445,10 @@ elif [[ -z ${subj[j]} ]];then
     [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required
 fi
 
+#START250708
+[[ -n ${s0} ]] && s1=${s0}_
+
+
 
 if((lchostname==1));then
     dir0+=_$(hostname)
@@ -465,14 +469,20 @@ rm -Rf $tmp
 echo ${dir0} > $tmp 
 
 
-F0stem=${dir0}/scripts/${s0}_OGREstruct${datestr} 
+#F0stem=${dir0}/scripts/${s0}_OGREstruct${datestr} 
+#START250708
+F0stem=${dir0}/scripts/${s1}OGREstruct${datestr} 
+
 F0=${F0stem}.sh
 F1=${F0stem}_fileout.sh
 F0name='${s0}'_OGREstruct${datestr}.sh
 
 
 #START250705
-Fcopy=${dir0}/scripts/${s0}__bidscp_struct${datestr}.sh
+#Fcopy=${dir0}/scripts/${s0}_bidscp_struct${datestr}.sh
+Fcopy=${dir0}/scripts/${s1}bidscp_struct${datestr}.sh
+
+
 Fcopyname='${s0}'_bidscp_struct${datestr}.sh
 
 

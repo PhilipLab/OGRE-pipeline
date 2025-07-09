@@ -272,33 +272,9 @@ if __name__ == "__main__":
         +'Ex. --fslmo --fd,--thresh=2\n'
     parser.add_argument('--fslmo','-fslmo','--fsl_motion_outliers','-fsl_motion_outliers',dest='fslmo',action='store_true',help=hfslmo)
 
-    #START250706
-    #hdil='Dilate masks applied to fMRI at output.'
-    #mdil='Dilate output masks'
-    #parser.add_argument('-dil','--dil','-dilation','--dilation',dest='dilation',metavar=mdil,help=hdil,default=0)
-
     hstartIntensityNormalization='Flag. Start at IntensityNormalization. Defaut is to run the whole script.\n'
     parser.add_argument('-startIntensityNormalization','--startIntensityNormalization','-sin','--sin',dest='startIntensityNormalization',action='store_true',help=hstartIntensityNormalization)
 
-
-
-    #hd='Archaic. Use --container_directory instead.'
-    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
-    #flagdsir=['-d','--dir','-dir']
-    #happend='Archaic. Use --container_directory instead.'
-    #parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
-    #flagsappend=['-append','--append']
-    #hcd0='Container directory\n' \
-    #    +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
-    #    +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
-    #parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
-    #START250613
-    #hd='Archaic. Use --parent instead.'
-    #parser.add_argument('-d','--dir','-dir',dest='dir',metavar='Pipeline directory',help=hd)
-    #flagdsir=['-d','--dir','-dir']
-    happend='Archaic. Use --parent instead.'
-    parser.add_argument('-append','--append',dest='append',metavar='mystr',help=happend)
-    flagsappend=['-append','--append']
     hcd0='Project directory\n' \
         +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
         +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
@@ -705,10 +681,6 @@ if __name__ == "__main__":
                     F0f[0].write('COPY=${sf0}/scripts/'+f'{F2name}\n')
                     F0f[0].write('SMOOTH=${sf0}/scripts/'+f'{F3name}\n')
                     if feat: F0f[0].write('FEAT=${sf0}/scripts/'+f'{Ffeatname}\n')
-
-                    #START250706
-                    #F0f[0].write(f'dilation={args.dilation}\n')
-
                     F0f[0].write('\nRAW_BOLD=(\\\n')
                     j=-1 #default value needed for a single bold
                     for j in range(len(par.bold)-1): F0f[0].write(f'        {par.bold[j][0]} \\\n')
@@ -756,10 +728,6 @@ if __name__ == "__main__":
 
                     F0f[0].write('    --freesurferVersion=${FREESURFVER} \\\n')
                     if args.userefinement: F0f[0].write('    --userefinement \\\n')
-
-                    #START250706
-                    F0f[0].write('    --dilation=${dilation} \\\n')
-
                     if args.startIntensityNormalization: F0f[0].write('    --startIntensityNormalization \\\n')
                     F0f[0].write('    --EnvironmentScript=${SETUP}\n\n')
                 if par.taskidx:
