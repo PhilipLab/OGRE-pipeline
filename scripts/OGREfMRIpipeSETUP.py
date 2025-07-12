@@ -294,29 +294,20 @@ if __name__ == "__main__":
     #print(f'args.fslmo={args.fslmo}')
     #print(f'args.bs={args.bs}')
 
-    #START240923
-    #print(f'args={args}')
 
-    if args.dir:
-        #print(f'sys.argv={sys.argv}')
-        matches = [x for x in flagsdir if x in sys.argv]
-        #print(f'matches={matches}')
-
-        #print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --container_directory instead. Abort!\n')
-        #START250613
-        print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --parent instead. Abort!\n')
-
-        exit()
-    if args.append:
-        #print(f'sys.argv={sys.argv}')
-        matches = [x for x in flagsappend if x in sys.argv]
-        #print(f'matches={matches}')
-
-        #print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --container_directory instead. Abort!\n')
-        #START250613
-        print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --parent instead. Abort!\n')
-
-        exit()
+    #START250709
+    #if args.dir:
+    #    #print(f'sys.argv={sys.argv}')
+    #    matches = [x for x in flagsdir if x in sys.argv]
+    #    #print(f'matches={matches}')
+    #    print(f'Your option list includes "{matches[0]} {args.dir}". Archaic. Use --parent instead. Abort!\n')
+    #    exit()
+    #if args.append:
+    #    #print(f'sys.argv={sys.argv}')
+    #    matches = [x for x in flagsappend if x in sys.argv]
+    #    #print(f'matches={matches}')
+    #    print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --parent instead. Abort!\n')
+    #    exit()
 
     print(f'{' '.join(sys.argv)}')          
 
@@ -427,12 +418,11 @@ if __name__ == "__main__":
         else:
             par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
 
-        idx = i.find('sub-')
+        #START250709
 
+        idx = i.find('sub-')
         if idx != -1:
             s0 = i[idx: idx + i[idx:].find('/')]
-
-            #START250607
             if not s0: s0 = i[idx: idx + i[idx:].find('_')]
 
         if args.cd0:
@@ -521,30 +511,6 @@ if __name__ == "__main__":
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
 
         else:
-
-            #idx = i.find('raw_data')
-            #if idx == -1:
-            #    d0 = str(pathlib.Path(i).resolve().parent) + '/'
-            #else:
-            #    d0 = i[:idx]
-            #dir0 = d0 + 'derivatives/preprocessed/' + s0 + '/pipeline' + gev.FREESURFVER
-            #bids = d0 + 'derivatives/preprocessed/${s0}'
-            #dir1 = '${bids}/pipeline${FREESURFVER}'
-            #dir2 = bids + '/pipeline${FREESURFVER}'
-            #START250607
-            #idx = i.find('raw_data')
-            #if idx == -1:
-            #    #d0 = str(pathlib.Path(i).resolve().parent) + '/'
-            #    d0 = str(pathlib.Path(i).resolve().parent)
-            #    str0=''
-            #else:
-            #    d0 = i[:idx]
-            #    str0='derivatives/preprocessed/' + s0
-            #dir0 = d0 + str0 + '/pipeline' + gev.FREESURFVER
-            #bids = d0 + str0 + '${s0}'
-            #dir1 = '${bids}/pipeline${FREESURFVER}'
-            #dir2 = bids + '/pipeline${FREESURFVER}'
-            #START250608
             idx = i.find('raw_data')
             if idx == -1:
                 d0 = str(pathlib.Path(i).resolve().parent)
@@ -574,33 +540,49 @@ if __name__ == "__main__":
         except Exception as e:
             print(f'Error: Unable to write to {tmp}: {e}')
 
-
-        stem0 = dir0 + '/scripts/' + s0
-        str0 = stem0 + '_' + l0 + datestr
+        #stem0 = dir0 + '/scripts/' + s0
+        #str0 = stem0 + '_' + l0 + datestr
+        #START250709
+        stem0 = f'{dir0}/scripts/'
+        if 's0' in locals():
+            s1='${s0}_'
+            stem0 += f'{s0}_' 
+        else:
+            s0,s1='',''
+        str0 = stem0 + l0 + datestr
 
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
 
         if not args.lcfeatadapter and feat: 
-            #Ffeat = stem0 + '_FEATADAPTER' + datestr + '.sh'
-            #Ffeatname = '${s0}_FEATADAPTER' + datestr + '.sh' 
             Ffeat = stem0 + '_featadapter' + datestr + '.sh'
-            Ffeatname = '${s0}_featadapter' + datestr + '.sh' 
 
-        #F2 = stem0 + '_bidscp' + datestr + '.sh' 
-        #F2name = '${s0}_bidscp' + datestr + '.sh'
-        #START250706
-        F2 = stem0 + '_bidscp_func' + datestr + '.sh' 
-        F2name = '${s0}_bidscp_func' + datestr + '.sh'
+            #Ffeatname = '${s0}_featadapter' + datestr + '.sh' 
+            #START250709
+            Ffeatname = s1 + 'featadapter' + datestr + '.sh' 
 
-        F3 = stem0 + '_smooth' + datestr + '.sh' 
-        F3name = '${s0}_smooth' + datestr + '.sh'
+        #F2 = stem0 + '_bidscp_func' + datestr + '.sh' 
+        #F2name = '${s0}_bidscp_func' + datestr + '.sh'
+        #START250709
+        F2 = stem0 + 'bidscp_func' + datestr + '.sh' 
+        F2name = s1 + 'bidscp_func' + datestr + '.sh'
 
-        F0name = '${s0}_' + l0 + datestr + '.sh'
-        Fclean = stem0 + '_cleanup' + datestr + '.sh'
+        #F3 = stem0 + '_smooth' + datestr + '.sh' 
+        #F3name = '${s0}_smooth' + datestr + '.sh'
+        #F0name = '${s0}_' + l0 + datestr + '.sh'
+        #Fclean = stem0 + '_cleanup' + datestr + '.sh'
+        #START250709
+        F3 = stem0 + 'smooth' + datestr + '.sh' 
+        F3name = s1 + 'smooth' + datestr + '.sh'
+        F0name = s1 + l0 + datestr + '.sh'
+        Fclean = stem0 + 'cleanup' + datestr + '.sh'
 
         if args.bs:
-            str0 = stem0 + '_OGREbatch' + datestr
+
+            #str0 = stem0 + '_OGREbatch' + datestr
+            #START250709
+            str0 = stem0 + 'OGREbatch' + datestr
+
             bs0 = str0 + '.sh'
 
             if not pathlib.Path(bs0).is_file():

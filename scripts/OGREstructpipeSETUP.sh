@@ -413,7 +413,7 @@ if [ -z "${cd0}" ];then
         d0=/$(join_by / ${subj[@]::${#subj[@]}})
         str0=
         bids=${d0}${str0}
-        echo "here0 bids=$bids"
+        #echo "here0 bids=$bids"
     else
         for j in "${!subj[@]}";do
             if [[ "${subj[j]}" = "raw_data" ]];then
