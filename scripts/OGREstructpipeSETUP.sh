@@ -433,10 +433,6 @@ else
     dir1=${cd0}/pipeline'${FREESURFVER}'
 fi
 
-
-
-
-
 if [[ -n $name ]];then
     s0=$name
 elif [[ -z ${subj[j]} ]];then
@@ -444,11 +440,7 @@ elif [[ -z ${subj[j]} ]];then
     s0=${r0%scanlist*}
     [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required
 fi
-
-#START250708
 [[ -n ${s0} ]] && s1=${s0}_
-
-
 
 if((lchostname==1));then
     dir0+=_$(hostname)
@@ -469,21 +461,20 @@ rm -Rf $tmp
 echo ${dir0} > $tmp 
 
 
-#F0stem=${dir0}/scripts/${s0}_OGREstruct${datestr} 
-#START250708
 F0stem=${dir0}/scripts/${s1}OGREstruct${datestr} 
-
 F0=${F0stem}.sh
 F1=${F0stem}_fileout.sh
-F0name='${s0}'_OGREstruct${datestr}.sh
 
+#F0name='${s0}'_OGREstruct${datestr}.sh
+#START250711
+F0name='${s0}'OGREstruct${datestr}.sh
 
-#START250705
-#Fcopy=${dir0}/scripts/${s0}_bidscp_struct${datestr}.sh
 Fcopy=${dir0}/scripts/${s1}bidscp_struct${datestr}.sh
 
 
-Fcopyname='${s0}'_bidscp_struct${datestr}.sh
+#Fcopyname='${s0}'_bidscp_struct${datestr}.sh
+#START250711
+Fcopyname='${s1}'bidscp_struct${datestr}.sh
 
 
 if [ -n "${bs}" ];then
@@ -782,14 +773,13 @@ echo "bids=${bids}" >> ${F0}
 
 echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${F0}
 
+#START250711
+echo 'unset s1'  >> ${F0}
+echo '[[ -n ${s0} ]] && s1=${s0}_'  >> ${F0}
 
-#START250705
 echo -e COPY='${sf0}'/scripts/${Fcopyname}'\n' >> ${F0}
-
-
 echo "erosion=${erosion}" >> ${F0}
 echo -e "dilation=${dilation}\n" >> ${F0}
-
 echo 'freesurferdir=${sf0}/T1w/${s0}' >> ${F0}
 echo 'if [ ! -d "$freesurferdir" ];then' >> ${F0}
 echo '    ${PRE} \' >> ${F0}
@@ -907,6 +897,10 @@ echo "FREESURFVER=${FREESURFVER}" >> ${Fcopy}
 echo "s0=${s0}" >> ${Fcopy}
 echo "bids=${bids}" >> ${Fcopy}
 echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${Fcopy}
+
+#START250711
+echo '[[ -n ${s0} ]] && s0+=_'  >> ${Fcopy} 
+
 echo 'mkdir -p ${bids}/anat' >> ${Fcopy}
 echo 'source ${sf0}/templates/export_templates.sh #->FinalfMRIResolution' >> ${Fcopy}
 echo 'ANAT=(T1w_restore \' >> ${Fcopy}
@@ -932,20 +926,37 @@ echo '    if [ ! -f "${anat}" ];then' >> ${Fcopy}
 echo '        echo ${anat} not found.' >> ${Fcopy}
 echo '        continue' >> ${Fcopy}
 echo '    fi' >> ${Fcopy}
-echo '    out=${bids}/anat/${s0}_${OUT[i]}.nii.gz' >> ${Fcopy}
+
+#echo '    out=${bids}/anat/${s0}_${OUT[i]}.nii.gz' >> ${Fcopy}
+#START250711
+echo '    out=${bids}/anat/${s0}${OUT[i]}.nii.gz' >> ${Fcopy}
+
 echo '    cp -f -p ${anat} ${out}' >> ${Fcopy}
 echo '    echo -e "${anat}\n    copied to ${out}"' >> ${Fcopy}
 echo 'done' >> ${Fcopy}
 T1j=${T1f//nii.gz/json}
 [ -n "${T2f}" ] && T2j=${T2f//nii.gz/json}
-echo -e '\nFILE=(${bids}/anat/${s0}_OGRE-preproc_desc-restore_T1w.nii.gz \' >> ${Fcopy}
-echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T1w_brain.nii.gz \' >> ${Fcopy}
-echo '     ${bids}/anat/${s0}_OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w.nii.gz \' >> ${Fcopy}
-echo '     ${bids}/anat/${s0}_OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w_brain.nii.gz'$ender >> ${Fcopy}
+
+
+#echo -e '\nFILE=(${bids}/anat/${s0}_OGRE-preproc_desc-restore_T1w.nii.gz \' >> ${Fcopy}
+#echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T1w_brain.nii.gz \' >> ${Fcopy}
+#echo '     ${bids}/anat/${s0}_OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w.nii.gz \' >> ${Fcopy}
+#echo '     ${bids}/anat/${s0}_OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w_brain.nii.gz'$ender >> ${Fcopy}
+#if [ -n "${T2f}" ];then
+#    echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T2w.nii.gz \' >> ${Fcopy}
+#    echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T2w_brain.nii.gz)' >> ${Fcopy}
+#fi
+#START250711
+echo -e '\nFILE=(${bids}/anat/${s0}OGRE-preproc_desc-restore_T1w.nii.gz \' >> ${Fcopy}
+echo '     ${bids}/anat/${s0}OGRE-preproc_desc-restore_T1w_brain.nii.gz \' >> ${Fcopy}
+echo '     ${bids}/anat/${s0}OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w.nii.gz \' >> ${Fcopy}
+echo '     ${bids}/anat/${s0}OGRE-preproc_res-${FinalfMRIResolution}_desc-restore_T1w_brain.nii.gz'$ender >> ${Fcopy}
 if [ -n "${T2f}" ];then
-    echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T2w.nii.gz \' >> ${Fcopy}
-    echo '     ${bids}/anat/${s0}_OGRE-preproc_desc-restore_T2w_brain.nii.gz)' >> ${Fcopy}
+    echo '     ${bids}/anat/${s0}OGRE-preproc_desc-restore_T2w.nii.gz \' >> ${Fcopy}
+    echo '     ${bids}/anat/${s0}OGRE-preproc_desc-restore_T2w_brain.nii.gz)' >> ${Fcopy}
 fi
+
+
 echo 'JSON=('${T1j}' \' >> ${Fcopy}
 echo '      '${T1j}' \' >> ${Fcopy}
 echo '      '${T1j}' \' >> ${Fcopy}
@@ -957,6 +968,7 @@ if [ -n "${T2j}" ];then
 fi
 echo 'OGREjson.py -f "${FILE[@]}" -j "${JSON[@]}"' >> ${Fcopy} #@ needed for python to see arrays
 
+
 echo '${COPY}' >> ${F0} #F0 is correct
 echo "    Output written to ${Fcopy}"
 
@@ -967,13 +979,14 @@ echo -e '\necho -e "Finshed $0\\nOGRE structural pipeline completed."' >> ${F0}
 
 echo -e "$shebang\nset -e\n" > ${F1} 
 
-#e0="FREESURFVER=${FREESURFVER}\ns0=${s0}\nsf0=${dir1}\n"F0='${sf0}'/scripts/${F0name}"\n"out='${F0}'.txt
-#echo -e ${e0} >> ${F1}
-#START250705
 echo "FREESURFVER=${FREESURFVER}" >> ${F1}
 echo "s0=${s0}" >> ${F1}
 echo "bids=${bids}" >> ${F1}
 echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${F1}
+
+#START250711
+echo '[[ -n ${s0} ]] && s0+=_'  >> ${F1}
+
 echo -e F0='${sf0}'/scripts/${F0name}'\nout=${F0}'.txt >> ${F1}
 
 
