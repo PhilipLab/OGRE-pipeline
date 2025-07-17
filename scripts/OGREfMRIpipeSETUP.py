@@ -544,11 +544,22 @@ if __name__ == "__main__":
         #str0 = stem0 + '_' + l0 + datestr
         #START250709
         stem0 = f'{dir0}/scripts/'
+
+
+
+        #if 's0' in locals():
+        #    s1='${s0}_'
+        #    stem0 += f'{s0}_' 
+        #else:
+        #    s0,s1='',''
+        #START250709
         if 's0' in locals():
-            s1='${s0}_'
             stem0 += f'{s0}_' 
         else:
-            s0,s1='',''
+            s0=''
+        s1='${s1}'
+
+
         str0 = stem0 + l0 + datestr
 
         F0 = [str0 + '.sh']
@@ -574,7 +585,11 @@ if __name__ == "__main__":
         #START250709
         F3 = stem0 + 'smooth' + datestr + '.sh' 
         F3name = s1 + 'smooth' + datestr + '.sh'
-        F0name = s1 + l0 + datestr + '.sh'
+
+        #F0name = s1 + l0 + datestr + '.sh'
+        #START250715
+        F0name = '${s0}' + l0 + datestr + '.sh'
+
         Fclean = stem0 + 'cleanup' + datestr + '.sh'
 
         if args.bs:
@@ -660,6 +675,11 @@ if __name__ == "__main__":
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
 
                 if not args.lcsmoothonly: 
+
+                    #START250715
+                    F0f[0].write('\nunset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
+
+
                     F0f[0].write('COPY=${sf0}/scripts/'+f'{F2name}\n')
                     F0f[0].write('SMOOTH=${sf0}/scripts/'+f'{F3name}\n')
                     if feat: F0f[0].write('FEAT=${sf0}/scripts/'+f'{Ffeatname}\n')
@@ -739,6 +759,9 @@ if __name__ == "__main__":
 
                 F1f.write(f'{gev.SHEBANG}\nset -e\n\n')
                 F1f.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir2}\n')
+
+                #START250715
+                F1f.write('\n[[ -n ${s0} ]] && s0+=_\n')
 
                 #F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
                 #START241224

@@ -138,6 +138,9 @@ class Scans:
     #START250307
     def write_copy_script(self,file,s0,pathstr,gev):
 
+        print(f'write_copy_script here0 s0={s0}END')
+        print(f'write_copy_script here0 self.bold={self.bold}END')
+
         with open(file,'w') as f0:
 
             #f0.write(f'{SHEBANG}\nset -e\n\n')
@@ -301,7 +304,14 @@ class Scans:
 
 
     def write_bold_bash(self,f0,s0,bolds):
-        bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
+
+        #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
+        #START250715
+        if s0:
+            bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
+        else:
+            bold_bash = [i for i in list(zip(*bolds))[0]]
+
         f0.write('BOLD=(\\\n')
         j=-1 #default value needed for single bold
         for j in range(len(bold_bash)-1):
