@@ -280,7 +280,9 @@ if __name__ == "__main__":
         +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
     parser.add_argument('-P','--projectdirectory','-projectdirectory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
 
-
+    #START250718
+    hname='Use with --projectdirectory to provide the subject name. Default is root of scanlist.csv.'
+    parser.add_argument('-n','--name','-name',dest='name',metavar='mynamestr',help=hname)
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code
@@ -418,12 +420,20 @@ if __name__ == "__main__":
         else:
             par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
 
-        #START250709
 
-        idx = i.find('sub-')
-        if idx != -1:
-            s0 = i[idx: idx + i[idx:].find('/')]
-            if not s0: s0 = i[idx: idx + i[idx:].find('_')]
+        #idx = i.find('sub-')
+        #if idx != -1:
+        #    s0 = i[idx: idx + i[idx:].find('/')]
+        #    if not s0: s0 = i[idx: idx + i[idx:].find('_')]
+        #START250718
+        if args.name:
+            s0 = args.name
+        else:
+            idx = i.find('sub-')
+            if idx != -1:
+                s0 = i[idx: idx + i[idx:].find('/')]
+                if not s0: s0 = i[idx: idx + i[idx:].find('_')]
+
 
         if args.cd0:
             p0=pathlib.Path(args.cd0) 
@@ -445,71 +455,37 @@ if __name__ == "__main__":
             if p0.root:
                 #TRAP 1
                 if exists:
-
-                    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
-                    #    + ' Would you like to continue? y, n ').casefold()
-                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                    #START250613
-                    ynq = input(f'    \nParent directory = {args.cd0}\n    Your parent directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+                    ynq = input(f'    \nProject directory = {args.cd0}\n    Your project directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
                         + ' Would you like to continue? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-
             else:
                 ##TRAP 2
                 if exists:
-
-                    #ynq = input(f'    \nContainer directory = {args.cd0}\n    Your container directory is a relative path. Resolving ...\n' \
-                    #    + f'        {d0}\n    Your container directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
-                    #    + ' Would you like to continue? y, n ').casefold()
-                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                    #START250613
-                    ynq = input(f'    \nParent directory = {args.cd0}\n    Your parent directory is a relative path. Resolving ...\n' \
-                        + f'        {d0}\n    Your parent directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
+                    ynq = input(f'    \nProject directory = {args.cd0}\n    Your project directory is a relative path. Resolving ...\n' \
+                        + f'        {d0}\n    Your project directory has preexisting functional outputs (MNINonLinear/Results) that will get overwritten.' \
                         + ' Would you like to continue? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-
-
                 #TRAP 3
                 if pathlib.Path(f'/{p0}').exists():
-
-                    #print(f'    \nContainer directory = {args.cd0}\n' \
-                    #    + '    Your container directory is missing the forward slash at the beginning.\n' \
-                    #    + '    However, the directory with the added forward slash already exists. Danger of overwrite! Please correct. Abort!')
-                    #START250613
-                    print(f'    \nParent directory = {args.cd0}\n' \
-                        + '    Your parent directory is missing the forward slash at the beginning.\n' \
+                    print(f'    \nProject directory = {args.cd0}\n' \
+                        + '    Your project directory is missing the forward slash at the beginning.\n' \
                         + '    However, the directory with the added forward slash already exists. Danger of overwrite! Please correct. Abort!')
-
                     exit()
                 #TRAP 4
                 if pathlib.Path(f'/{p0.parts[0]}').exists():
-
-                    #print(f'    \nContainer directory = {args.cd0}\n' \
-                    #    + '    Your container directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
-                    #START250613
-                    print(f'    \nParent directory = {args.cd0}\n' \
-                        + '    Your parent directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
+                    print(f'    \nProject directory = {args.cd0}\n' \
+                        + '    Your project directory is missing the forward slash at the beginning. Please correct the typo. Abort!\n') 
 
                     exit()
                 else:
                     #TRAP 5
-
-                    #ynq = input(f'    \nContainer directory = {args.cd0}\n' \
-                    #    + '    Your container directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
-                    #    + '    The following root will be added:\n' \
-                    #    + f'        {pathlib.Path.cwd()}\n' \
-                    #    + f'    New container directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
-                    #    + f'    Is this what you want? y, n ').casefold()
-                    #if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-                    #START260513
-                    ynq = input(f'    \nParent directory = {args.cd0}\n' \
-                        + '    Your parent directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
+                    ynq = input(f'    \nProject directory = {args.cd0}\n' \
+                        + '    Your project directory is missing the root (i.e. is a relative path, not an absolute path).\n' \
                         + '    The following root will be added:\n' \
                         + f'        {pathlib.Path.cwd()}\n' \
-                        + f'    New parent directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
+                        + f'    New project directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
                         + f'    Is this what you want? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
-
         else:
             idx = i.find('raw_data')
             if idx == -1:
