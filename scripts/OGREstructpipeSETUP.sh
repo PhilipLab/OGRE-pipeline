@@ -85,7 +85,7 @@ helpmsg(){
     echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
     echo "    -n --name -name"
-    echo "        Use with --parent to provide the subject name. Default is root of scanlist.csv."
+    echo "        Use with --projectdirectory to provide the subject name. Default is root of scanlist.csv."
 
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
@@ -383,6 +383,9 @@ dir0=${datf%/*}
 IFS='/' read -ra subj <<< "${dir0}"
 s0=${subj[${#subj[@]}-1]}
 
+echo "here0 subj[@]=${subj[@]}"
+echo "here0 s0=${s0}"
+
 
 #if [ -z "${cd0}" ];then
 #    T1f=${T1f//${s0}/'${s0}'}
@@ -435,6 +438,8 @@ fi
 
 if [[ -n $name ]];then
     s0=$name
+
+#STARTHERE ${subj[j]} needs to be changed to something else
 elif [[ -z ${subj[j]} ]];then
     r0=${datf##*/}
     s0=${r0%scanlist*}
