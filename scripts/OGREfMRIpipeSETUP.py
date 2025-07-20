@@ -606,54 +606,38 @@ if __name__ == "__main__":
             for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
 
             if not args.lcfeatadapter:
-                #F0f[0].write(f'FREESURFDIR={FREESURFDIR}\nFREESURFVER={FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
-                F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n\n')
-                F0f[0].write(f'export HCPDIR={gev.HCPDIR}\n\n')
+                F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n')
+                F0f[0].write(f'export HCPDIR={gev.HCPDIR}\n')
+                F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n\n')
+                pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
+                F0f[0].write(pathstr) # s0, bids and sf0
+                if len(F0f)>1: F0f[1].write(f's0={s0}\n')
+                if not args.lcsmoothonly: F0f[0].write('unset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
 
-            #if not feat:
-            #    if not args.lcfeatadapter:
-            #        if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
-            #            F0f[0].write(f'FSLDIR={gev.FSLDIR}\nexport FSLDIR='+'${FSLDIR}\n\n')          
-            #else:
-            #    feat.write_script(Ffeat,gev)
-            #START250310
-            #fi0=0
-            #if not args.lcfeatadapter:
-            #    #F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
-            #    #fi0+=1
-            #    #if not args.lcsmoothonly: 
-            #    #    F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
-            #    #
-            #    ##START250307
-            #    ##if par.taskidx and (args.fwhm or args.hpf_sec or args.lpf_sec):
-            #    ##    F0f[0].write('SMOOTH=${OGREDIR}/lib/'+P1+'\n')
-            #    #
-            #    ##START250211
-            #    #if not args.lcsmoothonly: 
-            #    #    F0f[0].write('MOTIONQA=${OGREDIR}/lib/'+P2+'\n')
-            #if not args.lcfeatadapter:
-            #    if not args.lcsmoothonly: 
-            #START250310 
             fi0=0
             if args.lcfeatadapter: 
                 feat.write_script(Ffeat,gev)
             else:
-                F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
+
+                #START250719
+                #F0f[0].write(f'export OGREDIR={gev.OGREDIR}\n')
+
                 fi0+=1
                 if not args.lcsmoothonly: 
                     F0f[0].write('VOLPROC=${OGREDIR}/lib/'+P0+'\n')
                     F0f[0].write('MOTIONQA=${OGREDIR}/lib/'+P2+'\n')
-                    F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP+'\n')
+                    F0f[0].write('SETUP=${OGREDIR}/lib/'+SETUP)
                 F0f[0].write('\n')
-                pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
-                F0f[0].write(pathstr) # s0, bids and sf0
 
-                if len(F0f)>1: F0f[1].write(f's0={s0}\n')
+                #START250719
+                #pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
+                #F0f[0].write(pathstr) # s0, bids and sf0
+                #if len(F0f)>1: F0f[1].write(f's0={s0}\n')
 
                 if not args.lcsmoothonly: 
 
-                    #START250715
-                    F0f[0].write('\nunset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
+                    #START250719
+                    #F0f[0].write('\nunset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
 
 
                     F0f[0].write('COPY=${sf0}/scripts/'+f'{F2name}\n')

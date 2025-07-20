@@ -752,16 +752,18 @@ echo export FinalfMRIResolution='$'"(sed -e 's/^[0]*//' -e 's/[0]*"'$'"//' -e 's
 
 echo -e "$shebang\nset -e\n" > ${F0} 
 echo -e "#$0 $@\n" >> ${F0}
+
+echo FREESURFVER=${FREESURFVER} >> ${F0}
+echo export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}' >> ${F0}
+echo export HCPDIR=${HCPDIR} >> ${F0}
+echo -e "export OGREDIR=${OGREDIR}\n" >> ${F0}
+
 echo "s0=${s0}" >> ${F0}
 echo "bids=${bids}" >> ${F0}
 echo 'sf0=${bids}/pipeline${FREESURFVER}' >> ${F0}
 echo 'unset s1'  >> ${F0}
 echo -e '[[ -n ${s0} ]] && s1=${s0}_\n'  >> ${F0}
 
-echo FREESURFVER=${FREESURFVER} >> ${F0}
-echo export FREESURFER_HOME=${FREESURFDIR}/'${FREESURFVER}' >> ${F0}
-echo export HCPDIR=${HCPDIR} >> ${F0}
-echo export OGREDIR=${OGREDIR} >> ${F0}
 echo PRE='${OGREDIR}'/lib/${PRE} >> ${F0}
 echo FREE='${OGREDIR}'/lib/${FREE} >> ${F0}
 echo POST='${OGREDIR}'/lib/${POST} >> ${F0}
@@ -885,16 +887,13 @@ echo '${MASKSLOW} ${sf0}' >> ${F0}
 #echo 'OGREjson.py -f "${FILE[@]}" -j "${JSON[@]}"' >> ${F0} #@ needed for python to see arrays
 #START250705
 echo -e "$shebang\nset -e\n" > ${Fcopy} 
-echo "FREESURFVER=${FREESURFVER}" >> ${Fcopy}
+echo -e "FREESURFVER=${FREESURFVER}\n" >> ${Fcopy}
 echo "s0=${s0}" >> ${Fcopy}
 echo "bids=${bids}" >> ${Fcopy}
-echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${Fcopy}
-
-#START250711
+echo -e 'sf0=${bids}/pipeline${FREESURFVER}' >> ${Fcopy}
 echo '[[ -n ${s0} ]] && s0+=_'  >> ${Fcopy} 
-
 echo 'mkdir -p ${bids}/anat' >> ${Fcopy}
-echo 'source ${sf0}/templates/export_templates.sh #->FinalfMRIResolution' >> ${Fcopy}
+echo -e 'source ${sf0}/templates/export_templates.sh #->FinalfMRIResolution\n' >> ${Fcopy}
 #echo 'Anat=(T1w_restore \' >> ${Fcopy}
 #echo '      T1w_restore_brain \'  >> ${Fcopy}
 #echo '      T1w_restore.${FinalfMRIResolution} \' >> ${Fcopy}
@@ -923,6 +922,7 @@ if [ -n "${T2f}" ];then
     echo '      T2w_restore \'  >> ${Fcopy}
     echo '      T2w_restore_brain)'  >> ${Fcopy}
 fi
+echo '' >> ${Fcopy}
 echo 'for((i=0;i<${#Anat[@]};++i));do' >> ${Fcopy}
 echo '    anat=${sf0}/MNINonLinear/${Anat[i]}.nii.gz' >> ${Fcopy}
 echo '    if [ ! -f "${anat}" ];then' >> ${Fcopy}
@@ -988,15 +988,13 @@ echo -e '\necho -e "Finshed $0\\nOGRE structural pipeline completed."' >> ${F0}
 
 echo -e "$shebang\nset -e\n" > ${F1} 
 
-echo "FREESURFVER=${FREESURFVER}" >> ${F1}
+echo -e "FREESURFVER=${FREESURFVER}\n" >> ${F1}
 echo "s0=${s0}" >> ${F1}
 echo "bids=${bids}" >> ${F1}
-echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${F1}
+echo 'sf0=${bids}/pipeline${FREESURFVER}' >> ${F1}
+echo -e '[[ -n ${s0} ]] && s0+=_\n'  >> ${F1}
 
-#START250711
-echo '[[ -n ${s0} ]] && s0+=_'  >> ${F1}
-
-echo -e F0='${sf0}'/scripts/${F0name}'\nout=${F0}'.txt >> ${F1}
+echo -e F0='${sf0}'/scripts/${F0name}'\nout=${F0}.txt\n' >> ${F1}
 
 
 echo 'if [ -f "${out}" ];then' >> ${F1}
@@ -1017,7 +1015,8 @@ if [ -n "${bs}" ];then
 
     #echo -e ${e0} >> ${bs0}
     #START250706
-    echo "FREESURFVER=${FREESURFVER}" >> ${F1}
+    echo -e "FREESURFVER=${FREESURFVER}\n" >> ${F1}
+
     echo "s0=${s0}" >> ${F1}
     echo "bids=${bids}" >> ${F1}
     echo -e 'sf0=${bids}/pipeline${FREESURFVER}\n' >> ${F1}
