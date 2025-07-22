@@ -84,11 +84,11 @@ class Scans:
         #print(f'self.fmap={self.fmap}')
         #print(f'self.sbref={self.sbref}')
         #print(f'self.bold={self.bold}')
-        print(f'self.taskidx={self.taskidx}')
+        #print(f'self.taskidx={self.taskidx}')
         #print(f'self.restidx={self.restidx}')
         #print(f'self.dwifmap={self.dwifmap}')
         #print(f'self.dwi={self.dwi}')
-        print(f'self.taskflag={self.taskflag}')
+        #print(f'self.taskflag={self.taskflag}')
 
         if not lcdonotuseIntendedFor: self.__check_IntendedFor_fmap()
 
@@ -138,8 +138,8 @@ class Scans:
     #START250307
     def write_copy_script(self,file,s0,pathstr,gev):
 
-        print(f'write_copy_script here0 s0={s0}END')
-        print(f'write_copy_script here0 self.bold={self.bold}END')
+        #print(f'write_copy_script here0 s0={s0}END')
+        #print(f'write_copy_script here0 self.bold={self.bold}END')
 
         with open(file,'w') as f0:
 

@@ -91,7 +91,11 @@ get_batch_options() {
 	local arguments=("$@")
 
 	unset command_line_specified_study_folder
-	unset command_line_specified_subj
+
+	#unset command_line_specified_subj
+        #START250720
+	unset Subjlist
+
 	unset command_line_specified_run_local
         unset command_line_specified_T1
         unset command_line_specified_T2
@@ -121,7 +125,11 @@ get_batch_options() {
 				index=$(( index + 1 ))
 				;;
 			--Subject=*)
-				command_line_specified_subj=${argument#*=}
+
+				#command_line_specified_subj=${argument#*=}
+                                #START250720
+				Subjlist=${argument#*=}
+
 				index=$(( index + 1 ))
 				;;
 			--runlocal)
@@ -217,7 +225,9 @@ main()
 	get_batch_options "$@"
 
 	StudyFolder="${HOME}/projects/Pipelines_ExampleData" # Location of Subject folders (named by subjectID)
-	Subjlist="100307"                                    # Space delimited list of subject IDs
+
+        #START250720
+	#Subjlist="100307"                                    # Space delimited list of subject IDs
 
 	## Use any command line specified options to override any of the variable settings above
 	#if [ -n "${command_line_specified_study_folder}" ]; then
@@ -232,9 +242,10 @@ main()
 	StudyFolder="${command_line_specified_study_folder}"
 
 
-	if [ -n "${command_line_specified_subj}" ]; then
-		Subjlist="${command_line_specified_subj}"
-	fi
+        #START250720
+	#if [ -n "${command_line_specified_subj}" ]; then
+	#	Subjlist="${command_line_specified_subj}"
+	#fi
 
 	# Set variable value that sets up environment
 	#EnvironmentScript="${HOME}/projects/Pipelines/Examples/Scripts/SetUpHCPPipeline.sh" # Pipeline environment script

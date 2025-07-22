@@ -429,7 +429,15 @@ if [[ -n $name ]];then
 else
     r0=${datf##*/}
     s0=${r0%scanlist*}
-    [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required
+    [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
+
+    #START250720
+    if [[ -z $s0 ]];then
+        r0=${T1f##*/}
+        s0=${r0%$T1SEARCHSTR*}
+        [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
+    fi
+
 fi
 [[ -n ${s0} ]] && s1=${s0}_
 if [[ -z "${cd0}" && -n ${s0} ]];then
