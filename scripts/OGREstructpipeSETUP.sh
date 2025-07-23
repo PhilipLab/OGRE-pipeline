@@ -403,6 +403,57 @@ IFS='/' read -ra subj <<< "${dir0}"
 #    dir1=${cd0}/pipeline'${FREESURFVER}'
 #fi
 #START250718
+#if [ -z "${cd0}" ];then
+#    if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
+#        d0=/$(join_by / ${subj[@]::${#subj[@]}})
+#        str0=
+#        bids=${d0}${str0}
+#    else
+#        for j in "${!subj[@]}";do
+#            if [[ "${subj[j]}" = "raw_data" ]];then
+#                d0=/$(join_by / ${subj[@]::j})
+#                str0=derivatives/preprocessed/${s0}
+#                bids=${d0}${str0}'${s0}'
+#                break
+#            fi
+#        done
+#    fi
+#    dir0=${d0}${str0}/pipeline${FREESURFVER}
+#    dir1='${bids}/pipeline${FREESURFVER}'
+#else
+#    dir0=${cd0}/pipeline${FREESURFVER}
+#    dir1=${cd0}/pipeline'${FREESURFVER}'
+#fi
+#if [[ -n $name ]];then
+#    s0=$name
+#else
+#    r0=${datf##*/}
+#    s0=${r0%scanlist*}
+#    [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
+#    if [[ -z $s0 ]];then
+#        r0=${T1f##*/}
+#        s0=${r0%$T1SEARCHSTR*}
+#        [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
+#    fi
+#fi
+#[[ -n ${s0} ]] && s1=${s0}_
+#if [[ -z "${cd0}" && -n ${s0} ]];then
+#    T1f=${T1f//${s0}/'${s0}'}
+#    T2f=${T2f//${s0}/'${s0}'}
+#fi
+#START250722
+if [[ -n $name ]];then
+    s0=$name
+else
+    r0=${datf##*/}
+    s0=${r0%scanlist*}
+    [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
+    if [[ -z $s0 ]];then
+        r0=${T1f##*/}
+        s0=${r0%$T1SEARCHSTR*}
+        [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
+    fi
+fi
 if [ -z "${cd0}" ];then
     if ! [[ $(echo ${subj[@]} | fgrep -w "raw_data") ]];then
         d0=/$(join_by / ${subj[@]::${#subj[@]}})
@@ -424,26 +475,14 @@ else
     dir0=${cd0}/pipeline${FREESURFVER}
     dir1=${cd0}/pipeline'${FREESURFVER}'
 fi
-if [[ -n $name ]];then
-    s0=$name
-else
-    r0=${datf##*/}
-    s0=${r0%scanlist*}
-    [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
-
-    #START250720
-    if [[ -z $s0 ]];then
-        r0=${T1f##*/}
-        s0=${r0%$T1SEARCHSTR*}
-        [[ ${s0: -1} == _ ]] && s0=${s0%_*} #space required before -1
-    fi
-
-fi
 [[ -n ${s0} ]] && s1=${s0}_
 if [[ -z "${cd0}" && -n ${s0} ]];then
     T1f=${T1f//${s0}/'${s0}'}
     T2f=${T2f//${s0}/'${s0}'}
 fi
+
+
+
 
 
 
@@ -470,17 +509,12 @@ echo ${dir0} > $tmp
 F0stem=${dir0}/scripts/${s1}OGREstruct${datestr} 
 F0=${F0stem}.sh
 F1=${F0stem}_fileout.sh
-
-#F0name='${s0}'_OGREstruct${datestr}.sh
-#START250711
 F0name='${s0}'OGREstruct${datestr}.sh
-
 Fcopy=${dir0}/scripts/${s1}bidscp_struct${datestr}.sh
-
-
-#Fcopyname='${s0}'_bidscp_struct${datestr}.sh
-#START250711
 Fcopyname='${s1}'bidscp_struct${datestr}.sh
+
+#START250722
+Fjson=${dir0}/scripts/OGREstruct.json
 
 
 if [ -n "${bs}" ];then
@@ -1059,6 +1093,10 @@ if [ -n "${bs}" ];then
         echo "Output written to $bs_fileout"
     fi
 fi
+
+#START250722
+jq -n --arg name $s0 '{ "name": $name }' > $Fjson
+echo "    Output written to $Fjson"
 
 cp -p -f ${dat} ${dir0}/scripts
 echo "OGRE structural pipeline setup completed."
