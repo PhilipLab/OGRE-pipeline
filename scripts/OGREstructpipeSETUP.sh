@@ -93,7 +93,7 @@ helpmsg(){
         echo "    -h --help -help"
         echo "        Echo this help message."
     else
-        echo "    -r --hires -hires"
+        echo "    -r --hires -hires --HighResolution -HighResolution"
         echo "        High resolution in mm: 0.7, 0.8 or 1. Default is 1. Applies only to default MNI152 asymmetric (HCP/FSL) templates."
 
         echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
@@ -210,7 +210,7 @@ for((i=0;i<${#@};++i));do
             helpall=True
             #echo "helpall=$helpall"
             ;;
-        -r | --hires | -hires)
+        -r | --hires | -hires | --HighResolution | -HighResolution)
             Hires=${arg[((++i))]}
             echo "Hires=$Hires"
             ;;

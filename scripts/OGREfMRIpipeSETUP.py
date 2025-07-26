@@ -424,12 +424,8 @@ if __name__ == "__main__":
         else:
             par = opl.scans.Scans(i,lcdonotsmoothrest=args.lcdonotsmoothrest,lcdonotuseIntendedFor=args.lcdonotuseIntendedFor)
 
-
-        #idx = i.find('sub-')
-        #if idx != -1:
-        #    s0 = i[idx: idx + i[idx:].find('/')]
-        #    if not s0: s0 = i[idx: idx + i[idx:].find('_')]
-        #START250718
+        #START250723
+        s0=''
         if args.name:
             s0 = args.name
         else:
@@ -437,7 +433,6 @@ if __name__ == "__main__":
             if idx != -1:
                 s0 = i[idx: idx + i[idx:].find('/')]
                 if not s0: s0 = i[idx: idx + i[idx:].find('_')]
-
 
         if args.cd0:
             p0=pathlib.Path(args.cd0) 
@@ -490,6 +485,17 @@ if __name__ == "__main__":
                         + f'    New project directory:\n    {pathlib.Path(args.cd0).resolve()}\n' \
                         + f'    Is this what you want? y, n ').casefold()
                     if ynq=='q' or ynq=='quit' or ynq=='exit' or ynq=='n' or ynq=='no': exit()
+
+            #START250723
+            #if not s0:
+            #    jsonf = dir0 + '/scripts/OGREstruct.json
+            #    try:
+            #        with open(jsonf,encoding="utf8",errors='ignore') as f0:
+            #            dict0 = json.load(file)
+            #            if 'name' in dict0: s0=name
+            #    except FileNotFoundError:
+            #        print(f'    Default {jsonf} not found.')
+
         else:
             idx = i.find('raw_data')
             if idx == -1:
@@ -520,6 +526,18 @@ if __name__ == "__main__":
         except Exception as e:
             print(f'Error: Unable to write to {tmp}: {e}')
 
+        #START250723
+        if not s0:
+            jsonf = dir0 + '/scripts/OGREstruct.json'
+            try:
+                with open(jsonf,encoding="utf8",errors='ignore') as f0:
+                    print(f'    Reading {jsonf}')
+                    dict0 = json.load(f0)
+                    if 'name' in dict0: s0=dict0["name"]
+            except FileNotFoundError:
+                print(f'    Default {jsonf} not found.')
+
+
         #stem0 = dir0 + '/scripts/' + s0
         #str0 = stem0 + '_' + l0 + datestr
         #START250709
@@ -533,15 +551,16 @@ if __name__ == "__main__":
         #else:
         #    s0,s1='',''
         #START250709
-        if 's0' in locals():
-            stem0 += f'{s0}_' 
-        else:
-            s0=''
+        #if 's0' in locals():
+        #    stem0 += f'{s0}_' 
+        #else:
+        #    s0=''
+        #START250723
+        if s0: stem0 += f'{s0}_'
+
+
         s1='${s1}'
-
-
         str0 = stem0 + l0 + datestr
-
         F0 = [str0 + '.sh']
         F1 = str0 + '_fileout.sh'
 

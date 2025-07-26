@@ -8,10 +8,6 @@ import subprocess
 import sys
 import threading
 
-#from opl.rou import run_cmd
-#START241214
-#from opl.rou import run_cmd,Envvars
-
 #https://stackoverflow.com/questions/60687577/trying-to-read-json-file-within-a-python-package
 #https://docs.python.org/3/library/importlib.resources.html
 import importlib.resources
@@ -36,35 +32,6 @@ if __name__ == "__main__":
          + 'Ex 5. '+parser.prog+' -j sub-1001_OGRE.json -j sub-2000_OGRE.json\n' \
          + 'Ex 6. '+parser.prog+' sub-1001_OGRE.json -j sub-2000_OGRE.json\n'
     parser.add_argument('-j','--json','-json',dest='dat',metavar='json',action='extend',nargs='+',help=hdat)
-    #START240908
-    #hp='Setup OGRE scripts. Required: OGREsetup.py <scanlist.csv>'
-    #parser=argparse.ArgumentParser(description=hp,formatter_class=argparse.RawTextHelpFormatter)
-    #parser.add_argument('dat0',metavar='<scanlist.csv(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be scanlist.csv files.')
-    #hdat = 'Ex 1. '+parser.prog+' sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
-    #     + 'Ex 2. '+parser.prog+' "sub-1001_scanlist.csv -s sub-2000_scanlist.csv"\n' \
-    #     + 'Ex 3. '+parser.prog+' -s sub-1001_scanlist.csv sub-2000_scanlist.csv\n' \
-    #     + 'Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
-    #     + 'Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -s sub-2000_scanlist.csv\n' \
-    #     + 'Ex 6. '+parser.prog+' sub-1001_scanlist.csv -s sub-2000_scanlist.csv\n'
-    #parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='extend',nargs='+',help=hdat)
-    #
-    #hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
-    #    +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
-    #    +'The path provided by this option will be used instead of any other setting.\n'
-    #parser.add_argument('-O','--OGREDIR','-OGREDIR','--ogredir','-ogredir',dest='OGREDIR',metavar='OGREdirectory',help=hOGREDIR)
-    #
-    #hjson = 'Your json file overwrites OGREdefault.json. Your options overwrite your json file.'
-    #parser.add_argument('-j','--json','-json',dest='json',metavar='json',help=hjson)
-    #
-    #hcd0='Container directory\n' \
-    #    +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
-    #    +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
-    #parser.add_argument('--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
-    #
-    #hfeat='Path to fsf files, text file which lists fsf files or directories with fsf files, one or more fsf files, or a combination thereof.\n' \
-    #    +'An OGREfeat.sh call is created for each fsf.'
-    #parser.add_argument('--feat','-feat','--fsf','-fsf','-o','-fsf1','--fsf1','-t','-fsf2','--fsf2',dest='feat',metavar='path, text file or *.fsf',action='extend',
-    #    nargs='+',help=hfeat)
 
     hverbose='Echo messages to terminal.'
     parser.add_argument('-v','--verbose','-verbose',dest='verbose',action='store_true',help=hverbose)
@@ -100,18 +67,22 @@ if __name__ == "__main__":
             print(f'    Error: {i} does not exist. Abort!')
             exit()
 
-        if not dict1["ScanList"]: 
-            print('{i} is missing ScanList. Abort!')
+        if "ScanList" in dict1:
+            if dict1["ScanList"]: 
+                str_both = ' ' + dict1["ScanList"] 
+
+#STARTHERE
+        if dict1["scanlist"]: 
+            str_both = ' ' + dict1["scanlist"] 
+        if 'str_both' not in locals():
+            print('{i} is missing scanlist. Abort!')
             exit()
-
-        str_both = ' ' + dict1["ScanList"] 
-
-        #START250604
-        #if dict1["AutoRun"]: str_both+=' -A' 
-
         if dict1["OGREDIR"]: str_both+=' -O ' + dict1["OGREDIR"]
         if dict1["HCPDIR"]: str_both+=' -H ' + dict1["HCPDIR"] 
+
         if dict1["FreeSurferVersion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
+        elif dict1["freesurferversion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
+
         if dict1["HostName"]: str_both+=' -m'
         if dict1["Date"]: str_both+=' -D'
         if dict1["DateLong"]: str_both+=' -DL'
