@@ -33,7 +33,7 @@ function join_by {
 root0=${0##*/}
 helpmsg(){
     echo "Required: ${root0} <scanlist.csv file(s)>"
-    echo "    -s --scanlist -scanlist"
+    echo "    -s -ScanList --scanlist -scanlist"
     echo "        scanlist.csv file(s). Arguments without options are assumed to be scanlist.csv files."
     echo "        Two columns. First column identifies the dicom directory. Second column is the output name of the nifti."
     echo "        Columns may be separated by commas, spaces and/or tabs."
@@ -42,7 +42,7 @@ helpmsg(){
     echo "            9,/Users/Shared/10_Connectivity/raw_data/sub-2035/fmap/sub-2035_SpinEchoFieldMap2_PA-1"
     echo "            10,/Users/Shared/10_Connectivity/raw_data/sub-2035/func/sub-2035_task-drawRH_run-1_SBRef"
     echo "            11,/Users/Shared/10_Connectivity/raw_data/sub-2035/func/sub-2035_task-drawRH_run-1"
-    echo "    -A --autorun -autorun --AUTORUN -AUTORUN"
+    echo "    -A -AutoRun --autorun -autorun --AUTORUN -AUTORUN"
     echo "        Flag. Automatically execute *_fileout.sh script. Default is to not execute."
     echo "    -O --OGREDIR -OGREDIR --ogredir -ogredir"
     echo "        OGRE directory. Location of OGRE software package (e.g. ~/GitHub/OGRE-pipeline)."
@@ -50,23 +50,23 @@ helpmsg(){
     echo "        NOTE: you must either set -O or the variable OGREDIR."
     echo "    -H --HCPDIR -HCPDIR --hcpdir -hcpdir"
     echo "        HCP directory. Optional; default location is OGREDIR/lib/HCP"
-    echo "    -V --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion --freesurferversion -freesurferversion"
+    echo "    -V -FreeSurferVersion --VERSION -VERSION --FREESURFVER -FREESURFVER --freesurferVersion -freesurferVersion --freesurferversion -freesurferversion"
     echo "        5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER."
-    echo "    -m --HOSTNAME -HOSTNAME --hostname -hostname"
+    echo "    -m -HostName --HOSTNAME -HOSTNAME --hostname -hostname"
     echo "        Flag. Append machine name to pipeline directory. Ex. pipeline7.4.1_3452-AD-05003"
-    echo "    -D --DATE -DATE --date -date"
+    echo "    -D -Date --DATE -DATE --date -date"
     echo "        Flag. Add date (YYMMDD) to name of output script."
-    echo "    -L -DL --DL --DATELONG -DATELONG --datelong -datelong"
+    echo "    -L -DateLong -DL --DL --DATELONG -DATELONG --datelong -datelong"
     echo "        Flag. Add date (YYMMDDHHMMSS) to name of output script."
-    echo "    -b --batchscript -batchscript"
+    echo "    -b -BatchScript --batchscript -batchscript"
     echo "        *_fileout.sh scripts are collected in an executable batchscript."
     echo "        This permits the struct and fMRIvol scripts to be run sequentially and seamlessly."
     echo "        If a filename is provided, then in addition, the batchscripts are written to the provided filename."
     echo "        This facilitates the creation of an across-subjects script such that multiple subjects can be run sequentially and seamlessly."
-    echo "    -d --dilation -dilation --dil -dil"
+    echo "    -d -Dilation --dilation -dilation --dil -dil"
     echo "        Dilate the brain mask. Default is 3. Number of dilations (fslmaths dilD) that precede the erosions."
     echo "        Ex. -d 3, will result in three dilations"
-    echo "    -e --erosion -erosion --ero -ero"
+    echo "    -e -Erosion --erosion -erosion --ero -ero"
     echo "        Erode the brain mask. Default is 2. Number of erosions that follow the dilations."
     echo "        Ex. -e 2, will result in two erosions"
     echo "        See OGRE-pipeline/lib/OGREFreeSurfer2CaretConvertAndRegisterNonlinear.sh"
@@ -81,11 +81,11 @@ helpmsg(){
     echo '        If T1w_brain_mask does not include "dil" in its name, then it is dilated.'
     echo "        Optionally, a single T2-weighted image can be included: T2w (whole head)"
     echo "        e.g. $OGREDIR/lib/templates/mni-hcp_asym_2mm"
-    echo "    -P --projectdirectory -projectdirectory --container_directory -container_directory --cd -cd"
+    echo "    -P -ProjectDirectory --projectdirectory -projectdirectory --container_directory -container_directory --cd -cd"
     echo "        Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc"
     echo "            func, anat, regressors, pipeline7.4.1 are created inside this directory"
-    echo "    -n --name -name"
-    echo "        Use with --projectdirectory to provide the subject name. Default is root of scanlist.csv."
+    echo "    -n -Name --name -name"
+    echo "        Use with --projectdirectory to provide the subject name. Default is root of scanlist.csv. Overrides the default."
 
     if [ -z "$1" ];then
         echo "    --helpall -helpall"
@@ -97,39 +97,34 @@ helpmsg(){
         echo "        High resolution in mm: 0.7, 0.8 or 1. Default is 1. Applies only to default MNI152 asymmetric (HCP/FSL) templates."
 
         echo "    -T1 --T1 -t1 --t1 --T1HighResolutionWholeHead -T1HighResolutionWholeHead"
-        echo "        Default is MNI152_T1_${Hires}mm.nii.gz. This will override -ht."
+        echo "        Default is MNI152_T1_${Hires}mm.nii.gz. Overrides -ht."
         echo "    -T1brain --T1brain -t1brain --t1brain -t1b --t1b -T1b --T1b -T1HighResolutionBrainOnly --T1HighResolutionBrainOnly"
-        echo "        Default is MNI152_T1_${Hires}mm_brain.nii.gz. This will override -ht."
+        echo "        Default is MNI152_T1_${Hires}mm_brain.nii.gz. Overrides -ht."
         echo "    -T1brainmask --T1brainmask -t1brainmask --t1brainmask -t1bm --t1bm -T1bm --T1bm -T1HighResolutionBrainMask --T1HighResolutionBrainMask"
-        echo "        Default is MNI152_T1_${Hires}mm_brain_mask.nii.gz. This will override -ht."
+        echo "        Default is MNI152_T1_${Hires}mm_brain_mask.nii.gz. Overrides -ht."
 
         echo "    -T1low --T1low -t1low --t1low -t1l --t1l -T1l --T1l -T1LowResolutionWholeHead --T1LowResolutionWholeHead"
-        echo "        Default is MNI152_T1_2mm.nii.gz. This will overide -lt."
+        echo "        Default is MNI152_T1_2mm.nii.gz. Overides -lt."
         echo "    -T1brainlow --T1brainlow -t1brainlow --t1brainlow -t1bl --t1bl -T1bl --T1bl -T1LowResolutionBrainOnly --T1LowResolutionBrainOnly"
-        echo "        No default. If provided, this will be used to make the low resolution mask. This will override -lt."
+        echo "        No default. If provided, this will be used to make the low resolution mask. Overrides -lt."
         echo "    -T1brainmasklow --T1brainmasklow -t1brainmasklow --t1brainmasklow -t1bml --t1bml -T1bml --T1bml -T1LowResolutionBrainMask --T1LowResolutionBrainMask"
-        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. This will override -lt."
+        echo "        Default is MNI152_T1_2mm_brain_mask_dil.nii.gz. Overrides -lt."
         echo '        Mask is dilated if name does not include "dil".'
 
         echo "    -T2 --T2 -t2 --t2 -T2HighResolutionWholeHead --T2HighResolutionWholeHead"
-        echo "        Default is MNI152_T2_${Hires}mm.nii.gz. This will override -ht."
+        echo "        Default is MNI152_T2_${Hires}mm.nii.gz. Overrides -ht."
         echo "    -T2brain --T2brain -t2brain --t2brain -t2b --t2b -T2b --T2b -T2HighResolutionBrainOnly --T2HighResolutionBrainOnly"
-        echo "        Default is MNI152_T2_${Hires}mm_brain.nii.gz. This will override -ht."
+        echo "        Default is MNI152_T2_${Hires}mm_brain.nii.gz. Overrides -ht."
         echo "    -T2brainmask --T2brainmask -t2brainmask --t2brainmask -t2bm --t2bm -T2bm --T2bm -T2HighResolutionBrainMask --T2HighResolutionBrainMask" 
-        echo "        No default. If provided, this will be used to make the T2brain image. This will override -ht."
+        echo "        No default. If provided, this will be used to make the T2brain image. Overrides -ht."
         echo "    -T2low --T2low -t2low --t2low -t2l --t2l -T2l --T2l -T2LowResolutionWholeHead --T2LowResolutionWholeHead"
-        echo "        Default is MNI152_T2_2mm.nii.gz. This will override -lt."
+        echo "        Default is MNI152_T2_2mm.nii.gz. Overrides -lt."
 
         echo "    -h --help -help"
         echo "        Echo the short list."
         echo "    --helpall -helpall"
         echo "        Echo this help message."
     fi
-
-    #START250606
-    #echo "    -h --help -help"
-    #echo "        Echo this help message."
-
     }
 if((${#@}<1));then
     helpmsg
@@ -149,7 +144,7 @@ arg=("$@")
 for((i=0;i<${#@};++i));do
     #echo "i=$i ${arg[i]}"
     case "${arg[i]}" in
-        -s | --scanlist | -scanlist)
+        -s | -ScanList | --scanlist | -scanlist)
             dat+=(${arg[((++i))]})
             for((j=i;j<${#@};++i));do #i is incremented only if dat is appended
                 dat0=(${arg[((++j))]})
@@ -157,7 +152,7 @@ for((i=0;i<${#@};++i));do
                 dat+=(${dat0[@]})
             done
             ;;
-        -A | --autorun | -autorun | --AUTORUN | -AUTORUN)
+        -A | -AutoRun | --autorun | -autorun | --AUTORUN | -AUTORUN)
             lcautorun=1
             echo "lcautorun=$lcautorun"
             ;;
@@ -169,32 +164,32 @@ for((i=0;i<${#@};++i));do
             HCPDIR=${arg[((++i))]}
             echo "HCPDIR=$HCPDIR"
             ;;
-        -V | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion | --freesurferversion | -freesurferversion)
+        -V | -FreeSurferVersion | --VERSION | -VERSION | --FREESURFVER | -FREESURFVER | --freesurferVersion | -freesurferVersion | --freesurferversion | -freesurferversion)
             FREESURFVER=${arg[((++i))]}
             #echo "FREESURFVER=$FREESURFVER"
             ;;
-        -m | --HOSTNAME | -HOSTNAME | --hostname | -hostname)
+        -m | -HostName | --HOSTNAME | -HOSTNAME | --hostname | -hostname)
             lchostname=1
             echo "lchostname=$lchostname"
             ;;
-        -D | --DATE | -DATE | --date | -date)
+        -D | -Date | --DATE | -DATE | --date | -date)
             lcdate=1
             #echo "lcdate=$lcdate"
             ;;
-        -L | -DL | --DL | --DATELONG | -DATELONG | --datelong | -datelong)
+        -L | -DateLong | -DL | --DL | --DATELONG | -DATELONG | --datelong | -datelong)
             lcdate=2
             echo "lcdate=$lcdate"
             ;;
-        -b | --batchscript | -batchscript)
+        -b | -BatchScript | --batchscript | -batchscript)
             bs=True
             ((((i+i))<${#@})) && [[ ${arg[i+1]:0:1} != "-" ]] && bs=${arg[((++i))]}
             #echo "bs=$bs"
             ;;
-        -d | --dilation | -dilation | --dil | -dil)
+        -d | -Dilation | --dilation | -dilation | --dil | -dil)
             dilation=${arg[((++i))]}
             echo "dilation=$dilation"
             ;;
-        -e | --erosion | -erosion | --ero | -ero)
+        -e | -Erosion | --erosion | -erosion | --ero | -ero)
             erosion=${arg[((++i))]}
             echo "erosion=$erosion"
             ;;
@@ -205,6 +200,14 @@ for((i=0;i<${#@};++i));do
         -lt | --lt | --lowres-template | -lowres-template | --LowResolutionTemplateDirectory | -LowResolutionTemplateDirectory)
             lt=${arg[((++i))]}
             echo "lt=$lt"
+            ;;
+        -P | -ProjectDirectory | --projectdirectory | -projectdirectory | --container_directory | -container_directory | --cd | -cd)
+            cd0=${arg[((++i))]}
+            bids=${cd0}
+            ;;
+        -n | -Name | --name | -name)
+            name=${arg[((++i))]}
+            echo "name=$name"
             ;;
         --helpall | -helpall)
             helpall=True
@@ -251,14 +254,6 @@ for((i=0;i<${#@};++i));do
         --append | -append)
             echo ${arg[i]} is archaic. Use --projectdirectory instead.
             exit
-            ;;
-        -P | --projectdirectory | -projectdirectory | --container_directory | -container_directory | --cd | -cd)
-            cd0=${arg[((++i))]}
-            bids=${cd0}
-            ;;
-        -n | --name | -name)
-            name=${arg[((++i))]}
-            echo "name=$name"
             ;;
         -h | --help | -help)
             #helpmsg

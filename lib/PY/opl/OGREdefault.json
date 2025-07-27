@@ -38,6 +38,6 @@
         "Feat": null,
         "FeatAdapter": false,
         "UseRefinement": false,
-        "FSLMotionOutliers": null,  
+        "fsl_motion_outliers": null,  
         "StartIntensityNormalization": false
 }

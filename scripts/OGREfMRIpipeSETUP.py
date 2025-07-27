@@ -194,10 +194,10 @@ if __name__ == "__main__":
          + 'Ex 4. '+parser.prog+' -s "sub-1001_scanlist.csv sub-2000_scanlist.csv"\n' \
          + 'Ex 5. '+parser.prog+' -s sub-1001_scanlist.csv -s sub-2000_scanlist.csv\n' \
          + 'Ex 6. '+parser.prog+' sub-1001_scanlist.csv -s sub-2000_scanlist.csv\n'
-    parser.add_argument('-s','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='extend',nargs='+',help=hdat)
+    parser.add_argument('-s','-ScanList','--scanlist','-scanlist',dest='dat',metavar='scanlist.csv',action='extend',nargs='+',help=hdat)
 
     hlcautorun='Flag. Automatically execute *_fileout.sh script. Default is to not execute.'
-    parser.add_argument('-A','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
+    parser.add_argument('-A','-AutoRun','--autorun','-autorun','--AUTORUN','-AUTORUN',dest='lcautorun',action='store_true',help=hlcautorun)
 
     hOGREDIR='OGRE directory. Location of OGRE scripts.\n' \
         +'Optional if set at the top of this script or elsewhere via variable OGREDIR.\n' \
@@ -208,17 +208,31 @@ if __name__ == "__main__":
     parser.add_argument('-H','--HCPDIR','-HCPDIR','--hcpdir','-hcpdir',dest='HCPDIR',metavar='HCPdirectory',help=hHCPDIR)
 
     hFREESURFVER='5.3.0-HCP, 7.2.0, 7.3.2, 7.4.0 or 7.4.1. Default is 7.4.1 unless set elsewhere via variable FREESURFVER.'
-    parser.add_argument('-V','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER','--freesurferversion','-freesurferversion',dest='FREESURFVER',metavar='FreeSurferVersion', \
-        help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0', '7.4.1'])
+    parser.add_argument('-V','-FreeSurferVersion','--VERSION','-VERSION','--FREESURFVER','-FREESURFVER','--freesurferversion','-freesurferversion',dest='FREESURFVER', \
+        metavar='FreeSurferVersion',help=hFREESURFVER,choices=['5.3.0-HCP', '7.2.0', '7.3.2', '7.4.0', '7.4.1'])
 
     hbhostname='Flag. Append machine name to pipeline directory. Ex. pipeline7.4.0_3452-AD-05003'
-    parser.add_argument('-m','--HOSTNAME','-HOSTNAME','--hostname','-hostname',dest='bhostname',action='store_true',help=hbhostname)
+    parser.add_argument('-m','-HostName','--HOSTNAME','-HOSTNAME','--hostname','-hostname',dest='bhostname',action='store_true',help=hbhostname)
 
     hlcdate='Flag. Add date (YYMMDD) to name of output script.'
-    parser.add_argument('-D','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate,default=0)
+    parser.add_argument('-D','-Date','--DATE','-DATE','--date','-date',dest='lcdate',action='store_const',const=1,help=hlcdate,default=0)
 
     hlcdateL='Flag. Add date (YYMMDDHHMMSS) to name of output script.'
-    parser.add_argument('-L','-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL,default=0)
+    parser.add_argument('-L','-DateLong','-DL','--DL','--DATELONG','-DATELONG','--datelong','-datelong',dest='lcdate',action='store_const',const=2,help=hlcdateL,default=0)
+
+    hbs = '*_fileout.sh scripts are collected in an executable batchscript.\n' \
+        + 'This permits the struct and fMRIvol scripts to be run sequentially and seamlessly.\n' \
+        + 'If a filename is provided, then in addition, the batchscripts are written to the provided filename.\n' \
+        + 'This facilitates the creation of an across-subjects script such that multiple subjects can be run sequentially and seamlessly.\n'
+    parser.add_argument('-b','-BatchScript','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
+
+    hcd0='Project directory\n' \
+        +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
+        +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
+    parser.add_argument('-P','-ProjectDirectory','--projectdirectory','-projectdirectory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
+
+    hname='Use with -ProjectDirectory to provide the subject name. Default is root of scanlist.csv. Overrides the default.'
+    parser.add_argument('-n','-Name','--name','-name',dest='name',metavar='mynamestr',help=hname)
 
     hfwhm='SUSAN spatial smoothing (mm). Multiple values ok.'
     mfwhm='FWHM'
@@ -261,12 +275,6 @@ if __name__ == "__main__":
     hlcfeatadapter='Flag. Only write the feat adapter scripts.'
     parser.add_argument('-F','--FEATADAPTER','-FEATADAPTER','--featadapter','-featadapter','--FeatAdapter','-FeatAdapter',dest='lcfeatadapter',action='store_true',help=hlcfeatadapter)
 
-    hbs = '*_fileout.sh scripts are collected in an executable batchscript.\n' \
-        + 'This permits the struct and fMRIvol scripts to be run sequentially and seamlessly.\n' \
-        + 'If a filename is provided, then in addition, the batchscripts are written to the provided filename.\n' \
-        + 'This facilitates the creation of an across-subjects script such that multiple subjects can be run sequentially and seamlessly.\n'
-    parser.add_argument('-b','--batchscript','-batchscript',dest='bs',metavar='batchscript',nargs='?',const=True,help=hbs)
-
     huserefinement='Flag. Use the freesurfer refinement in the warp for one step resampling.\n' \
         + 'Defaut is not use the refinement as this was found to misregister the bolds.\n'
     parser.add_argument('-userefinement','--userefinement','-USEREFINEMENT','--USEREFINEMENT','--UseRefinement','-UseRefinement',dest='userefinement',action='store_true',help=huserefinement)
@@ -279,14 +287,6 @@ if __name__ == "__main__":
     hstartIntensityNormalization='Flag. Start at IntensityNormalization. Defaut is to run the whole script.\n'
     parser.add_argument('-startIntensityNormalization','--startIntensityNormalization','-sin','--sin',dest='startIntensityNormalization',action='store_true',help=hstartIntensityNormalization)
 
-    hcd0='Project directory\n' \
-        +'    Ex. /Users/Shared/10_Connectivity/derivatives/preprocessed/sub-1019_OGRE-preproc\n' \
-        +'        func, anat, regressors, pipeline7.4.1 are created inside this directory'
-    parser.add_argument('-P','--projectdirectory','-projectdirectory','--container_directory','-container_directory','--cd','-cd',dest='cd0',metavar='mystr',help=hcd0)
-
-    #START250718
-    hname='Use with --projectdirectory to provide the subject name. Default is root of scanlist.csv.'
-    parser.add_argument('-n','--name','-name',dest='name',metavar='mynamestr',help=hname)
 
 
     #START230411 https://stackoverflow.com/questions/22368458/how-to-make-argparse-print-usage-when-no-option-is-given-to-the-code

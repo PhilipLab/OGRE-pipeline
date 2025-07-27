@@ -124,17 +124,17 @@ if __name__ == "__main__":
     if dict1["FreeSurferVersion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
     if dict1["HostName"]: str_both+=' -m'
     if dict1["Date"]: str_both+=' -D'
-    if dict1["DateLong"]: str_both+=' -DL'
+    if dict1["DateLong"]: str_both+=' -L'
     if dict1["BatchScript"]: 
         str_both+=' -b'                    
         if dict1["BatchScript"]!=True: str_both+=' ' +  dict1["BatchScript"]
-        if dict1["ProjectDirectory"]: str_both+=' -cd ' + dict1["ProjectDirectory"] 
-        if dict1["Name"]: str_both+=' -n ' + dict1["Name"] 
+    if dict1["ProjectDirectory"]: str_both+=' -P ' + dict1["ProjectDirectory"] 
+    if dict1["Name"]: str_both+=' -n ' + dict1["Name"] 
 
     str_stru=''
     if dict1["OGREstructpipeSETUP"]:
+        if dict1["Dilation"]: str_stru+=' -d ' + dict1["Dilation"] 
         if dict1["Erosion"]: str_stru+=' -e ' + dict1["Erosion"] 
-        if dict1["Dilation"]: str_stru+=' -dil ' + dict1["Dilation"] 
         if dict1["HighResolutionTemplateDirectory"]: str_stru+=' -ht ' + dict1["HighResolutionTemplateDirectory"] 
         if dict1["LowResolutionTemplateDirectory"]: str_stru+=' -lt ' + dict1["LowResolutionTemplateDirectory"] 
         if dict1["HighResolution"]: str_stru+=' -r ' + dict1["Resolution"]
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
         if dict1["FeatAdapter"]: str_func+=' -F'
         if dict1["UseRefinement"]: str_func+=' -userefinement'
-        if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
+        if dict1["fsl_motion_outliers"]: str_func+=' -fslmo ' + dict1["fsl_motion_outliers"]  
         if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
         if dict1["AutoRun"]: str_func+=' -A' 
 
