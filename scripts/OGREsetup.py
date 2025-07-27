@@ -1,18 +1,40 @@
 #!/usr/bin/env python3
 
 import argparse
+#from collections.abc import Mapping
 import json
 import pathlib
+from requests.structures import CaseInsensitiveDict
 import shutil
 import subprocess
 import sys
 import threading
 
+
+##https://stackoverflow.com/questions/3296499/case-insensitive-dictionary-search/27890005#27890005
+#class CaseInsensitiveDict(Mapping):
+#    def __init__(self, d):
+#        self._d = d
+#        self._s = dict((k.casefold(), k) for k in d)
+#    def __contains__(self, k):
+#        return k.casefold() in self._s
+#    def __len__(self):
+#        return len(self._s)
+#    def __iter__(self):
+#        return iter(self._s)
+#    def __getitem__(self, k):
+#        return self._d[self._s[k.casefold()]]
+#    def actual_key_case(self, k):
+#        return self._s.get(k.casefold())
+
 #https://stackoverflow.com/questions/60687577/trying-to-read-json-file-within-a-python-package
 #https://docs.python.org/3/library/importlib.resources.html
 import importlib.resources
 with importlib.resources.files("opl").joinpath("OGREdefault.json").open('r',encoding="utf8") as file:
-    dict0 = json.load(file)
+    dict0 = CaseInsensitiveDict(json.load(file))
+    #[print(f'{k},{v} {dict0.actual_key_case(k)}') for k,v in dict0.items()]
+    [print(j) for j in dict0.items()]
+    print()
 
 def run_script(cmd):
     subprocess.run(cmd,shell=True)
@@ -22,15 +44,28 @@ def run_thread(cmd):
 
 if __name__ == "__main__":
 
-    hp=f'Setup OGRE scripts from a json.  Required: OGREsetup.py <json>'
+
+    #hp=f'Setup OGRE scripts from a json.  Required: OGREsetup.py <json>'
+    #parser=argparse.ArgumentParser(description=hp,formatter_class=argparse.RawTextHelpFormatter)
+    #parser.add_argument('dat0',metavar='<json(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be json files.')
+    #hdat = 'Ex 1. '+parser.prog+' sub-1001_OGRE.json sub-2000_OGRE.json\n' \
+    #     + 'Ex 2. '+parser.prog+' "sub-1001_OGRE.json -j sub-2000_OGRE.json"\n' \
+    #     + 'Ex 3. '+parser.prog+' -j sub-1001_OGRE.json sub-2000_OGRE.json\n' \
+    #     + 'Ex 4. '+parser.prog+' -j "sub-1001_OGRE.json sub-2000_OGRE.json"\n' \
+    #     + 'Ex 5. '+parser.prog+' -j sub-1001_OGRE.json -j sub-2000_OGRE.json\n' \
+    #     + 'Ex 6. '+parser.prog+' sub-1001_OGRE.json -j sub-2000_OGRE.json\n'
+    #parser.add_argument('-j','--json','-json',dest='dat',metavar='json',action='extend',nargs='+',help=hdat)
+    #START250726
+    hp = 'Setup OGRE scripts from a json.  Required: OGREsetup.py <json>\n' \
+        + 'Multiple json files are assumed to be from a single subject, thus will be combined to a single setup.'
     parser=argparse.ArgumentParser(description=hp,formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('dat0',metavar='<json(s)>',action='extend',nargs='*',help='Arguments without options are assumed to be json files.')
-    hdat = 'Ex 1. '+parser.prog+' sub-1001_OGRE.json sub-2000_OGRE.json\n' \
-         + 'Ex 2. '+parser.prog+' "sub-1001_OGRE.json -j sub-2000_OGRE.json"\n' \
-         + 'Ex 3. '+parser.prog+' -j sub-1001_OGRE.json sub-2000_OGRE.json\n' \
-         + 'Ex 4. '+parser.prog+' -j "sub-1001_OGRE.json sub-2000_OGRE.json"\n' \
-         + 'Ex 5. '+parser.prog+' -j sub-1001_OGRE.json -j sub-2000_OGRE.json\n' \
-         + 'Ex 6. '+parser.prog+' sub-1001_OGRE.json -j sub-2000_OGRE.json\n'
+    hdat = 'Ex 1. '+parser.prog+' sub-1001_OGRE.json sub-1001b_OGRE.json\n' \
+         + 'Ex 2. '+parser.prog+' "sub-1001_OGRE.json -j sub-1001b_OGRE.json"\n' \
+         + 'Ex 3. '+parser.prog+' -j sub-1001_OGRE.json sub-1001b_OGRE.json\n' \
+         + 'Ex 4. '+parser.prog+' -j "sub-1001_OGRE.json sub-1001b_OGRE.json"\n' \
+         + 'Ex 5. '+parser.prog+' -j sub-1001_OGRE.json -j sub-1001b_OGRE.json\n' \
+         + 'Ex 6. '+parser.prog+' sub-1001_OGRE.json -j sub-1001b_OGRE.json\n'
     parser.add_argument('-j','--json','-json',dest='dat',metavar='json',action='extend',nargs='+',help=hdat)
 
     hverbose='Echo messages to terminal.'
@@ -52,129 +87,117 @@ if __name__ == "__main__":
         exit()
     args.dat = [str(pathlib.Path(i).resolve()) for i in args.dat]
 
+    #START250726
+    dict1 = dict0
 
     for i in args.dat:
         try:
+
+            #with open(i,encoding="utf8",errors='ignore') as f0:
+            #    #https://docs.python.org/3/library/stdtypes.html#dict.setdefault
+            #    dict1 = dict0
+            #    print(f'Reading {i}')
+            #    dict1.update(json.load(f0))
+            #    #print(dict1)
+            #    [print(j) for j in dict1.items()]
+            #    print()
+            #START250726
             with open(i,encoding="utf8",errors='ignore') as f0:
                 #https://docs.python.org/3/library/stdtypes.html#dict.setdefault
-                dict1 = dict0
                 print(f'Reading {i}')
-                dict1.update(json.load(f0))
-                #print(dict1)
-                [print(j) for j in dict1.items()]
-                print()
+                #dict1.update(CaseInsensitiveDict(json.load(f0)))
+                dict1.update(CaseInsensitiveDict(json.load(f0)))
+
         except FileNotFoundError:
             print(f'    Error: {i} does not exist. Abort!')
             exit()
+    [print(j) for j in dict1.items()]
+    print()
 
-        if "ScanList" in dict1:
-            if dict1["ScanList"]: 
-                str_both = ' ' + dict1["ScanList"] 
-
-#STARTHERE
-        if dict1["scanlist"]: 
-            str_both = ' ' + dict1["scanlist"] 
-        if 'str_both' not in locals():
-            print('{i} is missing scanlist. Abort!')
-            exit()
-        if dict1["OGREDIR"]: str_both+=' -O ' + dict1["OGREDIR"]
-        if dict1["HCPDIR"]: str_both+=' -H ' + dict1["HCPDIR"] 
-
-        if dict1["FreeSurferVersion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
-        elif dict1["freesurferversion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
-
-        if dict1["HostName"]: str_both+=' -m'
-        if dict1["Date"]: str_both+=' -D'
-        if dict1["DateLong"]: str_both+=' -DL'
-        if dict1["BatchScript"]: 
-            str_both+=' -b'                    
-            if dict1["BatchScript"]!=True: str_both+=' ' +  dict1["BatchScript"]
-
-        #if dict1["ContainerDirectory"]: str_both+=' -cd ' + dict1["ContainerDirectory"] 
-        #START250613
-        if dict1["Parent"]: str_both+=' -cd ' + dict1["Parent"] 
-
+    #START250726
+    if not dict1["scanlist"]:
+        print('scanlist is missing scanlist. Abort!')
+        exit()
+    str_both = ' ' + dict1["scanlist"]
+    if dict1["OGREDIR"]: str_both+=' -O ' + dict1["OGREDIR"]
+    if dict1["HCPDIR"]: str_both+=' -H ' + dict1["HCPDIR"] 
+    if dict1["FreeSurferVersion"]: str_both+=' -V ' + dict1["FreeSurferVersion"] 
+    if dict1["HostName"]: str_both+=' -m'
+    if dict1["Date"]: str_both+=' -D'
+    if dict1["DateLong"]: str_both+=' -DL'
+    if dict1["BatchScript"]: 
+        str_both+=' -b'                    
+        if dict1["BatchScript"]!=True: str_both+=' ' +  dict1["BatchScript"]
+        if dict1["ProjectDirectory"]: str_both+=' -cd ' + dict1["ProjectDirectory"] 
         if dict1["Name"]: str_both+=' -n ' + dict1["Name"] 
 
-        str_stru=''
-        if dict1["OGREstructpipeSETUP"]:
-            if dict1["Erosion"]: str_stru+=' -e ' + dict1["Erosion"] 
-            if dict1["Dilation"]: str_stru+=' -dil ' + dict1["Dilation"] 
-            if dict1["HighResolutionTemplateDirectory"]: str_stru+=' -ht ' + dict1["HighResolutionTemplateDirectory"] 
-            if dict1["LowResolutionTemplateDirectory"]: str_stru+=' -lt ' + dict1["LowResolutionTemplateDirectory"] 
-            if dict1["Resolution"]: str_stru+=' -r ' + dict1["Resolution"]
-            if dict1["T1HighResolutionWholeHead"]: str_stru+=' -t1 ' + dict1["T1HighResolutionWholeHead"] 
-            if dict1["T1HighResolutionBrainOnly"]: str_stru+=' -t1b ' + dict1["T1HighResolutionBrainOnly"] 
-            if dict1["T1HighResolutionBrainMask"]: str_stru+=' -t1bm ' + dict1["T1HighResolutionBrainMask"] 
-            if dict1["T1LowResolutionWholeHead"]: str_stru+=' -t1l ' + dict1["T1LowResolutionWholeHead"] 
-            if dict1["T1LowResolutionBrainOnly"]: str_stru+=' -t1bl ' + dict1["T1LowResolutionBrainOnly"] 
-            if dict1["T1LowResolutionBrainMask"]: str_stru+=' -t1bml ' + dict1["T1LowResolutionBrainMask"] 
-            if dict1["T2HighResolutionWholeHead"]: str_stru+=' -t2 ' + dict1["T2HighResolutionWholeHead"] 
-            if dict1["T2HighResolutionBrainOnly"]: str_stru+=' -t2b ' + dict1["T2HighResolutionBrainOnly"] 
-            if dict1["T2HighResolutionBrainMask"]: str_stru+=' -t2bm ' + dict1["T2HighResolutionBrainMask"] 
-            if dict1["T2LowResolutionWholeHead"]: str_stru+=' -t2l ' + dict1["T2LowResolutionWholeHead"] 
+    str_stru=''
+    if dict1["OGREstructpipeSETUP"]:
+        if dict1["Erosion"]: str_stru+=' -e ' + dict1["Erosion"] 
+        if dict1["Dilation"]: str_stru+=' -dil ' + dict1["Dilation"] 
+        if dict1["HighResolutionTemplateDirectory"]: str_stru+=' -ht ' + dict1["HighResolutionTemplateDirectory"] 
+        if dict1["LowResolutionTemplateDirectory"]: str_stru+=' -lt ' + dict1["LowResolutionTemplateDirectory"] 
+        if dict1["HighResolution"]: str_stru+=' -r ' + dict1["Resolution"]
+        if dict1["T1HighResolutionWholeHead"]: str_stru+=' -t1 ' + dict1["T1HighResolutionWholeHead"] 
+        if dict1["T1HighResolutionBrainOnly"]: str_stru+=' -t1b ' + dict1["T1HighResolutionBrainOnly"] 
+        if dict1["T1HighResolutionBrainMask"]: str_stru+=' -t1bm ' + dict1["T1HighResolutionBrainMask"] 
+        if dict1["T1LowResolutionWholeHead"]: str_stru+=' -t1l ' + dict1["T1LowResolutionWholeHead"] 
+        if dict1["T1LowResolutionBrainOnly"]: str_stru+=' -t1bl ' + dict1["T1LowResolutionBrainOnly"] 
+        if dict1["T1LowResolutionBrainMask"]: str_stru+=' -t1bml ' + dict1["T1LowResolutionBrainMask"] 
+        if dict1["T2HighResolutionWholeHead"]: str_stru+=' -t2 ' + dict1["T2HighResolutionWholeHead"] 
+        if dict1["T2HighResolutionBrainOnly"]: str_stru+=' -t2b ' + dict1["T2HighResolutionBrainOnly"] 
+        if dict1["T2HighResolutionBrainMask"]: str_stru+=' -t2bm ' + dict1["T2HighResolutionBrainMask"] 
+        if dict1["T2LowResolutionWholeHead"]: str_stru+=' -t2l ' + dict1["T2LowResolutionWholeHead"] 
+        if dict1["AutoRun"] and not dict1["OGREfMRIpipeSETUP"]: str_stru+=' -A' 
 
-            #START250604
-            if dict1["AutoRun"] and not dict1["OGREfMRIpipeSETUP"]: str_stru+=' -A' 
+    str_func=''
+    if dict1["OGREfMRIpipeSETUP"]:
+        if dict1["FWHM"]: str_func+=' -f ' + str(dict1["FWHM"])
+        if dict1["HPFcutoff_sec"]: str_func+=' -hpf_sec ' + str(dict1["HPFcutoff_sec"])
+        if dict1["LPFcutoff_sec"]: str_func+=' -lpf_sec ' + str(dict1["LPFcutoff_sec"])
+        if dict1["HPFcutoff_Hz"]: str_func+=' -hpf_Hz ' + str(dict1["HPFcutoff_Hz"])
+        if dict1["LPFcutoff_Hz"]: str_func+=' -lpf_Hz ' + str(dict1["LPFcutoff_Hz"])
+        if dict1["SmoothOnly"]: str_func+=' -smoothonly'
+        if dict1["donotsmoothrest"]: str_func+=' -donotsmoothrest'
+        if dict1["donotuseIntendedFor"]: str_func+=' -donotuseIntendedFor'
+        if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
+        if dict1["FeatAdapter"]: str_func+=' -F'
+        if dict1["UseRefinement"]: str_func+=' -userefinement'
+        if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
+        if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
+        if dict1["AutoRun"]: str_func+=' -A' 
 
+    if dict1["OGREstructpipeSETUP"]:
+        cmd = f'{dict1["OGREDIR"]}/scripts/OGREstructpipeSETUP.sh{str_both}{str_stru}'
+        run_thread(cmd)
 
-        str_func=''
-        if dict1["OGREfMRIpipeSETUP"]:
-            if dict1["FWHM"]: str_func+=' -f ' + str(dict1["FWHM"])
-            if dict1["HPFcutoff_sec"]: str_func+=' -hpf_sec ' + str(dict1["HPFcutoff_sec"])
-            if dict1["LPFcutoff_sec"]: str_func+=' -lpf_sec ' + str(dict1["LPFcutoff_sec"])
-            if dict1["HPFcutoff_Hz"]: str_func+=' -hpf_Hz ' + str(dict1["HPFcutoff_Hz"])
-            if dict1["LPFcutoff_Hz"]: str_func+=' -lpf_Hz ' + str(dict1["LPFcutoff_Hz"])
-            if dict1["SmoothOnly"]: str_func+=' -smoothonly'
-            if dict1["donotsmoothrest"]: str_func+=' -donotsmoothrest'
-            if dict1["donotuseIntendedFor"]: str_func+=' -donotuseIntendedFor'
-            if dict1["Feat"]: str_func+=' -feat ' + dict1["Feat"]
-            if dict1["FeatAdapter"]: str_func+=' -F'
-            if dict1["UseRefinement"]: str_func+=' -userefinement'
+    if dict1["OGREfMRIpipeSETUP"]:
+        if dict1["OGREstructpipeSETUP"]: print()
+        cmd = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
+        run_thread(cmd)
 
-            #if dict1["FSLMotionOutliers"]: str_func+=' -fslmo ' + dict1["FSLMotionOutliers"]  
-            #START250623
-            if dict1["fsl_motion_outliers"]: str_func+=' -fslmo ' + dict1["fsl_motion_outliers"]  
-
-            if dict1["StartIntensityNormalization"]: str_func+=' -sin' 
-
-            #START250604
-            if dict1["AutoRun"]: str_func+=' -A' 
-
-        if dict1["OGREstructpipeSETUP"]:
-            cmd = f'{dict1["OGREDIR"]}/scripts/OGREstructpipeSETUP.sh{str_both}{str_stru}'
-            run_thread(cmd)
-
-        if dict1["OGREfMRIpipeSETUP"]:
-            if dict1["OGREstructpipeSETUP"]: print()
-            cmd = f'{dict1["OGREDIR"]}/scripts/OGREfMRIpipeSETUP.py{str_both}{str_func}'
-            run_thread(cmd)
-
-        #START241214
-        #KEEP
-        #if dict1["ContainerDirectory"]:
-        #    #use the shell to evaluate the directory name in case it includes $(date +%y%m%d)
-        #    cd0 = dict1["ContainerDirectory"]
-        #    cd1 = run_cmd(f'echo "{cd0}"')
-        #    print(f'container directory = {cd1}')
-        #    d0 = str(pathlib.Path(cd1).resolve())
-        #    print(f'd0 = {d0}')
-        #
-        #    gev = Envvars()
-        #    if dict1["FreeSurferVersion"]: gev.FREESURFVER =  dict1["FreeSurferVersion"]
-        #    dir0 = d0 + '/pipeline' + gev.FREESURFVER
-        #
-        #    dest = shutil.copy2(i,f'{dir0}/scripts/{pathlib.Path(i).name}')
-        #    print(f'JSON copied to {dest}')
-        #START241214
-        tmp='.OGREtmp'
-        try:
-            with open(tmp,encoding="utf8",errors='ignore') as f0:
-                cd0 = f0.read().strip()
-            pathlib.Path.unlink(tmp)
-        except FileNotFoundError:
-            print(f'    Error: {tmp} does not exist. Abort!')
-            exit()
-        dest = shutil.copy2(i,f'{cd0}/scripts/{pathlib.Path(i).name}')
-        print(f'JSON copied to {dest}')
-
+    #KEEP
+    #if dict1["ContainerDirectory"]:
+    #    #use the shell to evaluate the directory name in case it includes $(date +%y%m%d)
+    #    cd0 = dict1["ContainerDirectory"]
+    #    cd1 = run_cmd(f'echo "{cd0}"')
+    #    print(f'container directory = {cd1}')
+    #    d0 = str(pathlib.Path(cd1).resolve())
+    #    print(f'd0 = {d0}')
+    #
+    #    gev = Envvars()
+    #    if dict1["FreeSurferVersion"]: gev.FREESURFVER =  dict1["FreeSurferVersion"]
+    #    dir0 = d0 + '/pipeline' + gev.FREESURFVER
+    #
+    #    dest = shutil.copy2(i,f'{dir0}/scripts/{pathlib.Path(i).name}')
+    #    print(f'JSON copied to {dest}')
+    tmp='.OGREtmp'
+    try:
+        with open(tmp,encoding="utf8",errors='ignore') as f0:
+            cd0 = f0.read().strip()
+        pathlib.Path.unlink(tmp)
+    except FileNotFoundError:
+        print(f'    Error: {tmp} does not exist. Abort!')
+        exit()
+    dest = shutil.copy2(i,f'{cd0}/scripts/{pathlib.Path(i).name}')
+    print(f'JSON copied to {dest}')

@@ -241,7 +241,7 @@ for((i=0;i<${#@};++i));do
         -T2brainmask | --T2brainmask | -t2brainmask | --t2brainmask | -t2bm | --t2bm | -T2bm | --T2bm | -T2HighResolutionBrainMask | --T2HighResolutionBrainMask) 
             t2bm=${arg[((++i))]}
             ;;
-        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l | -T2LowResolutionWholeHead | --T2HighResolutionWholeHead)
+        -T2low | --T2low | -t2low | --t2low | -t2l | --t2l | -T2l | --T2l | -T2LowResolutionWholeHead | --T2LowResolutionWholeHead)
             t2l=${arg[((++i))]}
             ;;
         -p | --pipedir | -pipedir | -d | -directory | --directory)
