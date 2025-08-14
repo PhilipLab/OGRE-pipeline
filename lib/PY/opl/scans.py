@@ -96,7 +96,11 @@ class Scans:
     #START250110
     def __check_IntendedFor_fmap(self):
         for k in range(len(self.fmap)):
-            jsonf = (f'{self.fmap[k].split('.nii')[0]}.json')
+
+            #jsonf = (f'{self.fmap[k].split('.nii')[0]}.json')
+            #START250809
+            jsonf = (f'{self.fmap[k].split(".nii")[0]}.json')
+
             try:
                 with open(jsonf,encoding="utf8",errors='ignore') as f0:
                     #print(f'    Loading {jsonf}')
@@ -154,8 +158,13 @@ class Scans:
             self.write_bold_bash(f0,s0,self.bold)
             f0.write('\nJSON=(\\\n')
             j=-1 #default value needed for a single bold
-            for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split('.nii')[0]}.json \\\n')
-            f0.write(f'        {self.bold[j+1][0].split('.nii')[0]}.json)\n')
+
+            #for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split('.nii')[0]}.json \\\n')
+            #f0.write(f'        {self.bold[j+1][0].split('.nii')[0]}.json)\n')
+            #START250809
+            for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split(".nii")[0]}.json \\\n')
+            f0.write(f'        {self.bold[j+1][0].split(".nii")[0]}.json)\n')
+
             f0.write('\nfor i in "${!BOLD[@]}";do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${BOLD[i]}/${BOLD[i]}.nii.gz\n')
             f0.write('    if [ ! -f "${file}" ];then\n')
@@ -220,7 +229,11 @@ class Scans:
         f0.write('    file=${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz\n')
         f0.write('    ${SMOOTH} \\\n')
         f0.write('        --fMRITimeSeriesResults="$file"\\\n')
-        if fwhm: f0.write(f'        --fwhm="{' '.join(fwhm)}" \\\n')
+
+        #if fwhm: f0.write(f'        --fwhm="{' '.join(fwhm)}" \\\n')
+        #START250809
+        if fwhm: f0.write(f'        --fwhm="{" ".join(fwhm)}" \\\n')
+
         if paradigm_hp_sec:
             f0.write(f'        --paradigm_hp_sec="{paradigm_hp_sec}" \n')
         f0.write('done\n\n')
@@ -236,7 +249,11 @@ class Scans:
         f0.write("# Edit the BOLD (bash) array below to change which runs are smoothed.\n")
         boldtask = [self.bold[j] for j in self.taskidx]
         self.write_bold_bash(f0,s0,boldtask)
-        cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
+
+        #cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{' '.join(fwhm)}'
+        #START250809
+        cmd='${SMOOTH} ${bids}/func/${BOLD[i]%bold*}OGRE-preproc_bold.nii.gz -fwhm '+f'{" ".join(fwhm)}'
+
         if hpf_sec: cmd+=f' -hpf_sec {hpf_sec}'
         if lpf_sec: cmd+=f' -lpf_sec {lpf_sec}'
         f0.write('for((i=0;i<${#BOLD[@]};++i));do\n'+f'    {cmd}\ndone\n\n')
@@ -255,7 +272,11 @@ class Scans:
             #START260607
             f0.write(f's0={s0}\nbids={bids}\n\n')
             if fwhm:
-                f0.write(f'FWHM="{' '.join(fwhm)}"\n')
+
+                #f0.write(f'FWHM="{' '.join(fwhm)}"\n')
+                #START250809
+                f0.write(f'FWHM="{" ".join(fwhm)}"\n')
+
             else:
                 f0.write('FWHM=\n')
 
@@ -294,9 +315,11 @@ class Scans:
             for i,j in enumerate(self.bold):
                 cmd=''
                 if self.taskflag[i]==0: cmd='#'
-                b0=f'BOLD={pathlib.Path(j[0]).name.split('.nii')[0]}'
-                #cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -lpf_sec $LPF_SEC'
-                #cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm $FWHM -hpf_sec $HPF_SEC -hpf_Hz $HPF_Hz -lpf_sec $LPF_SEC -lpf_Hz $LPF_Hz -TR $TR'
+
+                #b0=f'BOLD={pathlib.Path(j[0]).name.split('.nii')[0]}'
+                #START250809
+                b0=f'BOLD={pathlib.Path(j[0]).name.split(".nii")[0]}'
+
                 cmd+='${SMOOTH} ${bids}/func/${BOLD%bold*}OGRE-preproc_bold.nii.gz -fwhm ${FWHM[@]} -hpf_sec ${HPF_SEC[@]} -hpf_Hz ${HPF_Hz[@]} -lpf_sec ${LPF_SEC[@]} -lpf_Hz ${LPF_Hz[@]} -TR ${TR[@]}'
                 f0.write(f'{b0}\n{cmd}\n\n')
 
@@ -346,7 +369,11 @@ class Par(Scans):
         #print(f'len(self.fmap_bold)={self.fmap_bold}')
 
     def __get_phase(self,file):
-        jsonf = (f'{file.split('.nii')[0]}.json')
+
+        #jsonf = (f'{file.split('.nii')[0]}.json')
+        #START250809
+        jsonf = (f'{file.split(".nii")[0]}.json')
+
         try:
             with open(jsonf,encoding="utf8",errors='ignore') as f0:
                 dict0 = json.load(f0)

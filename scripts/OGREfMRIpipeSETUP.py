@@ -315,7 +315,9 @@ if __name__ == "__main__":
     #    print(f'Your option list includes "{matches[0]} {args.append}". Archaic. Use --parent instead. Abort!\n')
     #    exit()
 
-    print(f'{' '.join(sys.argv)}')          
+    #print(f'{' '.join(sys.argv)}')          
+    #START250809
+    print(f'{" ".join(sys.argv)}')          
 
     if args.dat:
         if args.dat0:
@@ -446,8 +448,11 @@ if __name__ == "__main__":
             exists=False
             if p0.exists():
                 for j in par.bold:
-                    #print(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}')
-                    if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
+
+                    #if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split('.nii')[0]}').exists(): 
+                    #START250809
+                    if pathlib.Path(f'{dir0}/MNINonLinear/Results/{pathlib.Path(j[0]).name.split(".nii")[0]}').exists(): 
+
                         exists=True
                         break
 
@@ -626,7 +631,9 @@ if __name__ == "__main__":
 
             Fcleanf = fs.enter_context(open(Fclean, "w"))
 
-            for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
+            #for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{' '.join(sys.argv)}\n\n')          
+            #START250809
+            for fn in F0f: fn.write(f'{gev.SHEBANG}\nset -e\n\n#{" ".join(sys.argv)}\n\n')          
 
             if not args.lcfeatadapter:
                 F0f[0].write(f'FREESURFDIR={gev.FREESURFDIR}\nFREESURFVER={gev.FREESURFVER}\nexport FREESURFER_HOME='+'${FREESURFDIR}/${FREESURFVER}\n')
