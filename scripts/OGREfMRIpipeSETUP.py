@@ -506,11 +506,21 @@ if __name__ == "__main__":
             if idx == -1:
                 d0 = str(pathlib.Path(i).resolve().parent)
                 str0=''
-                bids = d0 + str0
+
+                #START250816
+                #bids = d0 + str0
+
             else:
                 d0 = i[:idx]
                 str0='derivatives/preprocessed/' + s0
-                bids = d0 + str0 + '${s0}'
+
+                #START250816
+                #bids = d0 + str0 + '${s0}'
+
+            #START250816
+            #bids = d0 + str0
+            bids = d0 + '${s0}' 
+
             dir0 = d0 + str0 + '/pipeline' + gev.FREESURFVER
             dir1 = '${bids}/pipeline${FREESURFVER}'
             dir2 = bids + '/pipeline${FREESURFVER}'
@@ -642,7 +652,10 @@ if __name__ == "__main__":
                 pathstr=f's0={s0}\nbids={bids}\nsf0={dir1}\n'
                 F0f[0].write(pathstr) # s0, bids and sf0
                 if len(F0f)>1: F0f[1].write(f's0={s0}\n')
-                if not args.lcsmoothonly: F0f[0].write('unset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
+
+                #if not args.lcsmoothonly: F0f[0].write('unset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
+                #START250816
+                if not args.lcsmoothonly: F0f[0].write('\nunset s1\n[[ -n ${s0} ]] && s1=${s0}_\n\n')
 
             fi0=0
             if args.lcfeatadapter: 
@@ -744,19 +757,16 @@ if __name__ == "__main__":
                 if arg.bs: pathlib.Path.unlink(bs0) 
             else:
 
-                #START241224
                 e0 = 'F0=${sf0}/scripts/'+f'{F0name}\n'+'out=${F0}.txt\n'
-
                 F1f.write(f'{gev.SHEBANG}\nset -e\n\n')
                 F1f.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir2}\n')
 
                 #START250715
-                F1f.write('\n[[ -n ${s0} ]] && s0+=_\n')
+                #F1f.write('\n\n[[ -n ${s0} ]] && s0+=_\n')
+                #START250816
+                F1f.write('\n[[ -n ${s0} ]] && s0+=_\n\n')
 
-                #F1f.write('F0=${sf0}/'+f'{F0name}\n'+'out=${F0}.txt\n')
-                #START241224
                 F1f.write(e0)
-
                 F1f.write('if [ -f "${out}" ];then\n')
                 F1f.write('    echo -e "\\n\\n**********************************************************************" >> ${out}\n')
                 F1f.write('    echo "    Reinstantiation $(date)" >> ${out}\n')
@@ -803,26 +813,16 @@ if __name__ == "__main__":
                     if 'batchscriptf' in locals(): batchscriptf[0].write(f'{bs0}\n')
 
                 Fcleanf.write(f'{gev.SHEBANG}\n\n')
-
-                #Fcleanf.write(f'FREESURFVER={gev.FREESURFVER}\ns0={s0}\nsf0={dir1}\n\n')
-                #Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
-                #START241103
                 Fcleanf.write(f'FREESURFVER={gev.FREESURFVER}\n{pathstr}')
 
-                #Fcleanf.write('\nmkdir -p ${sf0}/MNINonLinearSave\n')
-                #Fcleanf.write('cp -r ${sf0}/MNINonLinear/gm_wm_csf ${sf0}/MNINonLinearSave\n')
-                #Fcleanf.write('cp -r ${sf0}/MNINonLinear/Results ${sf0}/MNINonLinearSave\n')
-                #Fcleanf.write('rm -rf ${sf0}/MNINonLinear\n')
-                #Fcleanf.write('mv ${sf0}/MNINonLinearSave ${sf0}/MNINonLinear\n\n')
-                #START241210
+                #START250816
+                Fcleanf.write('\n[[ -n ${s0} ]] && s0+=_\n')
+
                 Fcleanf.write('\nmkdir -p ${sf0}/MNINonLinearSave/gm_wm_csf\n')
-                #Fcleanf.write('cp -R ${sf0}/MNINonLinear/gm_wm_csf/ ${sf0}/MNINonLinearSave/gm_wm_csf\n') # must be ...csf/ to only copy files
                 Fcleanf.write('cp -R ${sf0}/MNINonLinear/gm_wm_csf/ ${sf0}/MNINonLinearSave/gm_wm_csf # must be ...csf/ to only copy files and not the work directory\n')
                 Fcleanf.write('cp -R ${sf0}/MNINonLinear/Results ${sf0}/MNINonLinearSave\n')
                 Fcleanf.write('rm -Rf ${sf0}/MNINonLinear\n')
                 Fcleanf.write('mv ${sf0}/MNINonLinearSave ${sf0}/MNINonLinear\n\n')
-
-
                 Fcleanf.write('rm -rf ${sf0}/T1w\n')
                 Fcleanf.write('rm -rf ${sf0}/T2w\n')
                 par.write_bold_bash(Fcleanf,s0,par.bold)

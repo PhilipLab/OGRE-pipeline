@@ -115,36 +115,46 @@ class Scans:
 
                 #https://www.geeksforgeeks.org/python-finding-strings-with-given-substring-in-list/
                 #https://stackoverflow.com/questions/53984406/efficient-way-to-add-elements-to-a-tuple
+                #https://www.geeksforgeeks.org/python/python-list-index/ index() is a list method
 
-                for i in range(len(dict0["IntendedFor"])):
-                    found=0
-                    for j in range(len(self.bold)):
-                        try:
-                            index = self.bold[j][0].index(dict0["IntendedFor"][i])
-                            #print(f'{i} found at {index}')
-                            self.sbref[j] += (k,)
-                            self.bold[j] += (k,)
-                            found=1
-                            break
-                        except ValueError:
-                            pass
-                    #print(f'j={j} len(self.bold)={len(self.bold)}')
-                    if found == 0:
-                        print(f'{dict0["IntendedFor"][i]} not found in bold. Abort!')
+
+                #for i in range(len(dict0["IntendedFor"])):
+                #    found=0
+                #    print(f'here0 i={i}')
+                #    for j in range(len(self.bold)):
+                #        print(f'here1 j={j}')
+                #        try:
+                #            print(f'here2')
+                #            index = self.bold[j][0].index(dict0["IntendedFor"][i])
+                #            print(f'{i} found at {index}')
+                #            self.sbref[j] += (k,)
+                #            self.bold[j] += (k,)
+                #            found=1
+                #            break
+                #        except ValueError:
+                #            print(f'here3 index={index}')
+                #            pass
+                #    print(f'j={j} len(self.bold)={len(self.bold)}')
+                #    if found == 0:
+                #        print(f'{dict0["IntendedFor"][i]} not found in bold. Abort!')
+                #        exit()
+                #START250816
+                for i,j in enumerate(self.bold):
+                    if next((s for s in dict0["IntendedFor"] if s in j[0]), None):
+                         self.sbref[i] += (k,)
+                         self.bold[i] += (k,)
+                    else:      
+                        print(f'{j[0]} not found. Abort!')
                         exit()
+
+
 
         #print(f'self.sbref={self.sbref}')
         #print(f'self.bold={self.bold}')
         #print(f'len(self.bold)={len(self.bold)}')   
 
 
-    #def write_copy_script(self,file,s0,pathstr,FREESURFVER):
-    #START250307
     def write_copy_script(self,file,s0,pathstr,gev):
-
-        #print(f'write_copy_script here0 s0={s0}END')
-        #print(f'write_copy_script here0 self.bold={self.bold}END')
-
         with open(file,'w') as f0:
 
             #f0.write(f'{SHEBANG}\nset -e\n\n')
@@ -155,6 +165,10 @@ class Scans:
 
             f0.write(pathstr+'\n') # s0, bids and sf0
             f0.write('mkdir -p ${bids}/func\n\n')
+
+            #START250816
+            f0.write('\n[[ -n ${s0} ]] && s0+=_\n')
+
             self.write_bold_bash(f0,s0,self.bold)
             f0.write('\nJSON=(\\\n')
             j=-1 #default value needed for a single bold
@@ -162,8 +176,11 @@ class Scans:
             #for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split('.nii')[0]}.json \\\n')
             #f0.write(f'        {self.bold[j+1][0].split('.nii')[0]}.json)\n')
             #START250809
-            for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split(".nii")[0]}.json \\\n')
-            f0.write(f'        {self.bold[j+1][0].split(".nii")[0]}.json)\n')
+            #for j in range(len(self.bold)-1): f0.write(f'        {self.bold[j][0].split(".nii")[0]}.json \\\n')
+            #f0.write(f'        {self.bold[j+1][0].split(".nii")[0]}.json)\n')
+            #START250816
+            for j in range(len(self.bold)-1): f0.write(f'    {self.bold[j][0].split(".nii")[0]}.json \\\n')
+            f0.write(f'    {self.bold[j+1][0].split(".nii")[0]}.json)\n')
 
             f0.write('\nfor i in "${!BOLD[@]}";do\n')
             f0.write('    file=${sf0}/MNINonLinear/Results/${BOLD[i]}/${BOLD[i]}.nii.gz\n')
@@ -331,7 +348,11 @@ class Scans:
         #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
         #START250715
         if s0:
-            bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
+
+            #bold_bash = [i.replace(s0,'${s0}') for i in list(zip(*bolds))[0]]
+            #START250816
+            bold_bash = [i.replace(f'{s0}_','${s0}') for i in list(zip(*bolds))[0]]
+
         else:
             bold_bash = [i for i in list(zip(*bolds))[0]]
 
