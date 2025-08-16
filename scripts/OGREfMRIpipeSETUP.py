@@ -580,7 +580,10 @@ if __name__ == "__main__":
         F1 = str0 + '_fileout.sh'
 
         if not args.lcfeatadapter and feat: 
-            Ffeat = stem0 + '_featadapter' + datestr + '.sh'
+
+            #Ffeat = stem0 + '_featadapter' + datestr + '.sh'
+            #START250816
+            Ffeat = stem0 + 'featadapter' + datestr + '.sh'
 
             #Ffeatname = '${s0}_featadapter' + datestr + '.sh' 
             #START250709

@@ -92,15 +92,56 @@ class Scans:
 
         if not lcdonotuseIntendedFor: self.__check_IntendedFor_fmap()
 
-
-    #START250110
     def __check_IntendedFor_fmap(self):
+
+        #for k in range(len(self.fmap)):
+        #    jsonf = (f'{self.fmap[k].split(".nii")[0]}.json')
+        #    try:
+        #        with open(jsonf,encoding="utf8",errors='ignore') as f0:
+        #            #print(f'    Loading {jsonf}')
+        #            dict0 = json.load(f0)
+        #    except FileNotFoundError:
+        #        print(f'    INFO: {jsonf} does not exist.')
+        #    if 'IntendedFor' in dict0:
+        #        #print('        Key IntendedFor found')
+        #        print(f'    {jsonf}: Key "IntendedFor" found')
+        #        #print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
+        #        #https://www.geeksforgeeks.org/python-finding-strings-with-given-substring-in-list/
+        #        #https://stackoverflow.com/questions/53984406/efficient-way-to-add-elements-to-a-tuple
+        #        #https://www.geeksforgeeks.org/python/python-list-index/ index() is a list method
+        #        #for i in range(len(dict0["IntendedFor"])):
+        #        #    found=0
+        #        #    print(f'here0 i={i}')
+        #        #    for j in range(len(self.bold)):
+        #        #        print(f'here1 j={j}')
+        #        #        try:
+        #        #            print(f'here2')
+        #        #            index = self.bold[j][0].index(dict0["IntendedFor"][i])
+        #        #            print(f'{i} found at {index}')
+        #        #            self.sbref[j] += (k,)
+        #        #            self.bold[j] += (k,)
+        #        #            found=1
+        #        #            break
+        #        #        except ValueError:
+        #        #            print(f'here3 index={index}')
+        #        #            pass
+        #        #    print(f'j={j} len(self.bold)={len(self.bold)}')
+        #        #    if found == 0:
+        #        #        print(f'{dict0["IntendedFor"][i]} not found in bold. Abort!')
+        #        #        exit()
+        #        #START250816
+        #        for i,j in enumerate(self.bold):
+        #            print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
+        #            if next((s for s in dict0["IntendedFor"] if s in j[0]), None):
+        #                 self.sbref[i] += (k,)
+        #                 self.bold[i] += (k,)
+        #            else:      
+        #                print(f'    {j[0]} not found. Abort!')
+        #                exit()
+        #START250816
+        found = [False]*len(self.bold)
         for k in range(len(self.fmap)):
-
-            #jsonf = (f'{self.fmap[k].split('.nii')[0]}.json')
-            #START250809
             jsonf = (f'{self.fmap[k].split(".nii")[0]}.json')
-
             try:
                 with open(jsonf,encoding="utf8",errors='ignore') as f0:
                     #print(f'    Loading {jsonf}')
@@ -109,44 +150,21 @@ class Scans:
                 print(f'    INFO: {jsonf} does not exist.')
 
             if 'IntendedFor' in dict0:
-                #print('        Key IntendedFor found')
                 print(f'    {jsonf}: Key "IntendedFor" found')
-                #print(f'dict0["IntendedFor"]={dict0["IntendedFor"]}')
 
                 #https://www.geeksforgeeks.org/python-finding-strings-with-given-substring-in-list/
                 #https://stackoverflow.com/questions/53984406/efficient-way-to-add-elements-to-a-tuple
                 #https://www.geeksforgeeks.org/python/python-list-index/ index() is a list method
 
-
-                #for i in range(len(dict0["IntendedFor"])):
-                #    found=0
-                #    print(f'here0 i={i}')
-                #    for j in range(len(self.bold)):
-                #        print(f'here1 j={j}')
-                #        try:
-                #            print(f'here2')
-                #            index = self.bold[j][0].index(dict0["IntendedFor"][i])
-                #            print(f'{i} found at {index}')
-                #            self.sbref[j] += (k,)
-                #            self.bold[j] += (k,)
-                #            found=1
-                #            break
-                #        except ValueError:
-                #            print(f'here3 index={index}')
-                #            pass
-                #    print(f'j={j} len(self.bold)={len(self.bold)}')
-                #    if found == 0:
-                #        print(f'{dict0["IntendedFor"][i]} not found in bold. Abort!')
-                #        exit()
-                #START250816
                 for i,j in enumerate(self.bold):
                     if next((s for s in dict0["IntendedFor"] if s in j[0]), None):
                          self.sbref[i] += (k,)
                          self.bold[i] += (k,)
-                    else:      
-                        print(f'{j[0]} not found. Abort!')
-                        exit()
-
+                         found[i] = True
+        if not all(found):
+            [print(f'{self.bold[i][0]} does not exist!') for i, x in enumerate(found) if not x]
+            print('Abort!!!')
+            exit(0)
 
 
         #print(f'self.sbref={self.sbref}')
